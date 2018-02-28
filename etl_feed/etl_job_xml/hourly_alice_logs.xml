@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/css" href="xmlpartsstyle.css"?>
+<etl_job xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../src/main/resources/etl_feed_job.xsd">
+    <job_static_param>
+        <feed_name>hourly_alice_logs</feed_name>
+        <frequency>HOURLY</frequency>
+    </job_static_param>
+
+    <extract>
+        <type>JSON</type>
+        <format_file_name>true</format_file_name>
+        <file_initial_path>/data-raw/kafka-mirror</file_initial_path>
+        <file_name_pattern>alice_audit_logs_%s_json</file_name_pattern>
+    </extract>
+
+    <transform>
+        <rule order="1" type="SELECT" group='1'>
+                <condition>event, facebook_id, google_id, http-agent, ip_address, user_email, date_time, user_id, version, lazada_rest_proxy_event_timestamp</condition>
+        </rule>
+
+        <rule order="2" type="SCHEMA_TRANSFORMATION" group="1" failed_field_limit="0" failed_row_limit="10">
+            <field_mapping source_name="http-agent" target_name="http_agent"/>
+        </rule>
+    </transform>
+
+    <load>
+        <type>HIVE</type>
+        <task>hourly_alice_logs</task>
+        <db_name>audit_logs</db_name>
+        <table_name>hourly_alice_logs</table_name>
+        <file_type>PARQUET</file_type>
+        <partition_data>
+            <coalesce_partition>true</coalesce_partition>
+            <overwrite_partition>true</overwrite_partition>
+            <coalesce_partition_count>10</coalesce_partition_count>
+            <partition_file_initial_path>/data</partition_file_initial_path>
+            <partition_columns>
+                <column name="venture" value="VENTURE"/>
+                <column name="data_date" value="DATE"/>
+                <column name="data_hour" value="HOUR"/>
+            </partition_columns>
+        </partition_data>
+    </load>
+</etl_job>

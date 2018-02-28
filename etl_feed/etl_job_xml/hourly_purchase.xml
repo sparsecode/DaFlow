@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/css" href="xmlpartsstyle.css"?>
+<etl_job xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../src/main/resources/etl_feed_job.xsd">
+    <job_static_param>
+        <feed_name>hourly_purchase</feed_name>
+        <frequency>HOURLY</frequency>
+    </job_static_param>
+
+    <extract>
+        <type>JSON</type>
+        <format_file_name>true</format_file_name>
+        <file_initial_path>/data-raw/kafka-mirror</file_initial_path>
+        <file_name_pattern>order_feed_%s_json</file_name_pattern>
+    </extract>
+
+    <transform>
+        <rule order="1" type="FILTER" group='1'>
+            <condition>event = 'order_save'</condition>
+        </rule>
+
+        <rule order="2" type="SELECT" group='1'>
+            <condition>data, data.products</condition>
+        </rule>
+
+        <rule order="3" type="SELECT" group='1'>
+            <condition>data.order_id, data.order_nr, data.anonymous_id, data.user_id, data.session_id, data.source, data.products, data.client_session_id, data.payment_type, data.fingerprint, data.adjust_id, data.device_id</condition>
+        </rule>
+
+        <rule order="4" type="SCHEMA_TRANSFORMATION" group="1" failed_field_limit="0" failed_row_limit="10"/>
+    </transform>
+
+    <load>
+        <type>HIVE</type>
+        <task>hourly_purchase</task>
+        <db_name>purchase_data</db_name>
+        <table_name>hourly_purchase</table_name>
+        <file_type>PARQUET</file_type>
+        <partition_data>
+            <coalesce_partition>true</coalesce_partition>
+            <overwrite_partition>true</overwrite_partition>
+            <coalesce_partition_count>10</coalesce_partition_count>
+            <partition_file_initial_path>/data</partition_file_initial_path>
+            <partition_columns>
+                <column name="venture" value="VENTURE"/>
+                <column name="data_date" value="DATE"/>
+                <column name="data_hour" value="HOUR"/>
+            </partition_columns>
+        </partition_data>
+    </load>
+</etl_job>
