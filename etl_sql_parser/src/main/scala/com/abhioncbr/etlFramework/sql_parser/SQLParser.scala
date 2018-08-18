@@ -1,11 +1,13 @@
-package com.abhioncbr.etlFramework.etl.feed.common.sql_parser
+package com.abhioncbr.etlFramework.sql_parser
 
-import com.abhioncbr.etlFramework.etl.feed.Logger
+import com.typesafe.scalalogging.Logger
 import org.joda.time.format.DateTimeFormat
 
 import scala.util.parsing.combinator._
 
 class SQLParser extends JavaTokenParsers {
+  private val logger = Logger(this.getClass)
+
   def sqlIdent: Parser[String] = """\p{javaJavaIdentifierStart}\p{javaJavaIdentifierPart}*([.-]\p{javaJavaIdentifierStart}\p{javaJavaIdentifierPart}*)?""".r
   def sqlDecimalNumber: Parser[String] = """-?(\d+(\.\d*)?|\d*\.\d+)""".r
 
@@ -60,14 +62,14 @@ class SQLParser extends JavaTokenParsers {
   def parseWhere(sql:String):Option[Where] = {
     parseAll(where, sql) match {
       case Success(r, q) => Option(r)
-      case x => Logger.log.error(x); None
+      case x => logger.error(x.toString); None
     }
   }
 
   def parseSelect(sql:String): Option[Select] = {
     parseAll(operation, sql) match {
       case Success(r, q) => Option(r)
-      case x => Logger.log.error(x); None
+      case x => logger.error(x.toString); None
     }
   }
 

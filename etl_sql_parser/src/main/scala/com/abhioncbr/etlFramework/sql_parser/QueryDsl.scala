@@ -1,4 +1,4 @@
-package com.abhioncbr.etlFramework.etl.feed.common.sql_parser
+package com.abhioncbr.etlFramework.sql_parser
 
 case class Query(operation:Operation,  from: From,  where: Option[Where],  order: Option[Direction] = None) {
   def order(dir: Direction): Query = this.copy(order = Option(dir))

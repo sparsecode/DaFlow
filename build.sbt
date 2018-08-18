@@ -1,3 +1,5 @@
+import sbt.Keys.libraryDependencies
+
 name := "etl_framework"
 
 lazy val etl_framework_common_settings = Seq(
@@ -8,7 +10,6 @@ lazy val etl_framework_common_settings = Seq(
 )
 
 val versions = new {
-  val hadoopVersion = "2.7.0"
   val scoptVersion = "3.5.0"
   val sparkVersion = "2.3.1"
   val jodaTimeVersion = "2.9.4"
@@ -30,12 +31,21 @@ libraryDependencies in ThisBuild ++= Seq(
   "io.prometheus" % "simpleclient_servlet" % versions.prometheusVersion,
   "io.prometheus" % "simpleclient_pushgateway" % versions.prometheusVersion,
 
+  "ch.qos.logback" % "logback-classic" % "1.1.7",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
+
   "mysql" % "mysql-connector-java" % "5.1.25"
 )
 
 lazy val etl_framework = project.in(file(".")).
-  dependsOn("etl_feed").aggregate("etl_feed").settings(etl_framework_common_settings: _*)
+  dependsOn("etl_feed").aggregate("etl_feed")
+  .dependsOn("etl_sql_parser").aggregate("etl_sql_parser")
+  .settings(etl_framework_common_settings: _*)
 
 lazy val etl_feed = project.in(file("etl_feed"))
+  .dependsOn("etl_sql_parser").aggregate("etl_sql_parser")
   .settings(etl_framework_common_settings: _*)
   .settings(mainClass in assembly := Some("com.lzd.etlFramework.etl.feed.LaunchETLExecution"))
+
+lazy val etl_sql_parser = project.in(file("etl_sql_parser"))
+  .settings(etl_framework_common_settings: _*)

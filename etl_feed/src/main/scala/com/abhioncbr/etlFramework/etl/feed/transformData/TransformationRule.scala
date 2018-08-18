@@ -2,7 +2,7 @@ package com.abhioncbr.etlFramework.etl.feed.transformData
 
 import com.abhioncbr.etlFramework.etl.feed.Logger
 import com.abhioncbr.etlFramework.etl.feed.common.ContextConstantEnum._
-import com.abhioncbr.etlFramework.etl.feed.common.sql_parser.{Clause, SQLParser}
+import com.abhioncbr.etlFramework.sql_parser.{Clause, SQLParser}
 import com.abhioncbr.etlFramework.etl.feed.common.{Context, FieldMapping, Load}
 import com.abhioncbr.etlFramework.etl.feed.loadData.hive.PartitionColumnTypeEnum
 import org.apache.spark.rdd.RDD
@@ -187,11 +187,11 @@ class PartitionRule(order: Int, scope: String, ruleCondition: String, group: Int
 
   private def setCondition(conditions: Seq[Clause]): Unit = {
     conditions.foreach {
-      case notNullClause: com.abhioncbr.etlFramework.etl.feed.common.sql_parser.NotNull =>
+      case notNullClause: com.abhioncbr.etlFramework.sql_parser.NotNull =>
         condition = s"${notNullClause.getFields("field")} IS NOT NULL"
         notCondition = s"${notNullClause.getFields("field")} IS NULL"
 
-      case nullClause: com.abhioncbr.etlFramework.etl.feed.common.sql_parser.Null =>
+      case nullClause: com.abhioncbr.etlFramework.sql_parser.Null =>
         condition = s"${nullClause.getFields("field")} IS NULL"
         notCondition = s"${nullClause.getFields("field")} IS NOT NULL"
     }
