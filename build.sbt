@@ -21,7 +21,7 @@ libraryDependencies in ThisBuild ++= Seq(
   "org.apache.spark" %% "spark-core" % versions.sparkVersion % "provided",
   "org.apache.spark" %% "spark-sql" % versions.sparkVersion % "provided",
   "org.apache.spark" %% "spark-hive" % versions.sparkVersion % "provided",
-  "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+
   "com.github.scopt" %% "scopt" % versions.scoptVersion,
   "com.google.guava" % "guava" % "13.0",
   "joda-time" % "joda-time" % versions.jodaTimeVersion,
@@ -30,6 +30,9 @@ libraryDependencies in ThisBuild ++= Seq(
   "io.prometheus" % "simpleclient" % versions.prometheusVersion,
   "io.prometheus" % "simpleclient_servlet" % versions.prometheusVersion,
   "io.prometheus" % "simpleclient_pushgateway" % versions.prometheusVersion,
+
+  "org.scalamock" % "scalamock_2.11" % "4.1.0" % Test,
+  "org.scalatest" % "scalatest_2.11" % "3.0.4" % Test,
 
   "ch.qos.logback" % "logback-classic" % "1.1.7",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
