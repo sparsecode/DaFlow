@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:simpleType name="extraction_type">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="JSON"/>
+      <xs:enumeration value="JDBC"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="load_file_type">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="PARQUET"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="merge_group_type">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[0-9]*[,][0-9]*"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="load_type">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="HIVE"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="partition_scope">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="MERGE"/>
+      <xs:enumeration value="LOAD"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="query_param_value">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="VENTURE"/>
+      <xs:enumeration value="FIRST_DATE"/>
+      <xs:enumeration value="DATE"/>
+      <xs:enumeration value="YEAR"/>
+      <xs:enumeration value="MONTH"/>
+      <xs:enumeration value="DAY"/>
+      <xs:enumeration value="HOUR"/>
+      <xs:enumeration value="OTHER"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="partition_col_value">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="VENTURE"/>
+      <xs:enumeration value="DATE"/>
+      <xs:enumeration value="YEAR"/>
+      <xs:enumeration value="MONTH"/>
+      <xs:enumeration value="DAY"/>
+      <xs:enumeration value="HOUR"/>
+      <xs:enumeration value="OTHER"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="transformation_rule_order">
+    <xs:restriction base="xs:positiveInteger"/>
+  </xs:simpleType>
+  <xs:simpleType name="transformation_rule_group">
+    <xs:restriction base="xs:positiveInteger"/>
+  </xs:simpleType>
+  <xs:simpleType name="transformation_rule">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="MERGE"/>
+      <xs:enumeration value="NIL"/>
+      <xs:enumeration value="FILTER"/>
+      <xs:enumeration value="SELECT"/>
+      <xs:enumeration value="PARTITION"/>
+      <xs:enumeration value="EXPLODE"/>
+      <xs:enumeration value="DROP"/>
+      <xs:enumeration value="SCHEMA_TRANSFORMATION"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="process_frequency">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="HOURLY"/>
+      <xs:enumeration value="DAILY"/>
+      <xs:enumeration value="WEEKLY"/>
+      <xs:enumeration value="MONTHLY"/>
+      <xs:enumeration value="YEARLY"/>
+      <xs:enumeration value="DATE_RANGE"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="etl_job" type="etl_jobType"/>
+  <xs:complexType name="loadType">
+    <xs:sequence>
+      <xs:element type="load_type" name="type" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="xs:string" name="db_name" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="xs:string" name="table_name" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="load_file_type" name="file_type" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="xs:string" name="task" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="partition_data">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element type="xs:boolean" name="coalesce_partition" minOccurs="1" maxOccurs="1"/>
+            <xs:element type="xs:boolean" name="overwrite_partition" minOccurs="1" maxOccurs="1"/>
+            <xs:element type="xs:integer" name="coalesce_partition_count" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="xs:string" name="partition_file_initial_path" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="partition_columns">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="column" maxOccurs="unbounded" minOccurs="0">
+                    <xs:complexType>
+                        <xs:attribute type="xs:string" name="name"/>
+                        <xs:attribute type="partition_col_value" name="value"/>
+                    </xs:complexType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ruleType">
+    <xs:attribute type="transformation_rule_group" name="group" use="required"/>
+    <xs:attribute type="partition_scope" name="scope" />
+    <xs:attribute type="merge_group_type" name="merge_group" />
+    <xs:attribute type="transformation_rule_order" name="order" use="required"/>
+    <xs:attribute type="transformation_rule" name="type" use="required"/>
+    <xs:attribute type="xs:positiveInteger" name="failed_field_limit"/>
+    <xs:attribute type="xs:positiveInteger" name="failed_row_limit"/>
+    <xs:sequence>
+      <xs:element type="field_mapping" name="field_mapping"/>
+      <xs:element type="ruleType" name="rule"/>
+      <xs:element type="xs:string" name="condition" minOccurs="1" maxOccurs="5"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="field_mapping">
+    <xs:attribute type="xs:string" name="source_name" use="required"/>
+    <xs:attribute type="xs:string" name="target_name" use="required"/>
+  </xs:complexType>
+  <xs:complexType name="transformType">
+    <xs:sequence>
+        <xs:element type="ruleType" name="rule"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="extractType">
+    <xs:sequence>
+      <xs:element type="extraction_type" name="type" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="xs:boolean" name ="format_file_name"  minOccurs="0" maxOccurs="1"/>
+      <xs:element type="xs:string" name="file_initial_path" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="xs:string" name="file_name_pattern" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="xs:string" name="db_property_file_path" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="xs:string" name="sql_query_file_path" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="query_params">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="param" maxOccurs="unbounded" minOccurs="0">
+              <xs:complexType>
+                <xs:attribute type="xs:int" name="order"/>
+                <xs:attribute type="xs:string" name="name"/>
+                <xs:attribute type="query_param_value" name="value"/>
+                <xs:attribute type="xs:string" name="default_value"/>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="job_static_paramType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="feed_name" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="process_frequency" name="frequency" minOccurs="1" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="etl_jobType">
+    <xs:sequence>
+      <xs:element type="job_static_paramType" name="job_static_param" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="extractType" name="extract" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="transformType" name="transform" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="loadType" name="load" minOccurs="1" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

@@ -40,15 +40,27 @@ libraryDependencies in ThisBuild ++= Seq(
   "mysql" % "mysql-connector-java" % "5.1.25"
 )
 
-lazy val etl_framework = project.in(file(".")).
-  dependsOn("etl_feed").aggregate("etl_feed")
+lazy val etl_framework = project.in(file("."))
+  .dependsOn("etl_feed").aggregate("etl_feed")
+  .dependsOn("etl_commons").aggregate("etl_commons")
+  .dependsOn("etl_job_conf").aggregate("etl_job_conf")
   .dependsOn("etl_sql_parser").aggregate("etl_sql_parser")
   .settings(etl_framework_common_settings: _*)
 
 lazy val etl_feed = project.in(file("etl_feed"))
+  .dependsOn("etl_commons").aggregate("etl_commons")
   .dependsOn("etl_sql_parser").aggregate("etl_sql_parser")
+  .dependsOn("etl_job_conf").aggregate("etl_job_conf")
   .settings(etl_framework_common_settings: _*)
   .settings(mainClass in assembly := Some("com.lzd.etlFramework.etl.feed.LaunchETLExecution"))
 
 lazy val etl_sql_parser = project.in(file("etl_sql_parser"))
+  .settings(etl_framework_common_settings: _*)
+
+lazy val etl_job_conf = project.in(file("etl_job_conf"))
+  .dependsOn("etl_commons").aggregate("etl_commons")
+  .settings(etl_framework_common_settings: _*)
+
+lazy val etl_commons = project.in(file("etl_commons"))
+  .dependsOn("etl_sql_parser").aggregate("etl_sql_parser")
   .settings(etl_framework_common_settings: _*)
