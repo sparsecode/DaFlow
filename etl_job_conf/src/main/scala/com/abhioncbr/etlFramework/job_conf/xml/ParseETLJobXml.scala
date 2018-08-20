@@ -6,7 +6,7 @@ import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{HADOOP_CONF, VENT
 import com.abhioncbr.etlFramework.commons.extract.{Extract, ExtractionType, QueryParam, QueryParamTypeEnum}
 import com.abhioncbr.etlFramework.commons.{Context, ProcessFrequencyEnum}
 import com.abhioncbr.etlFramework.commons.job.{ETLJob, FieldMapping, JobStaticParam}
-import com.abhioncbr.etlFramework.commons.load.{HivePartitionColumnTypeEnum, Load, PartitionColumn, PartitioningData}
+import com.abhioncbr.etlFramework.commons.load.{PartitionColumnTypeEnum, Load, PartitionColumn, PartitioningData}
 import com.abhioncbr.etlFramework.commons.transform.{AddColumnRule, DummyRule, MergeRule, NilRule, PartitionRule, SchemaTransformationRule, SimpleFunctionRule, Transform, TransformationRule, TransformationStep}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
@@ -111,7 +111,7 @@ object Rule {
 
       case "ADD_COLUMN" => val columnName = (node \ "@column_name").text
                            val columnValueType = (node \ "@column_value").text
-                           DummyRule(new AddColumnRule(order, group, columnName, HivePartitionColumnTypeEnum.getValueType(columnValueType)), null)
+                           DummyRule(new AddColumnRule(order, group, columnName, PartitionColumnTypeEnum.getValueType(columnValueType)), null)
 
       case "MERGE" => val mergeGroup = (node \ "@merge_group").text
                       DummyRule(new MergeRule(order, condition, getMergerGroup(mergeGroup).left.get, group), null)
@@ -153,7 +153,7 @@ object PartitionColumn {
   def fromXML(node: scala.xml.NodeSeq): PartitionColumn = {
     val name = (node  \ "@name").text
     val value = (node \ "@value").text
-    new PartitionColumn(name, HivePartitionColumnTypeEnum.getValueType(value))
+    new PartitionColumn(name, PartitionColumnTypeEnum.getValueType(value))
   }
 }
 

@@ -5,7 +5,7 @@ import java.text.DecimalFormat
 import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.job.JobStaticParam
-import com.abhioncbr.etlFramework.commons.load.{HivePartitionColumnTypeEnum, Load}
+import com.abhioncbr.etlFramework.commons.load.{PartitionColumnTypeEnum, Load}
 import com.abhioncbr.etlFramework.etl_feed.Logger
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.sql.{DataFrame, SaveMode}
@@ -53,7 +53,7 @@ class LoadDataIntoHiveTable extends LoadData {
         case _ => return Right(s"hive table data save file type is: $fileType")
       }
 
-      val partitioningString = HivePartitionColumnTypeEnum.getPartitioningString(partData)
+      val partitioningString = PartitionColumnTypeEnum.getPartitioningString(partData)
       Logger.log.info(s"partitioning string - $partitioningString")
 
       hiveContext.sql(

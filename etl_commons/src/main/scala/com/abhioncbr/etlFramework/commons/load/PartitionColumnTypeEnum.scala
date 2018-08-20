@@ -5,24 +5,24 @@ import java.text.DecimalFormat
 import com.abhioncbr.etlFramework.commons.{Context, ContextConstantEnum}
 import org.joda.time.DateTime
 
-object HivePartitionColumnTypeEnum extends Enumeration{
+object PartitionColumnTypeEnum extends Enumeration{
   type valueType = Value
   val DATE, YEAR, MONTH, DAY, HOUR, OTHER = Value
 
-  def getValueType(valueTypeString: String): HivePartitionColumnTypeEnum.valueType = {
+  def getValueType(valueTypeString: String): PartitionColumnTypeEnum.valueType = {
     val valueType = valueTypeString match {
-      case "DATE" => HivePartitionColumnTypeEnum.DATE
-      case "YEAR" => HivePartitionColumnTypeEnum.YEAR
-      case "MONTH" => HivePartitionColumnTypeEnum.MONTH
-      case "DAY" => HivePartitionColumnTypeEnum.DAY
-      case "HOUR"  => HivePartitionColumnTypeEnum.HOUR
-      case "OTHER" =>   HivePartitionColumnTypeEnum.OTHER
+      case "DATE" => PartitionColumnTypeEnum.DATE
+      case "YEAR" => PartitionColumnTypeEnum.YEAR
+      case "MONTH" => PartitionColumnTypeEnum.MONTH
+      case "DAY" => PartitionColumnTypeEnum.DAY
+      case "HOUR"  => PartitionColumnTypeEnum.HOUR
+      case "OTHER" =>   PartitionColumnTypeEnum.OTHER
     }
     valueType
   }
 
 
-  def getDataValue(valueType: HivePartitionColumnTypeEnum.valueType, otherValue: String = ""):  Any= {
+  def getDataValue(valueType: PartitionColumnTypeEnum.valueType, otherValue: String = ""):  Any= {
     val output = valueType match {
       case DATE => Context.getContextualObject[DateTime](ContextConstantEnum.FIRST_DATE).toString("yyyy-MM-dd")
       case YEAR => Context.getContextualObject[DateTime](ContextConstantEnum.FIRST_DATE).toString("yyyy")

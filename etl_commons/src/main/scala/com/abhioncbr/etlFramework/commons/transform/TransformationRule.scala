@@ -4,7 +4,7 @@ package com.abhioncbr.etlFramework.commons.transform
 import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.job.FieldMapping
-import com.abhioncbr.etlFramework.commons.load.{HivePartitionColumnTypeEnum, Load}
+import com.abhioncbr.etlFramework.commons.load.{PartitionColumnTypeEnum, Load}
 import com.abhioncbr.etlFramework.sql_parser.{Clause, SQLParser}
 import com.typesafe.scalalogging.Logger
 import org.apache.spark.rdd.RDD
@@ -94,13 +94,13 @@ abstract class abstractTransformationRule(order:Int, group: Int = 0, condition: 
 
 //Added on Sept-17, for adding column in to dataframe(currently, column values is only of type partition column)
 //TODO: Need to enhance in-future to support column values based on some logic.
-class AddColumnRule(order:Int, group: Int = 0, columnName: String, columnValueType: HivePartitionColumnTypeEnum.valueType) extends TransformationRule {
+class AddColumnRule(order:Int, group: Int = 0, columnName: String, columnValueType: PartitionColumnTypeEnum.valueType) extends TransformationRule {
   override def getOrder: Int = order
   override def getGroup: Int = group
   override def condition(f: Int => DataFrame): Boolean = true
   override def execute(f: Int => DataFrame): Either[Array[(DataFrame, Any, Any)], String] = {
     import org.apache.spark.sql.functions.lit
-    val value:Column = lit(HivePartitionColumnTypeEnum.getDataValue(columnValueType))
+    val value:Column = lit(PartitionColumnTypeEnum.getDataValue(columnValueType))
 
     val inputDataFrame:DataFrame = f.apply(group)
 
