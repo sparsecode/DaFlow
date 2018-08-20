@@ -52,7 +52,7 @@ lazy val etl_feed = project.in(file("etl_feed"))
   .dependsOn("etl_sql_parser").aggregate("etl_sql_parser")
   .dependsOn("etl_job_conf").aggregate("etl_job_conf")
   .settings(etl_framework_common_settings: _*)
-  .settings(mainClass in assembly := Some("com.lzd.etlFramework.etl.feed.LaunchETLExecution"))
+  .settings(mainClass in assembly := Some("com.abhioncbr.etlFramework.etl_feed.LaunchETLExecution"))
 
 lazy val etl_sql_parser = project.in(file("etl_sql_parser"))
   .settings(etl_framework_common_settings: _*)

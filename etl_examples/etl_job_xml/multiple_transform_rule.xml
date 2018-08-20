@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/css" href="xmlpartsstyle.css"?>
+<etl_job xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../etl_job_conf/etl_feed_job.xsd">
+    <job_static_param>
+        <feed_name>{etl_feed_name}</feed_name>
+        <frequency>HOURLY</frequency>
+    </job_static_param>
+
+    <extract>
+        <type>JSON</type>
+        <format_file_name>true</format_file_name>
+        <file_initial_path>{file-path-suffix}</file_initial_path>
+        <file_name_pattern>{file-name}</file_name_pattern>
+    </extract>
+
+    <transform>
+        <rule order="1" type="FILTER" group='1'>
+            <condition>{col1} like 'my%'</condition>
+        </rule>
+
+        <rule order="2" type="SELECT" group='1'>
+            <condition>{col2}, {col3}, {col4}, {col5}</condition>
+        </rule>
+
+        <rule order="3" type="SELECT" group='1'>
+            <condition>{col2}, {col3}, {col4}, {col5}</condition>
+        </rule>
+
+        <rule order="4" type="SCHEMA_TRANSFORMATION" group="1" failed_field_limit="0" failed_row_limit="10">
+        </rule>
+    </transform>
+
+    <load>
+        <type>HIVE</type>
+        <task>{load-task-name}</task>
+        <db_name>{db-name}</db_name>
+        <table_name>{table-name}</table_name>
+        <file_type>PARQUET</file_type>
+        <partition_data>
+            <coalesce_partition>true</coalesce_partition>
+            <overwrite_partition>true</overwrite_partition>
+            <coalesce_partition_count>10</coalesce_partition_count>
+            <partition_file_initial_path>{partition-file-path-initial}</partition_file_initial_path>
+            <partition_columns>
+                <column name="{colx}" value="DATE"/>
+                <column name="{coly}" value="HOUR"/>
+            </partition_columns>
+        </partition_data>
+    </load>
+</etl_job>

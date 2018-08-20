@@ -1,18 +1,18 @@
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/css" href="xmlpartsstyle.css"?>
-<etl_job xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../src/main/resources/etl_feed_job.xsd">
+<etl_job xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../etl_job_conf/etl_feed_job.xsd">
     <job_static_param>
-        <feed_name>customer_import</feed_name>
+        <feed_name>feed-name</feed_name>
         <frequency>DAILY</frequency>
     </job_static_param>
 
     <extract>
         <type>JDBC</type>
         <format_file_name>true</format_file_name>
-        <db_property_file_path>/user/datapipes/%s_bob_live_newsletter_subscription.properties</db_property_file_path>
-        <sql_query_file_path>/gitlab-artifacts/db_importer/data_queries/customer_select_query.sql</sql_query_file_path>
+        <db_property_file_path>{db-property-file-path}</db_property_file_path>
+        <sql_query_file_path>{sql-query-file-path.sql}</sql_query_file_path>
         <query_params>
-            <param order="1" name="first_date" value="FIRST_DATE"/>
+            <param order="1" name="{col1}" value="FIRST_DATE"/>
         </query_params>
     </extract>
 
@@ -22,18 +22,17 @@
 
     <load>
         <type>HIVE</type>
-        <task>customer_import</task>
-        <db_name>customer_data</db_name>
-        <table_name>customer</table_name>
+        <task>{load-task-name}</task>
+        <db_name>{db-name}</db_name>
+        <table_name>{table-name}</table_name>
         <file_type>PARQUET</file_type>
         <partition_data>
             <coalesce_partition>true</coalesce_partition>
             <overwrite_partition>true</overwrite_partition>
             <coalesce_partition_count>10</coalesce_partition_count>
-            <partition_file_initial_path>/data</partition_file_initial_path>
+            <partition_file_initial_path>{partition-file-path-initial}</partition_file_initial_path>
             <partition_columns>
-                <column name="venture" value="VENTURE"/>
-                <column name="data_date" value="DATE"/>
+                <column name="{partition-col1}" value="DATE"/>
             </partition_columns>
         </partition_data>
     </load>
