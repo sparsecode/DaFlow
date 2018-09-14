@@ -25,9 +25,8 @@ import org.joda.time.format.DateTimeFormat
 import scala.util.{Failure, Success, Try}
 import scala.xml.XML
 
-class LaunchETLSparkJobExecution(venture: String, firstDate: DateTime, secondDate: DateTime, xmlInputFilePath: String){
+class LaunchETLSparkJobExecution(firstDate: DateTime, secondDate: DateTime, xmlInputFilePath: String){
   def configureFeedJob: Either[Boolean, String] ={
-    Context.addContextualObject[String](VENTURE, venture)
     Context.addContextualObject[DateTime](FIRST_DATE, firstDate)
     Context.addContextualObject[DateTime](SECOND_DATE, secondDate)
 
@@ -140,7 +139,7 @@ class LaunchETLSparkJobExecution(venture: String, firstDate: DateTime, secondDat
     val subTask = if (jobSubtask.isEmpty) jobStaticParam.feedName else jobSubtask
 
     val shellCommand =
-      s"""sh $statScriptPath ${jobStaticParam.feedName} $subTask $venture $status ${jobStaticParam.processFrequency.toString.toLowerCase}
+      s"""sh $statScriptPath ${jobStaticParam.feedName} $subTask $status ${jobStaticParam.processFrequency.toString.toLowerCase}
           |   ${firstDate.toString(DatePattern)} ${new DecimalFormat("00").format(firstDate.getHourOfDay)}
           |   $validated $nonValidated $executionTime $transformed $nonTransformed $reason""".stripMargin
     Logger.log.info(s"""going to execute command: $shellCommand""")
@@ -153,11 +152,10 @@ class LaunchETLSparkJobExecution(venture: String, firstDate: DateTime, secondDat
 object LaunchETLSparkJobExecution extends App{
 
   def launch(args: Array[String]): Unit = {
-    case class CommandOptions(venture: String = "", firstDate: DateTime = null, feedName : String = "",
+    case class CommandOptions(firstDate: DateTime = null, feedName : String = "",
                               secondDate: DateTime = null, xmlInputFilePath: String = "", statScriptFilePath: String = "") {
       override def toString =
         Objects.toStringHelper(this)
-          .add("venture", venture)
           .add("feed_name", feedName)
           .add("firstDate", firstDate)
           .add("secondDate", secondDate)
@@ -169,11 +167,6 @@ object LaunchETLSparkJobExecution extends App{
     val dateParser  = DateTimeFormat.forPattern(DatePattern)
 
     val parser = new scopt.OptionParser[CommandOptions]("") {
-      opt[String]('v', "venture")
-        .action((v, c) => c.copy(venture = v))
-        .text("required venture for which job need to be executed.")
-        .required
-
       opt[String]('e', "etl_feed_name")
         .action((e, f) => f.copy(feedName = e))
         .text("required Etl feed name.")
@@ -205,12 +198,11 @@ object LaunchETLSparkJobExecution extends App{
       case Some(opts) =>
         Logger.log.info(s"Going to start the execution of the etl feed job with following params: $opts")
         var exitCode = -1
-        val etlExecutor = new LaunchETLSparkJobExecution(opts.venture, opts.firstDate, opts.secondDate, opts.xmlInputFilePath)
+        val etlExecutor = new LaunchETLSparkJobExecution(opts.firstDate, opts.secondDate, opts.xmlInputFilePath)
 
         @transient lazy val feedDataStatGauge = Gauge.build()
           .name(opts.feedName.replace("-","_"))
           .help(s"number of entries for a given ${opts.feedName.replace("-","_")}")
-          .labelNames("venture", "service")
           .register()
 
         var metricData = 0L
@@ -234,7 +226,7 @@ object LaunchETLSparkJobExecution extends App{
             Logger.log.error(s)
         }
 
-        feedDataStatGauge.labels(opts.venture, opts.feedName).set(metricData)
+        feedDataStatGauge.labels(opts.feedName).set(metricData)
         pushMetrics(opts.feedName)
 
         Logger.log.info(s"Etl job finish with exit code: $exitCode")

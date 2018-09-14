@@ -2,7 +2,7 @@ package com.abhioncbr.etlFramework.job_conf.xml
 
 import java.io._
 
-import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{HADOOP_CONF, VENTURE}
+import com.abhioncbr.etlFramework.commons.ContextConstantEnum.HADOOP_CONF
 import com.abhioncbr.etlFramework.commons.extract.{Extract, ExtractionType, QueryParam, QueryParamTypeEnum}
 import com.abhioncbr.etlFramework.commons.{Context, ProcessFrequencyEnum}
 import com.abhioncbr.etlFramework.commons.job.{ETLJob, FieldMapping, JobStaticParam}
@@ -10,11 +10,9 @@ import com.abhioncbr.etlFramework.commons.load.{PartitionColumnTypeEnum, Load, P
 import com.abhioncbr.etlFramework.commons.transform.{AddColumnRule, DummyRule, MergeRule, NilRule, PartitionRule, SchemaTransformationRule, SimpleFunctionRule, Transform, TransformationRule, TransformationStep}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
-
 import scala.collection.immutable.ListMap
-import scala.io.Source
 import scala.util.Try
-import scala.xml.XML
+
 
 
 
@@ -27,17 +25,17 @@ object JobStaticParam {
 }
 
 object Extract {
-  def fromXML(node: scala.xml.NodeSeq, venture: String): Extract = {
+  def fromXML(node: scala.xml.NodeSeq): Extract = {
     val extractionType = ExtractionType.getValueType((node \ "type").text)
     var extract: Extract = null
     if(extractionType.equals(ExtractionType.JSON)) {
       extract = new Extract(extractionType,
-        fileInitialPath = String.format((node \ "file_initial_path").text, venture),
+        fileInitialPath = String.format((node \ "file_initial_path").text),
         fileNamePattern = (node \ "file_name_pattern").text,
         formatFileName = (node \ "format_file_name").text.toBoolean, "", "", null)
     } else if(extractionType.equals(ExtractionType.JDBC)) {
       extract = new Extract(extractionType, "", "", (node \ "format_file_name").text.toBoolean,
-        dbPropertyFile = String.format((node \ "db_property_file_path").text, venture),
+        dbPropertyFile = String.format((node \ "db_property_file_path").text),
         queryFilePath = (node \ "sql_query_file_path").text,
         queryParams = List[QueryParam]((node \ "query_params" \ "param").toList map { s => QueryParam.fromXML(s) }: _*))
     }
@@ -160,7 +158,7 @@ object PartitionColumn {
 object ETLJob{
   def fromXML(node: scala.xml.NodeSeq): ETLJob = {
       new ETLJob(JobStaticParam.fromXML(node \ "job_static_param"),
-        Extract.fromXML(node \ "extract", Context.getContextualObject[String](VENTURE)),
+        Extract.fromXML(node \ "extract"),
         Transform.fromXML(node \ "transform"),
         Load.fromXML(node \ "load")
     )
@@ -199,11 +197,3 @@ class ParseETLJobXml {
   }
 }
 
-object ParseETLJobXml extends App{
-  Context.addContextualObject[String](VENTURE, "sg")
-  println(new ParseETLJobXml().parseNode(XML.loadString(
-    Source.fromFile("/Users/Abhishek/Code/etl_framework/etl_feed/etl_job_xml/customer_import.xml").getLines.mkString)).left.get._3.transformationSteps.mkString("\n"))
-
-  println(new ParseETLJobXml().parseNode(XML.loadString(
-    Source.fromFile("/Users/Abhishek/Code/etl_framework/etl_feed/etl_job_xml/customer_import.xml").getLines.mkString)).left.get._2.extractionType)
-}

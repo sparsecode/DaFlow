@@ -21,7 +21,7 @@ class ExtractDataFromDB(dbPropertyFile: String = Context.getContextualObject[Ext
     lazy val fs = FileSystem.get(new Configuration())
 
     //reading database properties from property file.
-    val propertyFilePath = if(formatFileName) String.format(dbPropertyFile, Context.getContextualObject[String](VENTURE)) else dbPropertyFile
+    val propertyFilePath = if(formatFileName) String.format(dbPropertyFile) else dbPropertyFile
     Logger.log.info(s"db property file path: $propertyFilePath")
 
     val connectionProps = new Properties()

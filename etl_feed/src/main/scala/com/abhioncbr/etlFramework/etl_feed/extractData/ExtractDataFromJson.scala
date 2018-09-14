@@ -11,14 +11,13 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.joda.time.{DateTime, Days, DurationFieldType}
 
 class FileNamePattern {
-  val venture: String = Context.getContextualObject[String](VENTURE)
   val processFrequency: ProcessFrequencyEnum.frequencyType = Context.getContextualObject[JobStaticParam](JOB_STATIC_PARAM).processFrequency
 
   def getFileDataPathPattern(filePathPrefix: String, fileNamePattern: String, firstDate: DateTime, secondDate: Option[DateTime]): String = {
     s"""$filePathPrefix/${getFeedName(fileNamePattern)}/${getProcessFrequencyPattern(firstDate,secondDate)}"""
   }
 
-  private def getFeedName(namePattern: String) = String.format(namePattern, venture)
+  private def getFeedName(namePattern: String) = String.format(namePattern)
   private def getProcessFrequencyPattern(firstDate: DateTime, secondDate: Option[DateTime]): String = {
     val df = new DecimalFormat("00")
     import com.abhioncbr.etlFramework.commons.ProcessFrequencyEnum._

@@ -27,11 +27,10 @@ import scala.util.{Failure, Success, Try}
 import scala.xml.XML
 
 class LaunchETLExecution(spark_master_mode : String, feed_name: String, job_queue: String, job_jars: Array[String],
-                         venture: String, firstDate: DateTime, secondDate: DateTime, xmlInputFilePath: String,
+                         firstDate: DateTime, secondDate: DateTime, xmlInputFilePath: String,
                          driverMemory: String, executorMemory: String){
 
   def configureFeedJob: Either[Boolean, String] ={
-    Context.addContextualObject[String](VENTURE, venture)
     Context.addContextualObject[DateTime](FIRST_DATE, firstDate)
     Context.addContextualObject[DateTime](SECOND_DATE, secondDate)
 
@@ -110,7 +109,6 @@ class LaunchETLExecution(spark_master_mode : String, feed_name: String, job_queu
 
   private def validate(transformationDF: Array[ (DataFrame, Any, Any) ]): Either[Array[(DataFrame, DataFrame, Any, Any)], String] = {
     //testing whether transformed data frames have data or not.
-    //As per Sreekanth, if one data frame doesn't have data, we will skip all data frames storage.
     transformationDF.unzip3._1.toArray.foreach(df => if(df.first == null ) return Right("Transformed data frame contains no data row"))
 
     var output: Array[ (DataFrame, DataFrame, Any, Any) ] = Array()
@@ -158,7 +156,7 @@ class LaunchETLExecution(spark_master_mode : String, feed_name: String, job_queu
     val reason = if (failureReason.isEmpty) "None" else s""" "${failureReason.split("[ ]").mkString("_")}" """.trim
 
     val shellCommand =
-      s"""sh $statScriptPath ${jobStaticParam.feedName} $feed_name $venture $status ${jobStaticParam.processFrequency.toString.toLowerCase}
+      s"""sh $statScriptPath ${jobStaticParam.feedName} $feed_name $status ${jobStaticParam.processFrequency.toString.toLowerCase}
          |   ${firstDate.toString(DatePattern)} ${new DecimalFormat("00").format(firstDate.getHourOfDay)}
          |   $validated $nonValidated $executionTime $transformed $nonTransformed $reason""".stripMargin
     Logger.log.info(s"""going to execute command: $shellCommand""")
@@ -176,17 +174,17 @@ class LaunchETLExecution(spark_master_mode : String, feed_name: String, job_queu
 
     val sc: SparkContext = Context.getContextualObject[SparkContext](SPARK_CONTEXT)
     val rdd = sc.parallelize(Seq(Seq(feed_name, status, jobStaticParam.processFrequency.toString.toLowerCase, new java.sql.Date(firstDate.getMillis), new DecimalFormat("00").format(firstDate.getHourOfDay),
-                                          reason, transformed , nonTransformed, validated, nonValidated, executionTime, jobStaticParam.feedName, venture)))
+                                          reason, transformed , nonTransformed, validated, nonValidated, executionTime, jobStaticParam.feedName)))
     val rowRdd = rdd.map(v => org.apache.spark.sql.Row(v: _*))
 
     val hiveContext: HiveContext = Context.getContextualObject[HiveContext](HIVE_CONTEXT)
-    val statDF = hiveContext.sql(s"""select * from $hiveDbName.$tableName where venture='$venture' and job_name='${jobStaticParam.feedName}'""".stripMargin)
+    val statDF = hiveContext.sql(s"""select * from $hiveDbName.$tableName where job_name='${jobStaticParam.feedName}'""".stripMargin)
 
     val sqlContext: SQLContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
     val newRow = sqlContext.createDataFrame(rowRdd, statDF.schema)
     val updatedStatDF = statDF.unionAll(newRow)
 
-    val path = s"$pathInitial/$hiveDbName/$tableName/${jobStaticParam.feedName}/$venture"
+    val path = s"$pathInitial/$hiveDbName/$tableName/${jobStaticParam.feedName}/"
     val tmpPath = path + "_tmp"
 
     try{
@@ -201,7 +199,7 @@ class LaunchETLExecution(spark_master_mode : String, feed_name: String, job_queu
       hiveContext.sql(
         s"""
            |ALTER TABLE $hiveDbName.$tableName
-           | ADD IF NOT EXISTS PARTITION (job_name ='${jobStaticParam.feedName}' , venture = '$venture' )
+           | ADD IF NOT EXISTS PARTITION (job_name ='${jobStaticParam.feedName}')
            | LOCATION '$path'
          """.stripMargin)
 
@@ -214,7 +212,7 @@ class LaunchETLExecution(spark_master_mode : String, feed_name: String, job_queu
 object LaunchETLExecution extends App{
 
   def launch(args: Array[String]): Unit = {
-    case class CommandOptions(spark_master_mode: String = "", queue: String ="", jars: Array[String] = null, venture: String = "", feedName : String = "",
+    case class CommandOptions(spark_master_mode: String = "", queue: String ="", jars: Array[String] = null, feedName : String = "",
                               firstDate: DateTime = null, secondDate: DateTime = null, xmlInputFilePath: String = ""
                               //, statScriptFilePath: String = ""
                               , executorMemory: String = "", driverMemory: String = ""
@@ -225,7 +223,6 @@ object LaunchETLExecution extends App{
           .add("feed_name", feedName)
           .add("job_queue", queue)
           .add("job_jars", jars.toString)
-          .add("venture", venture)
           .add("firstDate", firstDate)
           .add("secondDate", secondDate)
           .add("xmlFilePath", xmlInputFilePath)
@@ -257,11 +254,6 @@ object LaunchETLExecution extends App{
       opt[String]('j', "job_jars")
         .action((j, m) => m.copy(jars = j.split(",").map(str => str.trim)))
         .text("Additional jars needed for spark job.")
-        .required
-
-      opt[String]('v', "venture")
-        .action((v, c) => c.copy(venture = v))
-        .text("required venture for which job need to be executed.")
         .required
 
       opt[String]('d', "date")
@@ -304,13 +296,12 @@ object LaunchETLExecution extends App{
       case Some(opts) =>
         Logger.log.info(s"Going to start the execution of the etl feed job with following params: $opts")
         var exitCode = -1
-        val etlExecutor = new LaunchETLExecution(opts.spark_master_mode, opts.feedName, opts.queue, opts.jars, opts.venture,
+        val etlExecutor = new LaunchETLExecution(opts.spark_master_mode, opts.feedName, opts.queue, opts.jars,
                                                   opts.firstDate, opts.secondDate, opts.xmlInputFilePath, opts.driverMemory, opts.executorMemory)
 
         @transient lazy val feedDataStatGauge = Gauge.build()
           .name(opts.feedName.replace("-","_"))
           .help(s"number of entries for a given ${opts.feedName.replace("-","_")}")
-          .labelNames("venture", "service")
           .register()
 
         var metricData = 0L
@@ -335,7 +326,7 @@ object LaunchETLExecution extends App{
               Logger.log.error(s)
           }
 
-        feedDataStatGauge.labels(opts.venture, opts.feedName).set(metricData)
+        feedDataStatGauge.labels(opts.feedName).set(metricData)
         pushMetrics(opts.feedName)
 
         Logger.log.info(s"Etl job finish with exit code: $exitCode")
@@ -355,14 +346,6 @@ object LaunchETLExecution extends App{
       case Failure(th: Throwable) => Logger.log.info(s"Unable to push metrics. Got an exception ${th.getStackTrace} ")
     }
   }
-
-  //for checking the class path and environment variables, uncomment it.
-  /* val cl = ClassLoader.getSystemClassLoader
-  cl.asInstanceOf[java.net.URLClassLoader].getURLs.foreach(println)
-
-  val environmentVars = System.getenv()
-  import collection.JavaConversions._
-  for ((k,v) <- environmentVars) println(s"key: $k, value: $v")*/
 
   launch(args)
 }

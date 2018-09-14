@@ -10,6 +10,6 @@ transformation_failed_data_count bigint,
 schema_validation_passed_data_count bigint,
 schema_validation_failed_data_count bigint,
 feed_execution_time bigint)
-PARTITIONED BY (job_name string, venture string)
+PARTITIONED BY (job_name string)
 STORED AS parquetfile
 LOCATION "/data/etl_frmwk_data/etl_feed_stat"

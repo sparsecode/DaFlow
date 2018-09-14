@@ -18,7 +18,6 @@ trait LoadData{
 class LoadDataIntoHiveTable extends LoadData {
   private val hiveContext = Context.getContextualObject[HiveContext](HIVE_CONTEXT)
 
-  private val venture = Context.getContextualObject[String](VENTURE)
   private val processFrequency = Context.getContextualObject[JobStaticParam](JOB_STATIC_PARAM).processFrequency
 
   private val load = Context.getContextualObject[Load](LOAD)
@@ -31,7 +30,7 @@ class LoadDataIntoHiveTable extends LoadData {
     var df = dataFrame
     val dateString = date.toString("yyyy-MM-dd")
     val timeString = s"""${new DecimalFormat("00").format(date.getHourOfDay)}"""
-    val path = s"$hiveTableDataInitialPath/$databaseName/$tableName/$venture/$dateString/$timeString"
+    val path = s"$hiveTableDataInitialPath/$databaseName/$tableName/$dateString/$timeString"
 
     var output = false
     try{
