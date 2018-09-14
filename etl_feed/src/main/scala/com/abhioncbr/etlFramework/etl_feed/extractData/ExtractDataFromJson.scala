@@ -6,7 +6,7 @@ import com.abhioncbr.etlFramework.commons.extract.Extract
 import com.abhioncbr.etlFramework.commons.job.JobStaticParam
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.{Context, ProcessFrequencyEnum}
-import com.abhioncbr.etlFramework.etl_feed.Logger
+import com.abhioncbr.etlFramework.commons.Logger
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.joda.time.{DateTime, Days, DurationFieldType}
 

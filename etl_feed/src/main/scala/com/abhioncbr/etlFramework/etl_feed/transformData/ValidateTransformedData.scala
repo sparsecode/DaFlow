@@ -5,7 +5,7 @@ import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.load.Load
 import com.abhioncbr.etlFramework.commons.transform.TransformUtil
-import com.abhioncbr.etlFramework.etl_feed.Logger
+import com.abhioncbr.etlFramework.commons.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.sql.types.StructType

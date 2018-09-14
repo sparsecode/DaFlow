@@ -1,7 +1,7 @@
 package com.abhioncbr.etlFramework.etl_feed.transformData
 
 import com.abhioncbr.etlFramework.commons.transform.{MergeRule, Transform, TransformationRule}
-import com.abhioncbr.etlFramework.etl_feed.Logger
+import com.abhioncbr.etlFramework.commons.Logger
 import org.apache.spark.sql.DataFrame
 
 class TransformData(transform : Transform) {

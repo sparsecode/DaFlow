@@ -1,16 +1,13 @@
-package com.abhioncbr.etlFramework.etl_feed
+package com.abhioncbr.etlFramework.commons
 
 import java.io.OutputStreamWriter
 
+import com.abhioncbr.etlFramework.commons.job.ETLJob
 import org.apache.log4j.{ConsoleAppender, Level, LogManager, PatternLayout}
 
-case class JobResult(success: Boolean, subtask: String,
-                     transformationPassedCount: Long,
-                     transformationFailedCount: Long,
-                     validateCount: Long, nonValidatedCount: Long, failureReason: String)
-
+//TODO: rewrite complete logging logic. for refactoring purpose it's present.
 object Logger extends Serializable{
-  @transient lazy val log = LogManager.getLogger(classOf[LaunchETLExecution])
+  @transient lazy val log = LogManager.getLogger(classOf[ETLJob])
   log.setLevel(Level.INFO)
   log.setAdditivity(false)
   val ca = new ConsoleAppender()

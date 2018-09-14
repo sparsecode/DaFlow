@@ -12,11 +12,11 @@ import com.abhioncbr.etlFramework.etl_feed.extractData.{ExtractDataFromDB, Extra
 import com.abhioncbr.etlFramework.etl_feed.loadData.LoadDataIntoHiveTable
 import com.google.common.base.Objects
 import com.abhioncbr.etlFramework.etl_feed.transformData.{TransformData, ValidateTransformedDataSchema}
+import com.abhioncbr.etlFramework.etl_feed_metrics.stats.UpdateFeedStats
+import com.abhioncbr.etlFramework.etl_feed_metrics.stats.JobResult
+import com.abhioncbr.etlFramework.commons.Logger
 import com.abhioncbr.etlFramework.job_conf.xml.ParseETLJobXml
-import io.prometheus.client.{CollectorRegistry, Gauge}
-import io.prometheus.client.exporter.PushGateway
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -146,67 +146,7 @@ class LaunchETLExecution(spark_master_mode : String, feed_name: String, job_queu
     Left(loadResult)
   }
 
-  //function for updating etl_feed_stat table through shell script. For airflow-docker image usage, we are going to use other function.
-  @deprecated
-  def updateFeedStat(statScriptPath: String, validated: Long, nonValidated: Long, executionTime: Long,
-                     status: String, transformed: Long, nonTransformed: Long, failureReason: String): Int ={
-    val jobStaticParam = Context.getContextualObject[JobStaticParam](JOB_STATIC_PARAM)
-    val DatePattern = "yyyy-MM-dd"
 
-    val reason = if (failureReason.isEmpty) "None" else s""" "${failureReason.split("[ ]").mkString("_")}" """.trim
-
-    val shellCommand =
-      s"""sh $statScriptPath ${jobStaticParam.feedName} $feed_name $status ${jobStaticParam.processFrequency.toString.toLowerCase}
-         |   ${firstDate.toString(DatePattern)} ${new DecimalFormat("00").format(firstDate.getHourOfDay)}
-         |   $validated $nonValidated $executionTime $transformed $nonTransformed $reason""".stripMargin
-    Logger.log.info(s"""going to execute command: $shellCommand""")
-
-    import sys.process._
-    shellCommand.!
-  }
-
-  def updateFeedStat(hiveDbName: String, tableName: String, pathInitial: String,
-                     validated: Long, nonValidated: Long, executionTime: Long,
-                      status: String, transformed: Long, nonTransformed: Long, failureReason: String): Int ={
-    val jobStaticParam = Context.getContextualObject[JobStaticParam](JOB_STATIC_PARAM)
-
-    val reason = if (failureReason.isEmpty) "None" else failureReason.trim
-
-    val sc: SparkContext = Context.getContextualObject[SparkContext](SPARK_CONTEXT)
-    val rdd = sc.parallelize(Seq(Seq(feed_name, status, jobStaticParam.processFrequency.toString.toLowerCase, new java.sql.Date(firstDate.getMillis), new DecimalFormat("00").format(firstDate.getHourOfDay),
-                                          reason, transformed , nonTransformed, validated, nonValidated, executionTime, jobStaticParam.feedName)))
-    val rowRdd = rdd.map(v => org.apache.spark.sql.Row(v: _*))
-
-    val hiveContext: HiveContext = Context.getContextualObject[HiveContext](HIVE_CONTEXT)
-    val statDF = hiveContext.sql(s"""select * from $hiveDbName.$tableName where job_name='${jobStaticParam.feedName}'""".stripMargin)
-
-    val sqlContext: SQLContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
-    val newRow = sqlContext.createDataFrame(rowRdd, statDF.schema)
-    val updatedStatDF = statDF.unionAll(newRow)
-
-    val path = s"$pathInitial/$hiveDbName/$tableName/${jobStaticParam.feedName}/"
-    val tmpPath = path + "_tmp"
-
-    try{
-      println(s"Writing updated stats in to the table 'etl_feed_stat' to HDFS ($path)")
-      updatedStatDF.write.mode(SaveMode.Overwrite).parquet(tmpPath)
-
-      val hadoopFs = FileSystem.get(new Configuration())
-      Try(hadoopFs.delete(new Path(path + "_bkp"), true))
-      Try(hadoopFs.rename(new Path(path), new Path(path + "_bkp")))
-      hadoopFs.rename(new Path(tmpPath), new Path(path))
-
-      hiveContext.sql(
-        s"""
-           |ALTER TABLE $hiveDbName.$tableName
-           | ADD IF NOT EXISTS PARTITION (job_name ='${jobStaticParam.feedName}')
-           | LOCATION '$path'
-         """.stripMargin)
-
-      println(s"updated stats partition at ($path) registered successfully to $hiveDbName.$tableName")
-      0
-    } finally -1
-  }
 }
 
 object LaunchETLExecution extends App{
@@ -217,7 +157,7 @@ object LaunchETLExecution extends App{
                               //, statScriptFilePath: String = ""
                               , executorMemory: String = "", driverMemory: String = ""
                               , statParams: Array[String] = null) {
-      override def toString =
+      override def toString : String =
         Objects.toStringHelper(this)
           .add("spark_master_mode", spark_master_mode)
           .add("feed_name", feedName)
@@ -298,11 +238,7 @@ object LaunchETLExecution extends App{
         var exitCode = -1
         val etlExecutor = new LaunchETLExecution(opts.spark_master_mode, opts.feedName, opts.queue, opts.jars,
                                                   opts.firstDate, opts.secondDate, opts.xmlInputFilePath, opts.driverMemory, opts.executorMemory)
-
-        @transient lazy val feedDataStatGauge = Gauge.build()
-          .name(opts.feedName.replace("-","_"))
-          .help(s"number of entries for a given ${opts.feedName.replace("-","_")}")
-          .register()
+        val updateFeedStats: UpdateFeedStats = new UpdateFeedStats(opts.feedName, opts.firstDate)
 
         var metricData = 0L
         etlExecutor.configureFeedJob match {
@@ -311,7 +247,7 @@ object LaunchETLExecution extends App{
                             val end = System.currentTimeMillis()
                             feedJobOutput match {
                               case Left(dataArray) => val temp = dataArray.map(data =>
-                                                      etlExecutor.updateFeedStat(opts.statParams(0), opts.statParams(1), opts.statParams(2),
+                                updateFeedStats.updateFeedStat(opts.statParams(0), opts.statParams(1), opts.statParams(2),
                                                         data.validateCount, data.nonValidatedCount, end - start, "success",
                                                         data.transformationPassedCount, data.transformationFailedCount, data.failureReason)).map(status => if(status==0) true else false)
                                                       .reduce(_ && _)
@@ -319,15 +255,15 @@ object LaunchETLExecution extends App{
                                 metricData = dataArray.head.validateCount
 
                               //else
-                              case Right(s) => etlExecutor.updateFeedStat(opts.statParams(0), opts.statParams(1), opts.statParams(2), 0, 0, end - start, "fail", 0, 0, s)
+                              case Right(s) => updateFeedStats.updateFeedStat(opts.statParams(0), opts.statParams(1), opts.statParams(2), 0, 0, end - start, "fail", 0, 0, s)
                                                Logger.log.error(s)
                             }
-            case Right(s) => etlExecutor.updateFeedStat(opts.statParams(0), opts.statParams(1), opts.statParams(2), 0, 0, 0, "fail", 0, 0, s)
+            case Right(s) => updateFeedStats.updateFeedStat(opts.statParams(0), opts.statParams(1), opts.statParams(2), 0, 0, 0, "fail", 0, 0, s)
               Logger.log.error(s)
           }
 
-        feedDataStatGauge.labels(opts.feedName).set(metricData)
-        pushMetrics(opts.feedName)
+        //TODO: Promethus push metrics, commented in refactoring [will be triggered based on job static param]
+        //pushMetrics(opts.feedName)
 
         Logger.log.info(s"Etl job finish with exit code: $exitCode")
         System.exit(exitCode)
@@ -336,16 +272,7 @@ object LaunchETLExecution extends App{
     }
   }
 
-  def pushMetrics(MetricsJobName: String): Unit = {
-    @transient val conf: Map[String, String] = Map()
-    val pushGatewayAddress = conf.getOrElse("pushGatewayAddr", "sgdshadoopedge3.sgdc:9091")
-    val pushGateway = new PushGateway(pushGatewayAddress)
 
-    Try(pushGateway.push(CollectorRegistry.defaultRegistry, s"${MetricsJobName.replace("-","_")}")) match {
-      case Success(u: Unit) => true
-      case Failure(th: Throwable) => Logger.log.info(s"Unable to push metrics. Got an exception ${th.getStackTrace} ")
-    }
-  }
 
   launch(args)
 }

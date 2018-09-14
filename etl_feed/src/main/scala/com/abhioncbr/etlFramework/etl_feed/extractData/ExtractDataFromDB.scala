@@ -6,7 +6,7 @@ import java.util.Properties
 import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.extract.{Extract, QueryParam, QueryParamTypeEnum}
-import com.abhioncbr.etlFramework.etl_feed.Logger
+import com.abhioncbr.etlFramework.commons.Logger
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.{DataFrame, SQLContext}

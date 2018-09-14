@@ -67,4 +67,5 @@ lazy val etl_commons = project.in(file("etl_commons"))
   .settings(etl_framework_common_settings: _*)
 
 lazy val etl_feed_metrics = project.in(file("etl_feed_metrics"))
+  .dependsOn("etl_commons").aggregate("etl_commons")
   .settings(etl_framework_common_settings: _*)

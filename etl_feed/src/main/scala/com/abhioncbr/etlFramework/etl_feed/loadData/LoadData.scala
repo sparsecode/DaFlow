@@ -6,7 +6,7 @@ import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.job.JobStaticParam
 import com.abhioncbr.etlFramework.commons.load.{PartitionColumnTypeEnum, Load}
-import com.abhioncbr.etlFramework.etl_feed.Logger
+import com.abhioncbr.etlFramework.commons.Logger
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.sql.{DataFrame, SaveMode}
 import org.joda.time.DateTime

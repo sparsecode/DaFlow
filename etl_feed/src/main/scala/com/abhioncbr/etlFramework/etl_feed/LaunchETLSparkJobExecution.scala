@@ -12,10 +12,11 @@ import com.abhioncbr.etlFramework.etl_feed.extractData.{ExtractDataFromDB, Extra
 import com.abhioncbr.etlFramework.etl_feed.loadData.LoadDataIntoHiveTable
 import com.google.common.base.Objects
 import com.abhioncbr.etlFramework.etl_feed.transformData.{TransformData, ValidateTransformedDataSchema}
+import com.abhioncbr.etlFramework.etl_feed_metrics.stats.UpdateFeedStats
 import com.abhioncbr.etlFramework.job_conf.xml.ParseETLJobXml
-import io.prometheus.client.{CollectorRegistry, Gauge}
-import io.prometheus.client.exporter.PushGateway
 import org.apache.hadoop.conf.Configuration
+import com.abhioncbr.etlFramework.etl_feed_metrics.stats.JobResult
+import com.abhioncbr.etlFramework.commons.Logger
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -130,23 +131,7 @@ class LaunchETLSparkJobExecution(firstDate: DateTime, secondDate: DateTime, xmlI
     Left(loadResult)
   }
 
-  def updateFeedStat(statScriptPath: String, jobSubtask: String, validated: Long, nonValidated: Long, executionTime: Long,
-                     status: String, transformed: Long, nonTransformed: Long, failureReason: String): Int ={
-    val jobStaticParam = Context.getContextualObject[JobStaticParam](JOB_STATIC_PARAM)
-    val DatePattern = "yyyy-MM-dd"
 
-    val reason = if (failureReason.isEmpty) "None" else s""" "${failureReason.split("[ ]").mkString("_")}" """.trim
-    val subTask = if (jobSubtask.isEmpty) jobStaticParam.feedName else jobSubtask
-
-    val shellCommand =
-      s"""sh $statScriptPath ${jobStaticParam.feedName} $subTask $status ${jobStaticParam.processFrequency.toString.toLowerCase}
-          |   ${firstDate.toString(DatePattern)} ${new DecimalFormat("00").format(firstDate.getHourOfDay)}
-          |   $validated $nonValidated $executionTime $transformed $nonTransformed $reason""".stripMargin
-    Logger.log.info(s"""going to execute command: $shellCommand""")
-
-    import sys.process._
-    shellCommand.!
-  }
 }
 
 object LaunchETLSparkJobExecution extends App{
@@ -200,51 +185,35 @@ object LaunchETLSparkJobExecution extends App{
         var exitCode = -1
         val etlExecutor = new LaunchETLSparkJobExecution(opts.firstDate, opts.secondDate, opts.xmlInputFilePath)
 
-        @transient lazy val feedDataStatGauge = Gauge.build()
-          .name(opts.feedName.replace("-","_"))
-          .help(s"number of entries for a given ${opts.feedName.replace("-","_")}")
-          .register()
-
         var metricData = 0L
+        val updateFeedStats: UpdateFeedStats = new UpdateFeedStats(opts.feedName, opts.firstDate)
         etlExecutor.configureFeedJob match {
           case Left(b) => val start = System.currentTimeMillis()
             val feedJobOutput = etlExecutor.executeFeedJob
             val end = System.currentTimeMillis()
             feedJobOutput match {
               case Left(dataArray) => val temp = dataArray.map(data =>
-                etlExecutor.updateFeedStat(opts.statScriptFilePath, data.subtask, data.validateCount,
+                updateFeedStats.updateFeedStat(opts.statScriptFilePath, data.subtask, data.validateCount,
                   data.nonValidatedCount, end - start, "success", data.transformationPassedCount,
                   data.transformationFailedCount, data.failureReason)).map(status => if(status==0) true else false)
                 .reduce(_ && _)
                 if(temp) exitCode = 0
                 metricData = dataArray.head.validateCount
               //else
-              case Right(s) => etlExecutor.updateFeedStat(opts.statScriptFilePath, "", 0, 0, end - start, "fail", 0, 0, s)
+              case Right(s) => updateFeedStats.updateFeedStat(opts.statScriptFilePath, "", 0, 0, end - start, "fail", 0, 0, s)
                 Logger.log.error(s)
             }
-          case Right(s) => etlExecutor.updateFeedStat(opts.statScriptFilePath, "", 0, 0, 0, "fail", 0, 0, s)
+          case Right(s) => updateFeedStats.updateFeedStat(opts.statScriptFilePath, "", 0, 0, 0, "fail", 0, 0, s)
             Logger.log.error(s)
         }
 
-        feedDataStatGauge.labels(opts.feedName).set(metricData)
-        pushMetrics(opts.feedName)
+        //TODO: Promethus push metrics, commented in refactoring [will be triggered based on job static param]
+        //pushMetrics(opts.feedName)
 
         Logger.log.info(s"Etl job finish with exit code: $exitCode")
         System.exit(exitCode)
       case None =>
         parser.showTryHelp()
-    }
-  }
-
-  def pushMetrics(MetricsJobName: String): Unit = {
-    @transient val conf: Map[String, String] = Map()
-    val pushGatewayAddress = conf.getOrElse("pushGatewayAddr", "sgdshadoopedge3.sgdc:9091")
-    val pushGateway = new PushGateway(pushGatewayAddress)
-
-    Try(pushGateway.push(CollectorRegistry.defaultRegistry, s"${MetricsJobName.replace("-","_")}")) match {
-      case Success(u: Unit) => Logger.log.info("Metrics pushed.")
-                               true
-      case Failure(th: Throwable) => Logger.log.info(s"Unable to push metrics. Got an exception ${th.getStackTrace} ")
     }
   }
 
