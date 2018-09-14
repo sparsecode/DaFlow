@@ -13,9 +13,6 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 import scala.collection.immutable.ListMap
 import scala.util.Try
 
-
-
-
 object JobStaticParam {
   def fromXML(node: scala.xml.NodeSeq): JobStaticParam = {
     val frequency  = (node \ "frequency").text
