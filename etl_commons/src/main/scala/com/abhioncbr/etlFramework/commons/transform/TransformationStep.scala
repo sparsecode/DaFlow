@@ -4,12 +4,12 @@ import org.apache.spark.sql.DataFrame
 
 class TransformationStep(order: Int, rules: Map[Int, TransformationRule]){
   override def toString: String = s" step order: $order, step rules: $rules"
-  def getOrder = order
-  def getRules = rules
+  def getOrder: Int = order
+  def getRules: Map[Int, TransformationRule] = rules
 
   var inputData: Map[Int, DataFrame] = Map[Int, DataFrame]()
   def getInputData(i: Int) = inputData(i)
-  lazy val requiredDF = rules.values.flatMap {
+  lazy val requiredDF: Array[Int] = rules.values.flatMap {
     case merge: MergeRule => val temp  = merge.asInstanceOf[MergeRule].getMergeGroup
       Array(temp._1, temp._2)
     case default =>Array(default.getGroup)

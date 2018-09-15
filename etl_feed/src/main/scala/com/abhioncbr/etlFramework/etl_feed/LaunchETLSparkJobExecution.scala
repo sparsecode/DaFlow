@@ -1,7 +1,5 @@
 package com.abhioncbr.etlFramework.etl_feed
 
-import java.text.DecimalFormat
-
 import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.extract.{Extract, ExtractionType}
@@ -17,31 +15,23 @@ import com.abhioncbr.etlFramework.job_conf.xml.ParseETLJobXml
 import org.apache.hadoop.conf.Configuration
 import com.abhioncbr.etlFramework.etl_feed_metrics.stats.JobResult
 import com.abhioncbr.etlFramework.commons.Logger
-import org.apache.spark.sql.hive.HiveContext
-import org.apache.spark.sql.{DataFrame, SQLContext}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
+import org.apache.spark.SparkContext
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
-
-import scala.util.{Failure, Success, Try}
 import scala.xml.XML
 
-class LaunchETLSparkJobExecution(firstDate: DateTime, secondDate: DateTime, xmlInputFilePath: String){
+class LaunchETLSparkJobExecution(feedName: String ,firstDate: DateTime, secondDate: DateTime, xmlInputFilePath: String){
   def configureFeedJob: Either[Boolean, String] ={
     Context.addContextualObject[DateTime](FIRST_DATE, firstDate)
     Context.addContextualObject[DateTime](SECOND_DATE, secondDate)
-
-    val sparkContext = new SparkContext(new SparkConf)
-    Context.addContextualObject[Configuration](HADOOP_CONF, new Configuration)
-    Context.addContextualObject[SparkContext](SPARK_CONTEXT, sparkContext)
-    Context.addContextualObject[SQLContext](SQL_CONTEXT, new SQLContext(sparkContext))
-    Context.addContextualObject[HiveContext](HIVE_CONTEXT, new HiveContext(sparkContext))
 
     val FALSE = false
     val parse = new ParseETLJobXml
     parse.parseXml(xmlInputFilePath, FALSE) match {
       case Left(xmlContent) => parse.parseNode(XML.loadString(xmlContent)) match {
-        case Left(tuple) => Context.addContextualObject[JobStaticParam] (JOB_STATIC_PARAM, tuple._1)
+        case Left(tuple) =>
+          Context.addContextualObject[JobStaticParam] (JOB_STATIC_PARAM, tuple._1)
           Context.addContextualObject[Extract] (EXTRACT, tuple._2)
           Context.addContextualObject[Transform] (TRANSFORM, tuple._3)
           Context.addContextualObject[Load] (LOAD, tuple._4)
@@ -51,6 +41,13 @@ class LaunchETLSparkJobExecution(firstDate: DateTime, secondDate: DateTime, xmlI
       case Right(xmlLoadError) => Logger.log.error(xmlLoadError)
         return Right(xmlLoadError)
     }
+
+    val appName = s"etl-$feedName"
+    val sparkSession: SparkSession = SparkSession.builder().appName(appName).getOrCreate()
+    Context.addContextualObject[Configuration](HADOOP_CONF, new Configuration)
+    Context.addContextualObject[SparkContext](SPARK_CONTEXT, sparkSession.sparkContext)
+    Context.addContextualObject[SQLContext](SQL_CONTEXT, sparkSession.sqlContext)
+
     Left(true)
   }
 
@@ -94,15 +91,15 @@ class LaunchETLSparkJobExecution(firstDate: DateTime, secondDate: DateTime, xmlI
   private def validate(transformationDF: Array[ (DataFrame, Any, Any) ]): Either[Array[(DataFrame, DataFrame, Any, Any)], String] = {
     //testing whether transformed data frames have data or not.
     //As per Sreekanth, if one data frame doesn't have data, we will skip all data frames storage.
-    transformationDF.unzip3._1.toArray.foreach(df => if(df.first == null ) return Right("Transformed data frame contains no data row"))
+    transformationDF.unzip3._1.foreach(df => if(df.first == null ) return Right("Transformed data frame contains no data row"))
 
     var output: Array[ (DataFrame, DataFrame, Any, Any) ] = Array()
     transformationDF.foreach( arrayElement =>  {
       val validator = new ValidateTransformedDataSchema
       val validateSchemaResult = validator.validateSchema (arrayElement._1)
-      validateSchemaResult._1 match {
-        case true => output =  output ++ validator.validateData(arrayElement._1, validateSchemaResult._2.get, arrayElement._2, arrayElement._3)
-        case false => validateSchemaResult._2 match {
+      if(validateSchemaResult._1) {
+        output = output ++ validator.validateData(arrayElement._1, validateSchemaResult._2.get, arrayElement._2, arrayElement._3)
+      } else { validateSchemaResult._2 match {
           case Some(_2) => Logger.log.error("hive table schema & data frame schema does not match. Below are schemas for reference -")
             Logger.log.error(s"table schema:: ${_2.mkString}")
             Logger.log.error(s"data frame schema:: ${validateSchemaResult._3.get.mkString}")
@@ -139,7 +136,7 @@ object LaunchETLSparkJobExecution extends App{
   def launch(args: Array[String]): Unit = {
     case class CommandOptions(firstDate: DateTime = null, feedName : String = "",
                               secondDate: DateTime = null, xmlInputFilePath: String = "", statScriptFilePath: String = "") {
-      override def toString =
+      override def toString: String =
         Objects.toStringHelper(this)
           .add("feed_name", feedName)
           .add("firstDate", firstDate)
@@ -183,7 +180,7 @@ object LaunchETLSparkJobExecution extends App{
       case Some(opts) =>
         Logger.log.info(s"Going to start the execution of the etl feed job with following params: $opts")
         var exitCode = -1
-        val etlExecutor = new LaunchETLSparkJobExecution(opts.firstDate, opts.secondDate, opts.xmlInputFilePath)
+        val etlExecutor = new LaunchETLSparkJobExecution(opts.feedName, opts.firstDate, opts.secondDate, opts.xmlInputFilePath)
 
         var metricData = 0L
         val updateFeedStats: UpdateFeedStats = new UpdateFeedStats(opts.feedName, opts.firstDate)

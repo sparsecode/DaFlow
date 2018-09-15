@@ -7,7 +7,7 @@ import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.job.JobStaticParam
 import com.abhioncbr.etlFramework.commons.load.{PartitionColumnTypeEnum, Load}
 import com.abhioncbr.etlFramework.commons.Logger
-import org.apache.spark.sql.hive.HiveContext
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.{DataFrame, SaveMode}
 import org.joda.time.DateTime
 
@@ -16,7 +16,7 @@ trait LoadData{
 }
 
 class LoadDataIntoHiveTable extends LoadData {
-  private val hiveContext = Context.getContextualObject[HiveContext](HIVE_CONTEXT)
+  private val sqlContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
 
   private val processFrequency = Context.getContextualObject[JobStaticParam](JOB_STATIC_PARAM).processFrequency
 
@@ -41,7 +41,7 @@ class LoadDataIntoHiveTable extends LoadData {
       //coalesce the data frame if it is set true in feed xml
       if(partData.coalesce){
         val currentPartitions = dataFrame.rdd.partitions.length
-        val numExecutors = hiveContext.sparkContext.getConf.get("spark.executor.instances").toInt
+        val numExecutors = sqlContext.sparkContext.getConf.get("spark.executor.instances").toInt
         if (currentPartitions > numExecutors) {
           df = dataFrame.coalesce(partData.coalesceCount)
         }
@@ -55,7 +55,7 @@ class LoadDataIntoHiveTable extends LoadData {
       val partitioningString = PartitionColumnTypeEnum.getPartitioningString(partData)
       Logger.log.info(s"partitioning string - $partitioningString")
 
-      hiveContext.sql(
+      sqlContext.sql(
         s"""
            |ALTER TABLE $databaseName.$tableName
            |ADD IF NOT EXISTS PARTITION ($partitioningString)

@@ -8,7 +8,6 @@ import com.abhioncbr.etlFramework.commons.load.{PartitionColumnTypeEnum, Load}
 import com.abhioncbr.etlFramework.sql_parser.{Clause, SQLParser}
 import com.typesafe.scalalogging.Logger
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.sql.types.{DataType, StructType}
 import org.apache.spark.sql.{Column, DataFrame, Row, SQLContext}
 
@@ -45,7 +44,7 @@ class MergeRule(order: Int, ruleCondition: String, mergeGroup: (Int,Int), group:
     if(df1.count > 0 && df2.count <= 0) Left(Array( (df1, null, null) ))
     if(df1.count <= 0 && df2.count > 0) Left(Array( (df2, null, null) ))
 
-    if(df1.schema == df2.schema) Left(Array((df1.unionAll(df2), null, null) ))
+    if(df1.schema == df2.schema) Left(Array((df1.union(df2), null, null) ))
     else Right(s"DataFrames of group $mergeGroup, schema is not equal")
   }
 }
@@ -55,8 +54,8 @@ abstract class abstractTransformationRule(order:Int, group: Int = 0, condition: 
   override def getOrder: Int = order
   override def getGroup: Int = group
   override def toString: String = { s"order = $order, group = $group, ruleCondition = '$condition'" }
-  override def condition(f: Int => DataFrame) = condition(f.apply(group))
-  override def execute(f: Int => DataFrame) = execute(f.apply(group))
+  override def condition(f: Int => DataFrame): Boolean = condition(f.apply(group))
+  override def execute(f: Int => DataFrame): Either[Array[ (DataFrame, Any, Any) ], String] = execute(f.apply(group))
 
   def condition(inputDataFrame: DataFrame): Boolean
   def execute(inputDataFrame: DataFrame): Either[Array[ (DataFrame, Any, Any) ], String]
@@ -146,7 +145,7 @@ class SimpleFunctionRule(functionType:String, order: Int, ruleCondition: String,
     val selectCondition = selectColumns.map(str => if(str.contains(".")) str.trim else s"`${str.trim}`").mkString(", ")
 
     val sqlContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
-    inputDataFrame.registerTempTable("temp")
+    inputDataFrame.createGlobalTempView("temp")
     Array((sqlContext.sql(s"select $selectCondition from temp"), null, null))
   }
 
@@ -181,7 +180,7 @@ class PartitionRule(order: Int, scope: String, ruleCondition: String, group: Int
 
   def execute(inputDataFrame: DataFrame): Either[Array[ (DataFrame, Any, Any) ], String] = {
     val sqlContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
-    inputDataFrame.registerTempTable("temp")
+    inputDataFrame.createGlobalTempView("temp")
 
     val dataFrame = sqlContext.sql(s"select * from temp where $condition")
     val negateDataFrame = sqlContext.sql(s"select * from temp where $notCondition")
@@ -211,12 +210,12 @@ class SchemaTransformationRule(order: Int, ruleCondition: String, group: Int, fi
     s"failedFieldLimit = $failedFieldLimit, failedRowLimit = $failedRowLimit, fieldMapping = $fieldMapping, " + super.toString }
 
   def condition(inputDataFrame: DataFrame): Boolean = {
-    val hiveContext: HiveContext = Context.getContextualObject[HiveContext](HIVE_CONTEXT)
+    val sqlContext: SQLContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
     val tableName = Context.getContextualObject[Load](LOAD).tableName
     val databaseName = Context.getContextualObject[Load](LOAD).dbName
     val partitionColumns: List[String] = Context.getContextualObject[Load](LOAD).partData.partitionColumns.map(column => column.columnName)
 
-    val temp = TransformUtil.tableMetadata(tableName, databaseName, hiveContext, partitionColumns)
+    val temp = TransformUtil.tableMetadata(tableName, databaseName, sqlContext, partitionColumns)
 
     //adding schema in to context for re-use in validation step.
     Context.addContextualObject[(Option[StructType], Option[StructType])](SCHEMA, temp)
@@ -246,8 +245,12 @@ class SchemaTransformationRule(order: Int, ruleCondition: String, group: Int, fi
       )
       (failCount, Row.fromSeq(array))
     })
-    val validRDD: RDD[(Int, Row)] = filterRdd(true, failedFieldLimit, temp)
-    val invalidRDD: RDD[(Int, Row)] = filterRdd(false, failedFieldLimit, temp)
+
+    val TRUE: Boolean = true
+    val FALSE: Boolean = false
+
+    val validRDD: RDD[(Int, Row)] = filterRdd(TRUE, failedFieldLimit, temp)
+    val invalidRDD: RDD[(Int, Row)] = filterRdd(FALSE, failedFieldLimit, temp)
     val validCount: Int = validRDD.count.toInt
     val invalidCount: Int = invalidRDD.count.toInt
 

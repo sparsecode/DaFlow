@@ -7,7 +7,6 @@ import com.abhioncbr.etlFramework.commons.load.Load
 import com.abhioncbr.etlFramework.commons.transform.TransformUtil
 import com.abhioncbr.etlFramework.commons.Logger
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 
@@ -20,7 +19,7 @@ trait ValidateTransformedData{
 class ValidateTransformedDataSchema extends ValidateTransformedData {
   private val sparkContext: SparkContext = Context.getContextualObject[SparkContext](SPARK_CONTEXT)
   private val sqlContext: SQLContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
-  private val hiveContext: HiveContext = Context.getContextualObject[HiveContext](HIVE_CONTEXT)
+
 
   private val tableName = Context.getContextualObject[Load](LOAD).tableName
   private val databaseName = Context.getContextualObject[Load](LOAD).dbName
@@ -34,7 +33,7 @@ class ValidateTransformedDataSchema extends ValidateTransformedData {
 
     var tableSchema = Context.getContextualObject[(Option[StructType], Option[StructType])](SCHEMA)
     if(tableSchema == null)
-      tableSchema = TransformUtil.tableMetadata(tableName, databaseName, hiveContext, partitionColumns)
+      tableSchema = TransformUtil.tableMetadata(tableName, databaseName, sqlContext, partitionColumns)
 
     val output = if(tableSchema._1.isDefined) tableSchema._1.get == dataFrameSchema else false
     (output, tableSchema._1, Some(dataFrameSchema))

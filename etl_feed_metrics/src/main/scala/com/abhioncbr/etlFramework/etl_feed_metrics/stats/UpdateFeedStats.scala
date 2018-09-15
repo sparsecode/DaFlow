@@ -3,14 +3,13 @@ package com.abhioncbr.etlFramework.etl_feed_metrics.stats
 import java.text.DecimalFormat
 
 import com.abhioncbr.etlFramework.commons.Context
-import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{HIVE_CONTEXT, JOB_STATIC_PARAM, SPARK_CONTEXT, SQL_CONTEXT}
+import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{JOB_STATIC_PARAM, SPARK_CONTEXT, SQL_CONTEXT}
 import com.abhioncbr.etlFramework.commons.job.JobStaticParam
 import com.abhioncbr.etlFramework.commons.Logger
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{SQLContext, SaveMode}
-import org.apache.spark.sql.hive.HiveContext
 import org.joda.time.DateTime
 
 import scala.util.Try
@@ -66,12 +65,10 @@ class UpdateFeedStats(feed_name: String, firstDate: DateTime) {
       reason, transformed , nonTransformed, validated, nonValidated, executionTime, jobStaticParam.feedName)))
     val rowRdd = rdd.map(v => org.apache.spark.sql.Row(v: _*))
 
-    val hiveContext: HiveContext = Context.getContextualObject[HiveContext](HIVE_CONTEXT)
-    val statDF = hiveContext.sql(s"""select * from $hiveDbName.$tableName where job_name='${jobStaticParam.feedName}'""".stripMargin)
-
     val sqlContext: SQLContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
+    val statDF = sqlContext.sql(s"""select * from $hiveDbName.$tableName where job_name='${jobStaticParam.feedName}'""".stripMargin)
     val newRow = sqlContext.createDataFrame(rowRdd, statDF.schema)
-    val updatedStatDF = statDF.unionAll(newRow)
+    val updatedStatDF = statDF.union(newRow)
 
     val path = s"$pathInitial/$hiveDbName/$tableName/${jobStaticParam.feedName}/"
     val tmpPath = path + "_tmp"
@@ -85,7 +82,7 @@ class UpdateFeedStats(feed_name: String, firstDate: DateTime) {
       Try(hadoopFs.rename(new Path(path), new Path(path + "_bkp")))
       hadoopFs.rename(new Path(tmpPath), new Path(path))
 
-      hiveContext.sql(
+      sqlContext.sql(
         s"""
            |ALTER TABLE $hiveDbName.$tableName
            | ADD IF NOT EXISTS PARTITION (job_name ='${jobStaticParam.feedName}')

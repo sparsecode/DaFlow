@@ -1,6 +1,6 @@
 package com.abhioncbr.etlFramework.etl_feed.transformData
 
-import com.abhioncbr.etlFramework.commons.transform.{MergeRule, Transform, TransformationRule}
+import com.abhioncbr.etlFramework.commons.transform.Transform
 import com.abhioncbr.etlFramework.commons.Logger
 import org.apache.spark.sql.DataFrame
 
@@ -12,7 +12,7 @@ class TransformData(transform : Transform) {
     //iterating over transformation steps
     steps.foreach(step => {
       //setting up input data frames in transformation step
-      step.addInputData(stepOutput.unzip3._1.toArray) match {
+      step.addInputData(stepOutput.unzip3._1) match {
         //iterating for each group of transformation rules
         case Left(b) =>
           stepOutput = Array()

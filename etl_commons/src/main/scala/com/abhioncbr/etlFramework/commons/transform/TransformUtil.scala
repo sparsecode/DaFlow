@@ -1,18 +1,17 @@
 package com.abhioncbr.etlFramework.commons.transform
 
 import com.typesafe.scalalogging.Logger
-import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.sql.types.{DataType, StructType}
-import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 
 import scala.util.Try
 import scala.util.control.NonFatal
 
 object TransformUtil {
   private val logger = Logger(this.getClass)
-  lazy val tableMetadata: (String, String, HiveContext, List[String]) =>
+  lazy val tableMetadata: (String, String, SQLContext, List[String]) =>
     (Option[StructType], Option[StructType]) =
-    (tableName: String, databaseName: String, hiveContext: HiveContext, partitionColumns: List[String]) => {
+    (tableName: String, databaseName: String, sqlContext: SQLContext, partitionColumns: List[String]) => {
 
       var tableDataSchema: Option[StructType] = None
       var partitionColSchema: Option[StructType] = None
@@ -22,7 +21,7 @@ object TransformUtil {
        //val tableExist: Boolean = hiveContext.sql(s"SHOW TABLES IN $databaseName").map(row => row.get(0)).collect.toSet.contains(tableName)
 
       if (tableExist) {
-        var tableData = hiveContext.sql(s"select * from $databaseName.$tableName limit 1")
+        var tableData = sqlContext.sql(s"select * from $databaseName.$tableName limit 1")
         //val tablePartitionInfo = hiveContext.sql(s"SHOW TABLE EXTENDED in $databaseName like $tableName").collect.partition(row => row.getString(0).startsWith("partitionColumns"))._1
         if (partitionColumns.nonEmpty) {
           /*val temp = new scala.util.matching.Regex("(partitionColumns:struct partition_columns [{]{1})([0-9a-z._, ]*)(})", "prefix", "value", "postfix")
@@ -34,8 +33,8 @@ object TransformUtil {
 
           //if (partitionColumns.isDefined) {
             //selecting only partitioning columns from data frame
-            tableData.registerTempTable("temp")
-            val partitionColDF = hiveContext.sql(s"select ${partitionColumns.mkString(" , ")} from temp")
+            tableData.createGlobalTempView("temp")
+            val partitionColDF = sqlContext.sql(s"select ${partitionColumns.mkString(" , ")} from temp")
 
             //dropping columns from columns of a table
             partitionColumns.foreach(str => tableData = tableData.drop(str))
