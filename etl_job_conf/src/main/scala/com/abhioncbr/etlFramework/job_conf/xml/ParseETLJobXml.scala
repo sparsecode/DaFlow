@@ -128,8 +128,8 @@ object Rule {
 object Load {
   def fromXML(node: scala.xml.NodeSeq): Load = {
     new Load(subTask = (node \ "task").text, loadType = (node \ "type").text, dbName = (node \ "db_name").text,
-      tableName = (node \ "table_name").text, fileType = (node \ "file_type").text,
-      partData = PartitioningData.fromXML(node \ "partition_data"))
+      tableName = (node \ "table_name").text, datasetName= (node \ "dataset").text, feedName= (node \ "feed_name").text, fileInitialPath= (node \ "file_initial_path").text,
+      fileType = (node \ "file_type").text, partData = PartitioningData.fromXML(node \ "partition_data"))
   }
 }
 

@@ -7,7 +7,7 @@ import com.abhioncbr.etlFramework.commons.job.JobStaticParam
 import com.abhioncbr.etlFramework.commons.load.Load
 import com.abhioncbr.etlFramework.commons.transform.Transform
 import com.abhioncbr.etlFramework.etl_feed.extractData.{ExtractDataFromDB, ExtractDataFromHive, ExtractDataFromJson}
-import com.abhioncbr.etlFramework.etl_feed.loadData.LoadDataIntoHiveTable
+import com.abhioncbr.etlFramework.etl_feed.loadData.LoadDataIntoHive
 import com.google.common.base.Objects
 import com.abhioncbr.etlFramework.etl_feed.transformData.{TransformData, ValidateTransformedDataSchema}
 import com.abhioncbr.etlFramework.etl_feed_metrics.stats.UpdateFeedStats
@@ -121,7 +121,7 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: DateTime, secondDa
     val FALSE = false
     //TODO: load tables for multiple data frames
     val loadResult: Array[JobResult] = validationArrayDF.map( validate => {
-      (( new LoadDataIntoHiveTable).loadTransformedData(validate._1, firstDate), validate._1.count(), validate._2.count(), validate._3, validate._4 ) }
+      (( new LoadDataIntoHive).loadTransformedData(validate._1, firstDate), validate._1.count(), validate._2.count(), validate._3, validate._4 ) }
     ).map(loadResult => {
       if(loadResult._1.isRight) JobResult(FALSE, "", loadResult._4.asInstanceOf[Int], loadResult._5.asInstanceOf[Int], loadResult._2, loadResult._3, loadResult._1.right.get)
       else JobResult(loadResult._1.left.get, "", loadResult._4.asInstanceOf[Int], loadResult._5.asInstanceOf[Int], loadResult._2, loadResult._3, "")})
