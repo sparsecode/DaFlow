@@ -29,9 +29,10 @@ object Extract {
       extract = new Extract(extractionType,
         fileInitialPath = String.format((node \ "file_initial_path").text),
         fileNamePattern = (node \ "file_name_pattern").text,
-        formatFileName = (node \ "format_file_name").text.toBoolean, "", "", null)
+        formatFileName = (node \ "format_file_name").text.toBoolean, filePrefix = (node \ "file_prefix").text, dbPropertyFile= "", queryFilePath = "", queryParams= null)
     } else if(extractionType.equals(ExtractionType.JDBC)) {
-      extract = new Extract(extractionType, "", "", (node \ "format_file_name").text.toBoolean,
+      extract = new Extract(extractionType, fileInitialPath = "", fileNamePattern = "", formatFileName = (node \ "format_file_name").text.toBoolean,
+        filePrefix = "",
         dbPropertyFile = String.format((node \ "db_property_file_path").text),
         queryFilePath = (node \ "sql_query_file_path").text,
         queryParams = List[QueryParam]((node \ "query_params" \ "param").toList map { s => QueryParam.fromXML(s) }: _*))

@@ -142,7 +142,11 @@
             <xs:element type="extraction_type" name="type"/>
             <xs:element type="xs:boolean" name="format_file_name" minOccurs="0"/>
             <xs:element type="xs:string" name="file_initial_path" minOccurs="0"/>
+
+            <!-- TODO: make 'file_name_pattern' complex type & with regex pattern, also get filler string as input -->
             <xs:element type="xs:string" name="file_name_pattern" minOccurs="0"/>
+
+            <xs:element type="xs:string" name="file_prefix" minOccurs="0"/>
             <xs:element type="xs:string" name="db_property_file_path" minOccurs="0"/>
             <xs:element type="xs:string" name="sql_query_file_path" minOccurs="0"/>
             <xs:element name="query_params">
