@@ -1,22 +1,14 @@
-package com.abhioncbr.etlFramework.etl_feed.transformData
+package com.abhioncbr.etlFramework.etl_feed.validateData
 
-
-import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.load.Load
 import com.abhioncbr.etlFramework.commons.transform.TransformUtil
-import com.abhioncbr.etlFramework.commons.Logger
+import com.abhioncbr.etlFramework.commons.{Context, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 
-
-trait ValidateTransformedData{
-  def validateSchema(dataFrame: DataFrame) : (Boolean, Option[StructType], Option[StructType])
-  def validateData(dataFrame: DataFrame, structType: StructType, first: Any, second: Any): Array[(DataFrame, DataFrame, Any, Any)]
-}
-
-class ValidateTransformedDataSchema extends ValidateTransformedData {
+class ValidateTransformedData extends ValidateData {
   private val sparkContext: SparkContext = Context.getContextualObject[SparkContext](SPARK_CONTEXT)
   private val sqlContext: SQLContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
 

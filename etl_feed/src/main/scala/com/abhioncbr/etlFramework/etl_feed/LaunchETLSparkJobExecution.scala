@@ -9,16 +9,18 @@ import com.abhioncbr.etlFramework.commons.transform.Transform
 import com.abhioncbr.etlFramework.etl_feed.extractData.{ExtractDataFromDB, ExtractDataFromHive, ExtractDataFromJson}
 import com.abhioncbr.etlFramework.etl_feed.loadData.LoadDataIntoHive
 import com.google.common.base.Objects
-import com.abhioncbr.etlFramework.etl_feed.transformData.{TransformData, ValidateTransformedDataSchema}
+import com.abhioncbr.etlFramework.etl_feed.transformData.TransformData
 import com.abhioncbr.etlFramework.etl_feed_metrics.stats.UpdateFeedStats
 import com.abhioncbr.etlFramework.job_conf.xml.ParseETLJobXml
 import org.apache.hadoop.conf.Configuration
 import com.abhioncbr.etlFramework.etl_feed_metrics.stats.JobResult
 import com.abhioncbr.etlFramework.commons.Logger
+import com.abhioncbr.etlFramework.etl_feed.validateData.ValidateTransformedData
 import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import org.apache.spark.SparkContext
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
+
 import scala.xml.XML
 
 class LaunchETLSparkJobExecution(feedName: String ,firstDate: DateTime, secondDate: DateTime, xmlInputFilePath: String){
@@ -56,13 +58,16 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: DateTime, secondDa
     if(extractionResult.isRight) return Right(extractionResult.right.get)
     Logger.log.info("Extraction phase of the feed is completed")
 
+    //TODO: validate extracted data based on condition & boolean operator.
+
     val transformedResult = transformation(extractionResult.left.get)
     if(transformedResult.isRight) return Right(transformedResult.right.get)
     Logger.log.info("Transformation phase of the feed is completed")
 
+    val validateTransformedData: Boolean  = Context.getContextualObject[Transform](TRANSFORM).validateTransformedData
     val validateResult = validate(transformedResult.left.get)
-    if(validateResult.isRight) return Right(validateResult.right.get)
-    Logger.log.info ("Validation phase of the feed is completed")
+    if (validateResult.isRight) return Right(validateResult.right.get)
+    Logger.log.info("Validation phase of the feed is completed")
 
     val loadResult = load(validateResult.left.get)
     if(loadResult.isRight) return Right(validateResult.right.get)
@@ -95,7 +100,7 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: DateTime, secondDa
 
     var output: Array[ (DataFrame, DataFrame, Any, Any) ] = Array()
     transformationDF.foreach( arrayElement =>  {
-      val validator = new ValidateTransformedDataSchema
+      val validator = new ValidateTransformedData
       val validateSchemaResult = validator.validateSchema (arrayElement._1)
       if(validateSchemaResult._1) {
         output = output ++ validator.validateData(arrayElement._1, validateSchemaResult._2.get, arrayElement._2, arrayElement._3)

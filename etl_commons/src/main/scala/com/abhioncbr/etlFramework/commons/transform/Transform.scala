@@ -1,3 +1,3 @@
 package com.abhioncbr.etlFramework.commons.transform
 
-case class Transform(transformationSteps: List[TransformationStep]) {}
+case class Transform(transformationSteps: List[TransformationStep], validateTransformedData: Boolean) {}

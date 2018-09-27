@@ -135,18 +135,23 @@
     <xs:complexType name="transformType">
         <xs:sequence>
             <xs:element type="ruleType" name="rule"/>
+
+
+            <!-- TODO: validate transformed data [needs more condition for validation, currently it is only boolean operator] -->
+            <xs:element type="xs:boolean" name="validate_transformed_data" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="extractType">
         <xs:sequence>
             <xs:element type="extraction_type" name="type"/>
-            <xs:element type="xs:boolean" name="format_file_name" minOccurs="0"/>
             <xs:element type="xs:string" name="file_initial_path" minOccurs="0"/>
 
             <!-- TODO: make 'file_name_pattern' complex type & with regex pattern, also get filler string as input -->
+            <xs:element type="xs:boolean" name="format_file_name" minOccurs="0"/>
             <xs:element type="xs:string" name="file_name_pattern" minOccurs="0"/>
 
             <xs:element type="xs:string" name="file_prefix" minOccurs="0"/>
+
             <xs:element type="xs:string" name="db_property_file_path" minOccurs="0"/>
             <xs:element type="xs:string" name="sql_query_file_path" minOccurs="0"/>
             <xs:element name="query_params">
@@ -163,11 +168,15 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
+
+            <!-- TODO: validate extracted data [needs more condition for validation, currently it is only boolean operator] -->
+            <xs:element type="xs:boolean" name="validate_extracted_data" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="job_static_paramType">
         <xs:sequence>
             <xs:element type="xs:string" name="feed_name"/>
+            <xs:element type="xs:boolean" name="publish_stats"/>
             <xs:element type="process_frequency" name="frequency"/>
         </xs:sequence>
     </xs:complexType>
