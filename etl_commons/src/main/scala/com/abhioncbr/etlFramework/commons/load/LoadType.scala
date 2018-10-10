@@ -2,12 +2,12 @@ package com.abhioncbr.etlFramework.commons.load
 
 object LoadType extends Enumeration {
   type valueType = Value
-  val JDBC, JSON, HIVE = Value
+  val JDBC, FILE_SYSTEM, HIVE = Value
 
   def getValueType(valueTypeString: String): LoadType.valueType = {
     val valueType = valueTypeString match {
       case "JDBC" => LoadType.JDBC
-      case "JSON" => LoadType.JSON
+      case "FILE_SYSTEM" => LoadType.FILE_SYSTEM
       case "HIVE" => LoadType.HIVE
     }
     valueType
@@ -16,7 +16,7 @@ object LoadType extends Enumeration {
   def getDataValue(valueType: LoadType.valueType):  String= {
     val output = valueType match {
       case JDBC => "JDBC"
-      case JSON => "JSON"
+      case FILE_SYSTEM => "FILE_SYSTEM"
       case HIVE => "HIVE"
     }
     output
