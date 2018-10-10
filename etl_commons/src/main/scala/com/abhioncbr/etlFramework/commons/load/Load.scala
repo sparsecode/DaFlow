@@ -1,7 +1,7 @@
 package com.abhioncbr.etlFramework.commons.load
 
 case class Load(subTask: String,
-                loadType: String,
+                loadType: LoadType.valueType,
                 dbName: String,
                 tableName: String,
                 datasetName: String,

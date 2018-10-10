@@ -4,7 +4,7 @@ import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.extract.{Extract, ExtractionType}
 import com.abhioncbr.etlFramework.commons.job.JobStaticParam
-import com.abhioncbr.etlFramework.commons.load.Load
+import com.abhioncbr.etlFramework.commons.load.{Load, LoadType}
 import com.abhioncbr.etlFramework.commons.transform.{Transform, TransformationResult}
 import com.abhioncbr.etlFramework.etl_feed.extractData.{ExtractDataFromDB, ExtractDataFromHive, ExtractDataFromJson}
 import com.abhioncbr.etlFramework.etl_feed.loadData.LoadDataIntoHive
@@ -64,16 +64,17 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: DateTime, secondDa
     if(transformedResult.isRight) return Right(transformedResult.right.get)
     Logger.log.info("Transformation phase of the feed is completed")
 
+    // validating transformed data, if it is configured to be validated.
     val validateTransformedData: Boolean  = Context.getContextualObject[Transform](TRANSFORM).validateTransformedData
     val validateResult: Either[Array[(DataFrame, DataFrame, Any, Any)], String]  = if(validateTransformedData) {
       validate(transformedResult.left.get)
     } else {
       Left(transformedResult.left.get.map(array => (array.resultDF, null, array.resultInfo1, array.resultInfo1)))
     }
-
-    if (validateResult.isRight) return Right(validateResult.right.get)
+    if(validateResult.isRight) return Right(validateResult.right.get)
     if(validateTransformedData) Logger.log.info("Validation phase of the feed is completed")
 
+    // loading the transformed data.
     val loadResult = load(validateResult.left.get)
     if(loadResult.isRight) return Right(validateResult.right.get)
     Logger.log.info ("Load phase of the feed is completed")
@@ -131,10 +132,18 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: DateTime, secondDa
     val FALSE = false
     //TODO: load tables for multiple data frames
     val loadResult: Array[JobResult] = validationArrayDF.map( validate => {
-      (( new LoadDataIntoHive).loadTransformedData(validate._1, firstDate), validate._1.count(), validate._2.count(), validate._3, validate._4 ) }
-    ).map(loadResult => {
-      if(loadResult._1.isRight) JobResult(FALSE, "", loadResult._4.asInstanceOf[Int], loadResult._5.asInstanceOf[Int], loadResult._2, loadResult._3, loadResult._1.right.get)
-      else JobResult(loadResult._1.left.get, "", loadResult._4.asInstanceOf[Int], loadResult._5.asInstanceOf[Int], loadResult._2, loadResult._3, "")})
+      val loadType = Context.getContextualObject[Load](LOAD).loadType
+      val loadResult: Either[Boolean, String] = loadType match {
+        case LoadType.HIVE => (new LoadDataIntoHive).loadTransformedData(validate._1, firstDate)
+        case LoadType.JSON => Right(s"loading data to $loadType is not supported right now.")
+        case LoadType.JDBC => Right(s"loading data to $loadType is not supported right now.")
+        case _ => Right(s"loading data to $loadType is not supported right now.")
+      }
+      //writing output data tuple.
+      (loadResult, validate._1.count(), validate._2.count(), validate._3, validate._4)
+    }).map(result => {
+      if(result._1.isRight) JobResult(FALSE, "", result._4.asInstanceOf[Int], result._5.asInstanceOf[Int], result._2, result._3, result._1.right.get)
+      else JobResult(result._1.left.get, "", result._4.asInstanceOf[Int], result._5.asInstanceOf[Int], result._2, result._3, "")})
     Left(loadResult)
   }
 

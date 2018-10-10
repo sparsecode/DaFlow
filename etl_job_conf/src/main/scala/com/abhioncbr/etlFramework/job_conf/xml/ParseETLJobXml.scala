@@ -6,10 +6,11 @@ import com.abhioncbr.etlFramework.commons.ContextConstantEnum.HADOOP_CONF
 import com.abhioncbr.etlFramework.commons.extract.{Extract, ExtractionType, QueryParam, QueryParamTypeEnum}
 import com.abhioncbr.etlFramework.commons.{Context, ProcessFrequencyEnum}
 import com.abhioncbr.etlFramework.commons.job.{ETLJob, FieldMapping, JobStaticParam}
-import com.abhioncbr.etlFramework.commons.load.{PartitionColumnTypeEnum, Load, PartitionColumn, PartitioningData}
+import com.abhioncbr.etlFramework.commons.load.{Load, LoadType, PartitionColumn, PartitionColumnTypeEnum, PartitioningData}
 import com.abhioncbr.etlFramework.commons.transform.{AddColumnRule, DummyRule, MergeRule, NilRule, PartitionRule, SchemaTransformationRule, SimpleFunctionRule, Transform, TransformationRule, TransformationStep}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
+
 import scala.collection.immutable.ListMap
 import scala.util.Try
 
@@ -128,7 +129,7 @@ object Rule {
 
 object Load {
   def fromXML(node: scala.xml.NodeSeq): Load = {
-    new Load(subTask = (node \ "task").text, loadType = (node \ "type").text, dbName = (node \ "db_name").text,
+    new Load(subTask = (node \ "task").text, loadType = LoadType.getValueType((node \ "type").text), dbName = (node \ "db_name").text,
       tableName = (node \ "table_name").text, datasetName= (node \ "dataset").text, feedName= (node \ "feed_name").text, fileInitialPath= (node \ "file_initial_path").text,
       fileType = (node \ "file_type").text, partData = PartitioningData.fromXML(node \ "partition_data"))
   }
