@@ -1,18 +1,20 @@
 package com.abhioncbr.etlFramework.etl_feed.transformData
 
 import com.abhioncbr.etlFramework.commons.transform.Transform
+import com.abhioncbr.etlFramework.commons.transform.TransformationResult
 import com.abhioncbr.etlFramework.commons.Logger
 import org.apache.spark.sql.DataFrame
 
 class TransformData(transform : Transform) {
-  def performTransformation(rawDataFrame: DataFrame): Either[Array[(DataFrame, Any, Any)], String] = {
+
+  def performTransformation(rawDataFrame: DataFrame): Either[Array[TransformationResult], String] = {
     val steps = transform.transformationSteps
-    var stepOutput: Array[(DataFrame, Any, Any)] = Array((rawDataFrame, null, null))
+    var stepOutput: Array[TransformationResult] = Array(TransformationResult(rawDataFrame, null, null))
 
     //iterating over transformation steps
     steps.foreach(step => {
       //setting up input data frames in transformation step
-      step.addInputData(stepOutput.unzip3._1) match {
+      step.addInputData(stepOutput.map(res => res.resultDF)) match {
         //iterating for each group of transformation rules
         case Left(b) =>
           stepOutput = Array()
@@ -32,4 +34,5 @@ class TransformData(transform : Transform) {
     })
     Left(stepOutput)
   }
+
 }

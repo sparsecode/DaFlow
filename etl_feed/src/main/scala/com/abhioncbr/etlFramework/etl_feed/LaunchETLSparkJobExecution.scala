@@ -5,7 +5,7 @@ import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.extract.{Extract, ExtractionType}
 import com.abhioncbr.etlFramework.commons.job.JobStaticParam
 import com.abhioncbr.etlFramework.commons.load.Load
-import com.abhioncbr.etlFramework.commons.transform.Transform
+import com.abhioncbr.etlFramework.commons.transform.{Transform, TransformationResult}
 import com.abhioncbr.etlFramework.etl_feed.extractData.{ExtractDataFromDB, ExtractDataFromHive, ExtractDataFromJson}
 import com.abhioncbr.etlFramework.etl_feed.loadData.LoadDataIntoHive
 import com.google.common.base.Objects
@@ -65,9 +65,14 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: DateTime, secondDa
     Logger.log.info("Transformation phase of the feed is completed")
 
     val validateTransformedData: Boolean  = Context.getContextualObject[Transform](TRANSFORM).validateTransformedData
-    val validateResult = validate(transformedResult.left.get)
+    val validateResult: Either[Array[(DataFrame, DataFrame, Any, Any)], String]  = if(validateTransformedData) {
+      validate(transformedResult.left.get)
+    } else {
+      Left(transformedResult.left.get.map(array => (array.resultDF, null, array.resultInfo1, array.resultInfo1)))
+    }
+
     if (validateResult.isRight) return Right(validateResult.right.get)
-    Logger.log.info("Validation phase of the feed is completed")
+    if(validateTransformedData) Logger.log.info("Validation phase of the feed is completed")
 
     val loadResult = load(validateResult.left.get)
     if(loadResult.isRight) return Right(validateResult.right.get)
@@ -86,24 +91,24 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: DateTime, secondDa
     }
   }
 
-  private def transformation(extractionDF: DataFrame): Either[Array[ (DataFrame, Any, Any) ], String] = {
+  private def transformation(extractionDF: DataFrame): Either[Array[TransformationResult], String] = {
     //testing whether extracted data frame is having data or not. If not then, error message is returned.
     if(extractionDF.first == null) return Right("Extracted data frame contains no data row")
 
     new TransformData(Context.getContextualObject[Transform](TRANSFORM)).performTransformation(extractionDF)
   }
 
-  private def validate(transformationDF: Array[ (DataFrame, Any, Any) ]): Either[Array[(DataFrame, DataFrame, Any, Any)], String] = {
+  private def validate(transformationDF: Array[TransformationResult]): Either[Array[(DataFrame, DataFrame, Any, Any)], String] = {
     //testing whether transformed data frames have data or not.
     //As per Sreekanth, if one data frame doesn't have data, we will skip all data frames storage.
-    transformationDF.unzip3._1.foreach(df => if(df.first == null ) return Right("Transformed data frame contains no data row"))
+    transformationDF.map(res => res.resultDF).foreach(df => if(df.first == null ) return Right("Transformed data frame contains no data row"))
 
     var output: Array[ (DataFrame, DataFrame, Any, Any) ] = Array()
     transformationDF.foreach( arrayElement =>  {
       val validator = new ValidateTransformedData
-      val validateSchemaResult = validator.validateSchema (arrayElement._1)
+      val validateSchemaResult = validator.validateSchema (arrayElement.resultDF)
       if(validateSchemaResult._1) {
-        output = output ++ validator.validateData(arrayElement._1, validateSchemaResult._2.get, arrayElement._2, arrayElement._3)
+        output = output ++ validator.validateData(arrayElement.resultDF, validateSchemaResult._2.get, arrayElement.resultInfo1, arrayElement.resultInfo2)
       } else { validateSchemaResult._2 match {
           case Some(_2) => Logger.log.error("hive table schema & data frame schema does not match. Below are schemas for reference -")
             Logger.log.error(s"table schema:: ${_2.mkString}")
