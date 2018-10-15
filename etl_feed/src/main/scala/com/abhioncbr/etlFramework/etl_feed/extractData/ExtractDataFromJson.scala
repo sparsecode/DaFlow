@@ -4,23 +4,19 @@ import com.abhioncbr.etlFramework.commons.extract.Extract
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.Logger
-import com.abhioncbr.etlFramework.etl_feed.util.FileNamePattern
+import com.abhioncbr.etlFramework.commons.common.file.FilePath
+import com.abhioncbr.etlFramework.commons.util.FileUtil
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.joda.time.DateTime
 
-class ExtractDataFromJson(filePathPrefix: String = Context.getContextualObject[Extract](EXTRACT).fileInitialPath,
-                          fileNamePattern: String = Context.getContextualObject[Extract](EXTRACT).fileNamePattern,
-                          formatFileName: Boolean = Context.getContextualObject[Extract](EXTRACT).formatFileName,
-                          filePrefix: String = Context.getContextualObject[Extract](EXTRACT).filePrefix) extends ExtractData {
+class ExtractDataFromJson(dataPath: Option[FilePath] = Context.getContextualObject[Extract](EXTRACT).dataPath,
+                          firstDate: Option[DateTime] = Context.getContextualObject[Option[DateTime]](FIRST_DATE),
+                          secondDate: Option[DateTime] = Context.getContextualObject[Option[DateTime]](SECOND_DATE)) extends ExtractData {
   val sqlContext: SQLContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
 
-  def getRawData(firstDate: DateTime, secondDate: Option[DateTime]): DataFrame = {
-    val namePattern= new FileNamePattern
-    val fileNamePatternString = if(formatFileName) namePattern.getFileDataPathPattern(filePathPrefix, fileNamePattern, filePrefix, firstDate, secondDate)
-                                else s"$filePathPrefix/$fileNamePattern"
-
+  def getRawData: DataFrame = {
+    val fileNamePatternString = FileUtil.getFilePathString(dataPath.get)
     Logger.log.info(fileNamePatternString)
-
     sqlContext.read.json(fileNamePatternString)
   }
 }

@@ -14,7 +14,7 @@ import org.joda.time.DateTime
 
 import scala.util.Try
 
-class UpdateFeedStats(feed_name: String, firstDate: DateTime) {
+class UpdateFeedStats(feed_name: String, firstDate: DateTime = DateTime.now) {
 
   //function for updating etl_feed_stat table through shell script. For airflow-docker image usage, we are going to use other function.
   @deprecated

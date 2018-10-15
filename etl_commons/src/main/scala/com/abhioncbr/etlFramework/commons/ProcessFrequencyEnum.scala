@@ -2,10 +2,11 @@ package com.abhioncbr.etlFramework.commons
 
 object ProcessFrequencyEnum extends Enumeration {
   type frequencyType = Value
-  val HOURLY, DAILY, WEEKLY, MONTHLY, YEARLY, DATE_RANGE = Value
+  val ONCE, HOURLY, DAILY, WEEKLY, MONTHLY, YEARLY, DATE_RANGE = Value
 
   def getProcessFrequencyEnum(frequencyString: String): ProcessFrequencyEnum.frequencyType = {
     val processFrequencyEnum = frequencyString match {
+      case "ONCE" => ProcessFrequencyEnum.ONCE
       case "HOURLY" => ProcessFrequencyEnum.HOURLY
       case "DAILY" => ProcessFrequencyEnum.DAILY
       case "WEEKLY" => ProcessFrequencyEnum.WEEKLY

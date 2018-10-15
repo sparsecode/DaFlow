@@ -23,10 +23,10 @@ import org.joda.time.format.DateTimeFormat
 
 import scala.xml.XML
 
-class LaunchETLSparkJobExecution(feedName: String ,firstDate: DateTime, secondDate: DateTime, xmlInputFilePath: String){
+class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], secondDate: Option[DateTime], xmlInputFilePath: String){
   def configureFeedJob: Either[Boolean, String] ={
-    Context.addContextualObject[DateTime](FIRST_DATE, firstDate)
-    Context.addContextualObject[DateTime](SECOND_DATE, secondDate)
+    Context.addContextualObject[Option[DateTime]](FIRST_DATE, firstDate)
+    Context.addContextualObject[Option[DateTime]](SECOND_DATE, secondDate)
 
     val FALSE = false
     val parse = new ParseETLJobXml
@@ -85,9 +85,9 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: DateTime, secondDa
   private def extract: Either[DataFrame, String] = {
     val extractionType = Context.getContextualObject[Extract](EXTRACT).extractionType
     extractionType match {
-      case ExtractionType.JSON => Left((new ExtractDataFromJson).getRawData(firstDate, Some(secondDate)))
-      case ExtractionType.JDBC => Left((new ExtractDataFromDB).getRawData(firstDate, Some(secondDate)))
-      case ExtractionType.HIVE => Left((new ExtractDataFromHive).getRawData(firstDate, Some(secondDate)))
+      case ExtractionType.JSON => Left((new ExtractDataFromJson).getRawData)
+      case ExtractionType.JDBC => Left((new ExtractDataFromDB).getRawData)
+      case ExtractionType.HIVE => Left((new ExtractDataFromHive).getRawData)
       case _ => Right(s"extracting data from $extractionType is not supported right now.")
     }
   }
@@ -134,8 +134,8 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: DateTime, secondDa
     val loadResult: Array[JobResult] = validationArrayDF.map( validate => {
       val loadType = Context.getContextualObject[Load](LOAD).loadType
       val loadResult: Either[Boolean, String] = loadType match {
-        case LoadType.HIVE => (new LoadDataIntoHive).loadTransformedData(validate._1, firstDate)
-        case LoadType.FILE_SYSTEM => (new LoadDataIntoFileSystem).loadTransformedData(validate._1, firstDate)
+        case LoadType.HIVE => (new LoadDataIntoHive).loadTransformedData(validate._1)
+        case LoadType.FILE_SYSTEM => (new LoadDataIntoFileSystem).loadTransformedData(validate._1)
         case LoadType.JDBC => Right(s"loading data to $loadType is not supported right now.")
         case _ => Right(s"loading data to $loadType is not supported right now.")
       }
@@ -153,8 +153,8 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: DateTime, secondDa
 object LaunchETLSparkJobExecution extends App{
 
   def launch(args: Array[String]): Unit = {
-    case class CommandOptions(firstDate: DateTime = null, feedName : String = "",
-                              secondDate: DateTime = null, xmlInputFilePath: String = "", statScriptFilePath: String = "") {
+    case class CommandOptions(firstDate: Option[DateTime] = null, feedName : String = "",
+                              secondDate: Option[DateTime] = null, xmlInputFilePath: String = "", statScriptFilePath: String = "") {
       override def toString: String =
         Objects.toStringHelper(this)
           .add("feed_name", feedName)
@@ -174,12 +174,12 @@ object LaunchETLSparkJobExecution extends App{
         .required
 
       opt[String]('d', "date")
-        .action((fd, c) =>  c.copy(firstDate = if(!fd.trim.isEmpty) dateParser.parseDateTime(fd) else DateTime.now.minusHours(1)))
-        .text("required for all jobs except of hourly jobs.")
+        .action((fd, c) =>  c.copy(firstDate = if(!fd.trim.isEmpty) Some(dateParser.parseDateTime(fd)) else None))
+        .text("required for all jobs except of hourly jobs or once execution jobs.")
         .optional
 
       opt[String]('s', "second_date")
-        .action((sd, c) =>  c.copy(secondDate = if(!sd.trim.isEmpty) dateParser.parseDateTime(sd) else null))
+        .action((sd, c) =>  c.copy(secondDate = if(!sd.trim.isEmpty) Some(dateParser.parseDateTime(sd)) else None))
         .text("required only in case of date range jobs")
         .optional
 
@@ -191,7 +191,7 @@ object LaunchETLSparkJobExecution extends App{
       opt[String]('f', "stat_script_file_path")
         .action((sfp, c) => c.copy(statScriptFilePath = sfp))
         .text("required stat script file path for etl job result updates.")
-        .required
+        .optional
 
     }
 
@@ -202,7 +202,7 @@ object LaunchETLSparkJobExecution extends App{
         val etlExecutor = new LaunchETLSparkJobExecution(opts.feedName, opts.firstDate, opts.secondDate, opts.xmlInputFilePath)
 
         var metricData = 0L
-        val updateFeedStats: UpdateFeedStats = new UpdateFeedStats(opts.feedName, opts.firstDate)
+        val updateFeedStats: UpdateFeedStats = new UpdateFeedStats(opts.feedName, opts.firstDate.getOrElse(DateTime.now))
         etlExecutor.configureFeedJob match {
           case Left(b) => val start = System.currentTimeMillis()
             val feedJobOutput = etlExecutor.executeFeedJob

@@ -2,7 +2,7 @@ package com.abhioncbr.etlFramework.etl_feed.loadData
 
 import java.text.DecimalFormat
 
-import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{JOB_STATIC_PARAM, LOAD, SQL_CONTEXT}
+import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{FIRST_DATE, JOB_STATIC_PARAM, LOAD, SQL_CONTEXT}
 import com.abhioncbr.etlFramework.commons.{Context, Logger}
 import com.abhioncbr.etlFramework.commons.job.JobStaticParam
 import com.abhioncbr.etlFramework.commons.load.{Load, PartitionColumnTypeEnum}
@@ -20,10 +20,11 @@ class LoadDataIntoHive extends LoadData {
   private val partData = load.partData
   private val hiveTableDataInitialPath = load.partData.partitionFileInitialPath
 
-  def loadTransformedData(dataFrame: DataFrame, date: DateTime): Either[Boolean, String] = {
+  def loadTransformedData(dataFrame: DataFrame,
+                          date: Option[DateTime]=Context.getContextualObject[Option[DateTime]](FIRST_DATE)): Either[Boolean, String] = {
     var df = dataFrame
-    val dateString = date.toString("yyyy-MM-dd")
-    val timeString = s"""${new DecimalFormat("00").format(date.getHourOfDay)}"""
+    val dateString = date.get.toString("yyyy-MM-dd")
+    val timeString = s"""${new DecimalFormat("00").format(date.get.getHourOfDay)}"""
     val path = s"$hiveTableDataInitialPath/$databaseName/$tableName/$dateString/$timeString"
 
     var output = false

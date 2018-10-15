@@ -2,6 +2,7 @@ package com.abhioncbr.etlFramework.etl_feed.loadData
 
 import java.text.DecimalFormat
 
+import ch.qos.logback.core.rolling.helper.FileNamePattern
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{JOB_STATIC_PARAM, LOAD}
 import com.abhioncbr.etlFramework.commons.job.JobStaticParam
 import com.abhioncbr.etlFramework.commons.load.Load
@@ -17,9 +18,11 @@ class LoadDataIntoFileSystem extends LoadData {
   private val feedName = load.feedName
   private val initialPath = load.fileInitialPath
 
-  def loadTransformedData(dataFrame: DataFrame, date: DateTime): Either[Boolean, String] = {
-    val dateString = date.toString("yyyy-MM-dd")
-    val timeString = s"""${new DecimalFormat("00").format(date.getHourOfDay)}"""
+  def loadTransformedData(dataFrame: DataFrame, date: Option[DateTime] = None): Either[Boolean, String] = {
+
+    val dateString = date.get.toString("yyyy-MM-dd")
+    val timeString = s"""${new DecimalFormat("00").format(date.get.getHourOfDay)}"""
+
     val path = s"$initialPath/$datasetName/$feedName/$dateString/$timeString"
 
     var output = false

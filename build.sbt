@@ -9,6 +9,11 @@ lazy val etl_framework_common_settings = Seq(
   scalaVersion := "2.11.11"
 )
 
+resolvers ++= Seq(
+  Resolver.sonatypeRepo("releases"),
+  Resolver.sonatypeRepo("snapshots")
+)
+
 val versions = new {
   val scoptVersion = "3.5.0"
   val sparkVersion = "2.3.1"
@@ -35,6 +40,8 @@ libraryDependencies in ThisBuild ++= Seq(
 
   "ch.qos.logback" % "logback-classic" % "1.1.7",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
+
+  "com.chuusai" %% "shapeless" % "2.3.3",
 
   "mysql" % "mysql-connector-java" % "5.1.25"
 )

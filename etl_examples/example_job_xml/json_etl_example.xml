@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/css" href="xmlpartsstyle.css"?>
+<etl_job xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../etl_job_conf/etl_feed_job.xsd">
+    <job_static_param>
+        <feed_name>{hourly_feed_name}</feed_name>
+        <frequency>ONCE</frequency>
+    </job_static_param>
+
+    <extract>
+        <type>JSON</type>
+        <format_file_name>false</format_file_name>
+        <file_initial_path>~/etl-framework/etl_examples/sample_data</file_initial_path>
+        <file_name_pattern>json_data.json</file_name_pattern>
+    </extract>
+
+    <transform>
+        <rule order="1" type="SELECT" group='1'>
+            <condition>col1, col2, col3</condition>
+        </rule>
+    </transform>
+
+    <load>
+        <type>FILE_SYSTEM</type>
+        <dataset>{db-name}</dataset>
+        <feed_name>{table-name}</feed_name>
+        <file_type>JSON</file_type>
+        <file_initial_path>~/etl-framework/etl_examples/sample_data/etl-frwrk_result/</file_initial_path>
+    </load>
+</etl_job>

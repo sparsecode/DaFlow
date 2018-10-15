@@ -71,6 +71,7 @@
     </xs:simpleType>
     <xs:simpleType name="process_frequency">
         <xs:restriction base="xs:string">
+            <xs:enumeration value="ONCE"/>
             <xs:enumeration value="HOURLY"/>
             <xs:enumeration value="DAILY"/>
             <xs:enumeration value="WEEKLY"/>

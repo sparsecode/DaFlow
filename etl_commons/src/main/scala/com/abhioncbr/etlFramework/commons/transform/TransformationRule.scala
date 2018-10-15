@@ -3,8 +3,8 @@ package com.abhioncbr.etlFramework.commons.transform
 
 import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
-import com.abhioncbr.etlFramework.commons.job.FieldMapping
-import com.abhioncbr.etlFramework.commons.load.{PartitionColumnTypeEnum, Load}
+import com.abhioncbr.etlFramework.commons.common.FieldMapping
+import com.abhioncbr.etlFramework.commons.load.{Load, PartitionColumnTypeEnum}
 import com.abhioncbr.etlFramework.sql_parser.{Clause, SQLParser}
 import com.typesafe.scalalogging.Logger
 import org.apache.spark.rdd.RDD

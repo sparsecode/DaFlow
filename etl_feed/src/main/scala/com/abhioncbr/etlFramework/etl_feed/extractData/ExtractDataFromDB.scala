@@ -5,23 +5,21 @@ import java.util.Properties
 
 import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
-import com.abhioncbr.etlFramework.commons.extract.{Extract, QueryParam, QueryParamTypeEnum}
+import com.abhioncbr.etlFramework.commons.extract.Extract
 import com.abhioncbr.etlFramework.commons.Logger
+import com.abhioncbr.etlFramework.commons.common.query.{Query, QueryParam, QueryParamTypeEnum}
+import com.abhioncbr.etlFramework.commons.util.FileUtil
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.{DataFrame, SQLContext}
-import org.joda.time.DateTime
 
-class ExtractDataFromDB(dbPropertyFile: String = Context.getContextualObject[Extract](EXTRACT).dbPropertyFile,
-                        sqlQueryFile: String = Context.getContextualObject[Extract](EXTRACT).queryFilePath,
-                        formatFileName: Boolean = Context.getContextualObject[Extract](EXTRACT).formatFileName,
-                        sqlQueryParams: List[QueryParam] = Context.getContextualObject[Extract](EXTRACT).queryParams) extends ExtractData{
+class ExtractDataFromDB(query: Option[Query] = Context.getContextualObject[Extract](EXTRACT).query) extends AbstractExtractData{
 
-  def getRawData(firstDate: DateTime, secondDate: Option[DateTime]): DataFrame = {
+  def getRawData: DataFrame = {
     lazy val fs = FileSystem.get(new Configuration())
 
     //reading database properties from property file.
-    val propertyFilePath = if(formatFileName) String.format(dbPropertyFile) else dbPropertyFile
+    val propertyFilePath = FileUtil.getFilePathString(query.get.queryFile.configurationFile.get)
     Logger.log.info(s"db property file path: $propertyFilePath")
 
     val connectionProps = new Properties()
@@ -29,10 +27,12 @@ class ExtractDataFromDB(dbPropertyFile: String = Context.getContextualObject[Ext
     val dbUri = connectionProps.getProperty("dburi")
 
     //reading query from the query file.
+    val sqlQueryFile = FileUtil.getFilePathString(query.get.queryFile.queryFile.get)
     val tableQueryReader = new BufferedReader(new InputStreamReader(fs.open(new Path(sqlQueryFile))))
     val rawQuery = Stream.continually(tableQueryReader.readLine()).takeWhile(_ != null).toArray[String].mkString.stripMargin
 
-    val queryParams = QueryParamTypeEnum.getParamsValue(sqlQueryParams)
+    val sqlQueryParams: Array[QueryParam] = query.get.queryArgs.get
+    val queryParams = QueryParamTypeEnum.getParamsValue(sqlQueryParams.toList)
     println("query param values" + queryParams.mkString(" , "))
     val tableQuery = String.format(rawQuery, queryParams:_*)
     Logger.log.info(s"going to execute jdbc query  \\n: $tableQuery")

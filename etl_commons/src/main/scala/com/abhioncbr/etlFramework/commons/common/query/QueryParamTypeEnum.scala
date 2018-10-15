@@ -1,4 +1,4 @@
-package com.abhioncbr.etlFramework.commons.extract
+package com.abhioncbr.etlFramework.commons.common.query
 
 import com.abhioncbr.etlFramework.commons.{Context, ContextConstantEnum}
 import org.joda.time.{DateTime, DateTimeZone}
