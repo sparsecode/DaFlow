@@ -4,26 +4,27 @@
     <job_static_param>
         <feed_name>{hourly_feed_name}</feed_name>
         <frequency>ONCE</frequency>
+        <publish_stats>false</publish_stats>
     </job_static_param>
 
     <extract>
         <type>JSON</type>
         <format_file_name>false</format_file_name>
-        <file_initial_path>~/etl-framework/etl_examples/sample_data</file_initial_path>
+        <file_initial_path>/Users/abhisheksharma/work/github-proj/etl-framework/etl_examples/sample_data</file_initial_path>
         <file_name_pattern>json_data.json</file_name_pattern>
+        <validate_extracted_data>false</validate_extracted_data>
     </extract>
 
     <transform>
         <rule order="1" type="SELECT" group='1'>
-            <condition>col1, col2, col3</condition>
+            <condition>test_string2</condition>
         </rule>
+        <validate_transformed_data>false</validate_transformed_data>
     </transform>
 
     <load>
         <type>FILE_SYSTEM</type>
-        <dataset>{db-name}</dataset>
-        <feed_name>{table-name}</feed_name>
         <file_type>JSON</file_type>
-        <file_initial_path>~/etl-framework/etl_examples/sample_data/etl-frwrk_result/</file_initial_path>
+        <file_initial_path>/Users/abhisheksharma/work/github-proj/etl-framework/etl_examples/sample_data/etl-frwrk_result/</file_initial_path>
     </load>
 </etl_job>

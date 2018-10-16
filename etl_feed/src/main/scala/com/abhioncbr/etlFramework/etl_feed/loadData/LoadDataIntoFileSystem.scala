@@ -4,8 +4,10 @@ import java.text.DecimalFormat
 
 import ch.qos.logback.core.rolling.helper.FileNamePattern
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{JOB_STATIC_PARAM, LOAD}
+import com.abhioncbr.etlFramework.commons.common.file.FilePath
 import com.abhioncbr.etlFramework.commons.job.JobStaticParam
 import com.abhioncbr.etlFramework.commons.load.Load
+import com.abhioncbr.etlFramework.commons.util.FileUtil
 import com.abhioncbr.etlFramework.commons.{Context, Logger}
 import org.apache.spark.sql.{DataFrame, SaveMode}
 import org.joda.time.DateTime
@@ -16,18 +18,13 @@ class LoadDataIntoFileSystem extends LoadData {
   private val load = Context.getContextualObject[Load](LOAD)
   private val datasetName = load.datasetName
   private val feedName = load.feedName
-  private val initialPath = load.fileInitialPath
+  private val dataPath: FilePath = load.dataPath
 
   def loadTransformedData(dataFrame: DataFrame, date: Option[DateTime] = None): Either[Boolean, String] = {
-
-    val dateString = date.get.toString("yyyy-MM-dd")
-    val timeString = s"""${new DecimalFormat("00").format(date.get.getHourOfDay)}"""
-
-    val path = s"$initialPath/$datasetName/$feedName/$dateString/$timeString"
-
+    val path = FileUtil.getFilePathString(dataPath)
     var output = false
     try{
-      Logger.log.info(s"Writing $processFrequency dataFrame for table $feedName to ($path). Total number of data rows saved: ${dataFrame.count}")
+      Logger.log.info(s"Writing $processFrequency dataFrame for feed $feedName to ($path). Total number of data rows saved: ${dataFrame.count}")
       val fileType = load.fileType
 
       fileType match {

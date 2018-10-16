@@ -15,8 +15,8 @@ object ParseExtractConf {
         dataPath = Some(
           FilePath(pathPrefix = Some((node \ "file_initial_path").text),
             groupPatterns = None,
-            feedPattern = Some(PathInfixParam((node \ "file_name_pattern").text, Some((node \ "format_file_name").text.toBoolean))),
-            fileName = FileNameParam(Some((node \ "file_prefix").text))
+            feedPattern = None, //Some(PathInfixParam((node \ "file_name_pattern").text, Some((node \ "format_file_name").text.toBoolean))),
+            fileName = None //Some(FileNameParam(Some((node \ "file_prefix").text)))
           )
         ),
         query = None,

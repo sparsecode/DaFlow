@@ -17,13 +17,14 @@ object FileUtil {
     val groupsString = getInfixPathString[Array[PathInfixParam]](filePath.groupPatterns)
     val feedString = getInfixPathString[PathInfixParam](filePath.feedPattern)
     val fileNameString = getFileNameString(filePath.fileName)
-    s"""$pathPrefixString/$groupsString/$feedString/$fileNameString"""
+    s"""$pathPrefixString$groupsString$feedString$fileNameString"""
   }
 
   def getFilePathObject(filePathString: String): FilePath = {
     val parsedPath: Path = Paths.get(filePathString)
     val pathPrefix = parsedPath.getParent.toString
-    FilePath(Some(pathPrefix), fileName = parseFileName(parsedPath.getFileName.toString, parsedPath.getFileSystem.getSeparator))
+    FilePath(Some(pathPrefix),
+      fileName = Some(parseFileName(parsedPath.getFileName.toString, parsedPath.getFileSystem.getSeparator)))
   }
 
   private def parseFileName(rawFileName: String, separator: String): FileNameParam ={
@@ -33,17 +34,19 @@ object FileUtil {
 
   private def getFormattedString(pattern: String, args: Option[Array[String]]): String = String.format(pattern, args.get:_*)
 
-  private def getFileNameString(fileNameParam: FileNameParam): String = {
-    s"""${fileNameParam.fileNamePrefix.getOrElse("*")}
-      ${fileNameParam.fileNameSeparator.get}
-      ${fileNameParam.fileNameSuffix.getOrElse("*")}"""
+  private def getFileNameString(fileNameParamOption: Option[FileNameParam]): String = {
+    fileNameParamOption.getOrElse(None) match {
+      case fileNameParam: FileNameParam => s"""/${fileNameParam.fileNamePrefix.getOrElse("*")}${fileNameParam.fileNameSeparator.get}${fileNameParam.fileNameSuffix.getOrElse("*")}"""
+      case None => ""
+    }
+
   }
 
   private def getInfixPathString[T](infixObject: Option[T]): String ={
-    val output = infixObject.get match {
+    val output = infixObject.getOrElse(None) match {
       case groups: Array[PathInfixParam] => groups.
         map(gr => if(gr.formatInfix.get) getFormattedString(gr.infixPattern, gr.formatInfixArgs) else gr.infixPattern).
-        mkString("/")
+        mkString("/", "/", "")
       case feed: PathInfixParam => if(feed.formatInfix.get) getFormattedString(feed.infixPattern, feed.formatInfixArgs) else feed.infixPattern
       case None => ""
     }

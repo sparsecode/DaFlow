@@ -101,7 +101,6 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
 
   private def validate(transformationDF: Array[TransformationResult]): Either[Array[(DataFrame, DataFrame, Any, Any)], String] = {
     //testing whether transformed data frames have data or not.
-    //As per Sreekanth, if one data frame doesn't have data, we will skip all data frames storage.
     transformationDF.map(res => res.resultDF).foreach(df => if(df.first == null ) return Right("Transformed data frame contains no data row"))
 
     var output: Array[ (DataFrame, DataFrame, Any, Any) ] = Array()
@@ -140,7 +139,7 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
         case _ => Right(s"loading data to $loadType is not supported right now.")
       }
       //writing output data tuple.
-      (loadResult, validate._1.count(), validate._2.count(), validate._3, validate._4)
+      (loadResult, validate._1.count(), if(validate._2 != null ) validate._2.count() else 0, validate._3, validate._4)
     }).map(result => {
       if(result._1.isRight) JobResult(FALSE, "", result._4.asInstanceOf[Int], result._5.asInstanceOf[Int], result._2, result._3, result._1.right.get)
       else JobResult(result._1.left.get, "", result._4.asInstanceOf[Int], result._5.asInstanceOf[Int], result._2, result._3, "")})
@@ -153,8 +152,8 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
 object LaunchETLSparkJobExecution extends App{
 
   def launch(args: Array[String]): Unit = {
-    case class CommandOptions(firstDate: Option[DateTime] = null, feedName : String = "",
-                              secondDate: Option[DateTime] = null, xmlInputFilePath: String = "", statScriptFilePath: String = "") {
+    case class CommandOptions(firstDate: Option[DateTime] = None, feedName : String = "",
+                              secondDate: Option[DateTime] = None, xmlInputFilePath: String = "", statScriptFilePath: String = "") {
       override def toString: String =
         Objects.toStringHelper(this)
           .add("feed_name", feedName)
@@ -197,7 +196,7 @@ object LaunchETLSparkJobExecution extends App{
 
     parser.parse(args, CommandOptions()) match {
       case Some(opts) =>
-        Logger.log.info(s"Going to start the execution of the etl feed job with following params: $opts")
+        Logger.log.info(s"Going to start the execution of the etl feed job: ")
         var exitCode = -1
         val etlExecutor = new LaunchETLSparkJobExecution(opts.feedName, opts.firstDate, opts.secondDate, opts.xmlInputFilePath)
 
@@ -208,13 +207,14 @@ object LaunchETLSparkJobExecution extends App{
             val feedJobOutput = etlExecutor.executeFeedJob
             val end = System.currentTimeMillis()
             feedJobOutput match {
-              case Left(dataArray) => val temp = dataArray.map(data =>
+              case Left(dataArray) => /*val temp = dataArray.map(data =>
                 updateFeedStats.updateFeedStat(opts.statScriptFilePath, data.subtask, data.validateCount,
                   data.nonValidatedCount, end - start, "success", data.transformationPassedCount,
                   data.transformationFailedCount, data.failureReason)).map(status => if(status==0) true else false)
                 .reduce(_ && _)
                 if(temp) exitCode = 0
-                metricData = dataArray.head.validateCount
+                metricData = dataArray.head.validateCount*/
+                println("job complete.")
               //else
               case Right(s) => updateFeedStats.updateFeedStat(opts.statScriptFilePath, "", 0, 0, end - start, "fail", 0, 0, s)
                 Logger.log.error(s)

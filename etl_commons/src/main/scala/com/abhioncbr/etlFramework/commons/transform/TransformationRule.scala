@@ -145,7 +145,7 @@ class SimpleFunctionRule(functionType:String, order: Int, ruleCondition: String,
     val selectCondition = selectColumns.map(str => if(str.contains(".")) str.trim else s"`${str.trim}`").mkString(", ")
 
     val sqlContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
-    inputDataFrame.createGlobalTempView("temp")
+    inputDataFrame.createOrReplaceTempView("temp")
     Array(TransformationResult(sqlContext.sql(s"select $selectCondition from temp"), null, null))
   }
 
