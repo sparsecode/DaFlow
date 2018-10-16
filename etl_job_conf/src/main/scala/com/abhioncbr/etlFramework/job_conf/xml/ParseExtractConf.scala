@@ -26,7 +26,7 @@ object ParseExtractConf {
         dataPath = None,
         query = Some(Query(
           QueryFileParam(Some(FileUtil.getFilePathObject((node \ "db_property_file_path").text)), Some(FileUtil.getFilePathObject((node \ "sql_query_file_path").text))),
-          Some(Array[QueryParam]((node \ "query_params" \ "param").toList map { s => QueryParam.fromXML(s) }: _*))
+          Some(Array[QueryParam]((node \ "query_params" \ "param").toList map { s => ParseQueryParam.fromXML(s) }: _*))
         )),
         validateExtractedData = (node \ "validate_extracted_data").text.toBoolean)
     }
