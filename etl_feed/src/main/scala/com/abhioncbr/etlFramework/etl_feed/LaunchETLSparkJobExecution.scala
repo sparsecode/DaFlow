@@ -54,7 +54,7 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
   }
 
   def executeFeedJob: Either[Array[JobResult], String]={
-    val extractionResult = extract
+    val extractionResult = extract(0)
     if(extractionResult.isRight) return Right(extractionResult.right.get)
     Logger.log.info("Extraction phase of the feed is completed")
 
@@ -82,14 +82,14 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
     Left(loadResult.left.get)
   }
 
-  private def extract: Either[DataFrame, String] = {
-    val extractionType = Context.getContextualObject[Extract](EXTRACT).extractionType
-    extractionType match {
-      case ExtractionType.JSON => Left((new ExtractDataFromJson).getRawData)
-      case ExtractionType.JDBC => Left((new ExtractDataFromDB).getRawData)
-      case ExtractionType.HIVE => Left((new ExtractDataFromHive).getRawData)
-      case _ => Right(s"extracting data from $extractionType is not supported right now.")
-    }
+  private def extract: Array[Either[DataFrame, String]] = {
+    val extract: Extract = Context.getContextualObject[Extract](EXTRACT)
+    extract.feeds.map(feed => feed.extractionType match {
+      case ExtractionType.JSON => Left(new ExtractDataFromJson(feed).getRawData)
+      case ExtractionType.JDBC => Left(new ExtractDataFromDB(feed).getRawData)
+      case ExtractionType.HIVE => Left(new ExtractDataFromHive(feed).getRawData)
+      case _ => Right(s"extracting data from ${feed.extractionType} is not supported right now.")
+    })
   }
 
   private def transformation(extractionDF: DataFrame): Either[Array[TransformationResult], String] = {

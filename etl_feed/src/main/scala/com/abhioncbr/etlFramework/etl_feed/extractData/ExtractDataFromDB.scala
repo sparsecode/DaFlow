@@ -5,7 +5,7 @@ import java.util.Properties
 
 import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
-import com.abhioncbr.etlFramework.commons.extract.Extract
+import com.abhioncbr.etlFramework.commons.extract.{Extract, Feed}
 import com.abhioncbr.etlFramework.commons.Logger
 import com.abhioncbr.etlFramework.commons.common.query.{Query, QueryParam, QueryParamTypeEnum}
 import com.abhioncbr.etlFramework.commons.util.FileUtil
@@ -13,7 +13,8 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.{DataFrame, SQLContext}
 
-class ExtractDataFromDB(query: Option[Query] = Context.getContextualObject[Extract](EXTRACT).query) extends AbstractExtractData{
+class ExtractDataFromDB(feed: Feed) extends AbstractExtractData{
+  val query: Option[Query] = feed.query
 
   def getRawData: DataFrame = {
     lazy val fs = FileSystem.get(new Configuration())

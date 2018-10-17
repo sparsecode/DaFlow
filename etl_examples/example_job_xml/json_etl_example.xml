@@ -8,11 +8,18 @@
     </job_static_param>
 
     <extract>
-        <type>JSON</type>
-        <format_file_name>false</format_file_name>
-        <file_initial_path>/Users/abhisheksharma/work/github-proj/etl-framework/etl_examples/sample_data</file_initial_path>
-        <file_name_pattern>json_data.json</file_name_pattern>
-        <validate_extracted_data>false</validate_extracted_data>
+        <feed>
+            <feed_name>json_data</feed_name>
+            <type>JSON</type>
+            <data_path>
+                <initial_path>/Users/abhisheksharma/work/github-proj/etl-framework/etl_examples/sample_data</initial_path>
+                <file_name>
+                    <file_prefix>json_data</file_prefix>
+                    <File_suffix>json</File_suffix>
+                </file_name>
+            </data_path>
+            <validate_extracted_data>false</validate_extracted_data>
+        </feed>
     </extract>
 
     <transform>
