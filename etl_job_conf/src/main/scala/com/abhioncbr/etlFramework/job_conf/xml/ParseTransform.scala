@@ -7,7 +7,7 @@ import scala.collection.immutable.ListMap
 object ParseTransform {
   def fromXML(node: scala.xml.NodeSeq): Transform = {
     val rules = List[DummyRule]((node \ "rule").toList map { s => ParseRule.fromXML(s) }: _*).flatten(dummy => ParseRule.getRules(dummy))
-    Transform(transformationSteps = getTransformationStep(rules), validateTransformedData = (node \ "validate_transformed_data").text.toBoolean)
+    Transform(transformationSteps = getTransformationStep(rules), validateTransformedData = ParseUtil.parseBoolean((node \ "validate_transformed_data").text))
   }
 
   def getTransformationStep(rules: List[TransformationRule]) : List[TransformationStep] ={
@@ -15,8 +15,6 @@ object ParseTransform {
     val transformationStepsMap = orderedRule.keys.zip(orderedRule.values.map(list => list.map(rule => (rule.getGroup, rule)).toMap))
     val transformationSteps: List[TransformationStep] = ListMap(transformationStepsMap.toSeq.sortBy(_._1):_*).
       map(entry => new TransformationStep(entry._1,entry._2)).toList
-
-
     transformationSteps
   }
 }

@@ -80,6 +80,47 @@
             <xs:enumeration value="DATE_RANGE"/>
         </xs:restriction>
     </xs:simpleType>
+    <xs:complexType name="query">
+        <xs:sequence>
+            <xs:element type="xs:string" name="db_property_file_path" minOccurs="0"/>
+            <xs:element type="xs:string" name="sql_query_file_path" minOccurs="0"/>
+            <xs:element name="query_params" type="params"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="params">
+        <xs:sequence>
+            <xs:element name="param" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute type="xs:int" name="order"/>
+                    <xs:attribute type="xs:string" name="name"/>
+                    <xs:attribute type="query_param_value" name="value"/>
+                    <xs:attribute type="xs:string" name="default_value"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="file_name">
+        <xs:sequence>
+            <xs:element name="file_prefix" type="xs:string"/>
+            <xs:element name="file_separator" type="xs:string"/>
+            <xs:element name="File_suffix" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="infix_path">
+        <xs:sequence>
+            <xs:element name="infix_name_pattern" type="xs:string"/>
+            <xs:element name="format_infix_name_pattern" type="xs:boolean"/>
+            <xs:element name="format_values" type="params"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="file_path">
+        <xs:sequence>
+            <xs:element name="initial_path" type="xs:string"/>
+            <xs:element name="group_pattern" type="infix_path" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element name="feed_pattern" type="infix_path" minOccurs="0"/>
+            <xs:element name="file_name" type="file_name" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
     <xs:element name="etl_job" type="etl_jobType"/>
     <xs:complexType name="loadType">
         <xs:sequence>
@@ -142,36 +183,19 @@
             <xs:element type="xs:boolean" name="validate_transformed_data" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
-    <xs:complexType name="extractType">
-        <xs:sequence>
+    <xs:complexType name="extract_feed">
+        <xs:sequence id="extract_feed_elements">
+            <xs:element type="xs:string" name="feed_name"/>
             <xs:element type="extraction_type" name="type"/>
-            <xs:element type="xs:string" name="file_initial_path" minOccurs="0"/>
-
-            <!-- TODO: make 'file_name_pattern' complex type & with regex pattern, also get filler string as input -->
-            <xs:element type="xs:boolean" name="format_file_name" minOccurs="0"/>
-            <xs:element type="xs:string" name="file_name_pattern" minOccurs="0"/>
-
-            <xs:element type="xs:string" name="file_prefix" minOccurs="0"/>
-
-            <xs:element type="xs:string" name="db_property_file_path" minOccurs="0"/>
-            <xs:element type="xs:string" name="sql_query_file_path" minOccurs="0"/>
-            <xs:element name="query_params">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="param" maxOccurs="unbounded" minOccurs="0">
-                            <xs:complexType>
-                                <xs:attribute type="xs:int" name="order"/>
-                                <xs:attribute type="xs:string" name="name"/>
-                                <xs:attribute type="query_param_value" name="value"/>
-                                <xs:attribute type="xs:string" name="default_value"/>
-                            </xs:complexType>
-                        </xs:element>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-
+            <xs:element type="file_path" name="data_path" minOccurs="0"/>
+            <xs:element type="query" name="query" minOccurs="0"/>
             <!-- TODO: validate extracted data [needs more condition for validation, currently it is only boolean operator] -->
             <xs:element type="xs:boolean" name="validate_extracted_data" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="extractType">
+        <xs:sequence >
+           <xs:element type="extract_feed" name="feed" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="job_static_paramType">
