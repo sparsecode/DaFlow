@@ -106,18 +106,32 @@
             <xs:element name="File_suffix" type="xs:string"/>
         </xs:sequence>
     </xs:complexType>
-    <xs:complexType name="infix_path">
+    <xs:complexType name="groups_pattern">
         <xs:sequence>
-            <xs:element name="infix_name_pattern" type="xs:string"/>
-            <xs:element name="format_infix_name_pattern" type="xs:boolean"/>
+            <xs:element name="member" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="order" type="xs:int"/>
+                        <xs:element name="group_name_pattern" type="xs:string"/>
+                        <xs:element name="format_group_name_pattern" type="xs:boolean"/>
+                        <xs:element name="format_values" type="params"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="feed_pattern">
+        <xs:sequence>
+            <xs:element name="feed_name_pattern" type="xs:string"/>
+            <xs:element name="format_feed_name_pattern" type="xs:boolean"/>
             <xs:element name="format_values" type="params"/>
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="file_path">
         <xs:sequence>
             <xs:element name="initial_path" type="xs:string"/>
-            <xs:element name="group_pattern" type="infix_path" maxOccurs="unbounded" minOccurs="0"/>
-            <xs:element name="feed_pattern" type="infix_path" minOccurs="0"/>
+            <xs:element name="group_pattern" type="groups_pattern" minOccurs="0"/>
+            <xs:element name="feed_pattern" type="feed_pattern" minOccurs="0"/>
             <xs:element name="file_name" type="file_name" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>

@@ -1,5 +1,7 @@
 package com.abhioncbr.etlFramework.commons.common.query
 
+import com.abhioncbr.etlFramework.commons.common.GeneralParam
+import com.abhioncbr.etlFramework.commons.util.FileUtil
 import com.abhioncbr.etlFramework.commons.{Context, ContextConstantEnum}
 import org.joda.time.{DateTime, DateTimeZone}
 
@@ -32,7 +34,7 @@ object QueryParamTypeEnum extends Enumeration {
     output
   }
 
-  def getParamsValue(paramList: List[QueryParam]): Array[Object] ={
-    paramList.map(queryParam => (queryParam.order, getDataValue(queryParam.paramValue))).sortBy(_._1).map(_._2).toArray
+  def getParamsValue(paramList: List[GeneralParam]): Array[Object] ={
+    paramList.map(queryParam => (queryParam.order, FileUtil.mapFormatArgs(Some(paramList.toArray)))).sortBy(_._1).map(_._2).toArray
   }
 }
