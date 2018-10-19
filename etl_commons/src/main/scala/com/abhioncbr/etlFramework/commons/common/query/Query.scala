@@ -1,3 +1,5 @@
 package com.abhioncbr.etlFramework.commons.common.query
 
-case class Query(queryFile: QueryFileParam, queryArgs: Option[Array[QueryParam]])
+import com.abhioncbr.etlFramework.commons.common.GeneralParam
+
+case class Query(queryFile: QueryFileParam, queryArgs: Option[Array[GeneralParam]])

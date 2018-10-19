@@ -1,6 +1,6 @@
 package com.abhioncbr.etlFramework.etl_feed
 
-import com.abhioncbr.etlFramework.commons.Context
+import com.abhioncbr.etlFramework.commons.{Context, Logger}
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.extract.{Extract, ExtractionType}
 import com.abhioncbr.etlFramework.commons.job.JobStaticParam
@@ -14,7 +14,6 @@ import com.abhioncbr.etlFramework.etl_feed_metrics.stats.UpdateFeedStats
 import com.abhioncbr.etlFramework.job_conf.xml.ParseETLJobXml
 import org.apache.hadoop.conf.Configuration
 import com.abhioncbr.etlFramework.etl_feed_metrics.stats.JobResult
-import com.abhioncbr.etlFramework.commons.Logger
 import com.abhioncbr.etlFramework.etl_feed.validateData.ValidateTransformedData
 import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import org.apache.spark.SparkContext
@@ -23,7 +22,9 @@ import org.joda.time.format.DateTimeFormat
 
 import scala.xml.XML
 
-class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], secondDate: Option[DateTime], xmlInputFilePath: String){
+class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], secondDate: Option[DateTime],
+                                 xmlInputFilePath: String, otherParams: Option[Map[String, String]]){
+
   def configureFeedJob: Either[Boolean, String] ={
     Context.addContextualObject[Option[DateTime]](FIRST_DATE, firstDate)
     Context.addContextualObject[Option[DateTime]](SECOND_DATE, secondDate)
@@ -46,6 +47,7 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
 
     val appName = s"etl-$feedName"
     val sparkSession: SparkSession = SparkSession.builder().appName(appName).getOrCreate()
+    Context.addContextualObject[Option[Map[String,String]]](OTHER_PARAM, otherParams)
     Context.addContextualObject[Configuration](HADOOP_CONF, new Configuration)
     Context.addContextualObject[SparkContext](SPARK_CONTEXT, sparkSession.sparkContext)
     Context.addContextualObject[SQLContext](SQL_CONTEXT, sparkSession.sqlContext)
@@ -152,8 +154,9 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
 object LaunchETLSparkJobExecution extends App{
 
   def launch(args: Array[String]): Unit = {
-    case class CommandOptions(firstDate: Option[DateTime] = None, feedName : String = "",
-                              secondDate: Option[DateTime] = None, xmlInputFilePath: String = "", statScriptFilePath: String = "") {
+    case class CommandOptions(firstDate: Option[DateTime] = None, feedName : String = "", secondDate: Option[DateTime] = None,
+                              xmlInputFilePath: String = "", statScriptFilePath: String = "",
+                              otherParams: Option[Map[String, String]] = None) {
       override def toString: String =
         Objects.toStringHelper(this)
           .add("feed_name", feedName)
@@ -161,6 +164,7 @@ object LaunchETLSparkJobExecution extends App{
           .add("secondDate", secondDate)
           .add("xmlFilePath", xmlInputFilePath)
           .add("statScriptFilePath", statScriptFilePath)
+          .add("otherParams", otherParams)
           .toString
     }
     val DatePattern = "yyyy-MM-dd HH:mm:ss"
@@ -169,27 +173,35 @@ object LaunchETLSparkJobExecution extends App{
     val parser = new scopt.OptionParser[CommandOptions]("") {
       opt[String]('e', "etl_feed_name")
         .action((e, f) => f.copy(feedName = e))
-        .text("required Etl feed name.")
+        .text("Required Etl feed name.")
         .required
 
       opt[String]('d', "date")
         .action((fd, c) =>  c.copy(firstDate = if(!fd.trim.isEmpty) Some(dateParser.parseDateTime(fd)) else None))
-        .text("required for all jobs except of hourly jobs or once execution jobs.")
+        .text("Required for all jobs except of hourly jobs or once execution jobs.")
         .optional
 
       opt[String]('s', "second_date")
         .action((sd, c) =>  c.copy(secondDate = if(!sd.trim.isEmpty) Some(dateParser.parseDateTime(sd)) else None))
-        .text("required only in case of date range jobs")
+        .text("Required only in case of date range jobs")
         .optional
 
       opt[String]('x', "xml_file_path")
         .action((xfp, c) => c.copy(xmlInputFilePath = xfp))
-        .text("required xml file path for etl job execution steps.")
+        .text("Required xml file path for etl job execution steps.")
         .required
 
       opt[String]('f', "stat_script_file_path")
         .action((sfp, c) => c.copy(statScriptFilePath = sfp))
-        .text("required stat script file path for etl job result updates.")
+        .text("Required stat script file path for etl job result updates.")
+        .optional
+
+      opt[String]('o', "other_params")
+        .action((op, c) => c.copy(otherParams = Some( op.replace("[", "").
+          replace("]", "").split(",")
+          .map(str => {val temp = str.split("=")
+          (temp(0), temp(1))}).toMap)))
+        .text("Required in-case job requires extra params like mentioned in 'xml' file. Should be of key-value pattern like '[a=b,x=y]'")
         .optional
 
     }
@@ -198,7 +210,7 @@ object LaunchETLSparkJobExecution extends App{
       case Some(opts) =>
         Logger.log.info(s"Going to start the execution of the etl feed job: ")
         var exitCode = -1
-        val etlExecutor = new LaunchETLSparkJobExecution(opts.feedName, opts.firstDate, opts.secondDate, opts.xmlInputFilePath)
+        val etlExecutor = new LaunchETLSparkJobExecution(opts.feedName, opts.firstDate, opts.secondDate, opts.xmlInputFilePath, opts.otherParams)
 
         var metricData = 0L
         val updateFeedStats: UpdateFeedStats = new UpdateFeedStats(opts.feedName, opts.firstDate.getOrElse(DateTime.now))
