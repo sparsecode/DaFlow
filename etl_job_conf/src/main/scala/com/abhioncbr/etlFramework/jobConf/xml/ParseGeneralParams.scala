@@ -1,4 +1,4 @@
-package com.abhioncbr.etlFramework.job_conf.xml
+package com.abhioncbr.etlFramework.jobConf.xml
 
 import com.abhioncbr.etlFramework.commons.common.GeneralParam
 
@@ -7,7 +7,7 @@ object ParseGeneralParams {
     val order = ParseUtil.parseInt((node  \ "@order").text)
     val paramName = (node \ "@name").text
     val paramValue = (node \ "@value").text
-    val paramDefaultValue = (node \ "@default_value").text
+    val paramDefaultValue = (node \ "@defaultValue").text
     GeneralParam(order, paramName, paramValue, paramDefaultValue)
   }
 }

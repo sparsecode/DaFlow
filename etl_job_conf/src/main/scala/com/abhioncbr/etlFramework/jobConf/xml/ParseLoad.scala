@@ -1,4 +1,4 @@
-package com.abhioncbr.etlFramework.job_conf.xml
+package com.abhioncbr.etlFramework.jobConf.xml
 
 import com.abhioncbr.etlFramework.commons.common.file.FilePath
 import com.abhioncbr.etlFramework.commons.load.{Load, LoadType}

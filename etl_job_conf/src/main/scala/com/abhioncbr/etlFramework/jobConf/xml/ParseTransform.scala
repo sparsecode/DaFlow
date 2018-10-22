@@ -1,4 +1,4 @@
-package com.abhioncbr.etlFramework.job_conf.xml
+package com.abhioncbr.etlFramework.jobConf.xml
 
 import com.abhioncbr.etlFramework.commons.transform.{DummyRule, Transform, TransformationRule, TransformationStep}
 
@@ -7,7 +7,7 @@ import scala.collection.immutable.ListMap
 object ParseTransform {
   def fromXML(node: scala.xml.NodeSeq): Transform = {
     val rules = List[DummyRule]((node \ "rule").toList map { s => ParseRule.fromXML(s) }: _*).flatten(dummy => ParseRule.getRules(dummy))
-    Transform(transformationSteps = getTransformationStep(rules), validateTransformedData = ParseUtil.parseBoolean((node \ "validate_transformed_data").text))
+    Transform(transformationSteps = getTransformationStep(rules), validateTransformedData = ParseUtil.parseBoolean((node \ "validateTransformedData").text))
   }
 
   def getTransformationStep(rules: List[TransformationRule]) : List[TransformationStep] ={

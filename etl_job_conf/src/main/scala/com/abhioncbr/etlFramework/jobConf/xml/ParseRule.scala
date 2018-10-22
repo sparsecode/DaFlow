@@ -1,4 +1,4 @@
-package com.abhioncbr.etlFramework.job_conf.xml
+package com.abhioncbr.etlFramework.jobConf.xml
 
 import com.abhioncbr.etlFramework.commons.common.FieldMapping
 import com.abhioncbr.etlFramework.commons.load.PartitionColumnTypeEnum
@@ -41,16 +41,16 @@ object ParseRule {
         val columnValueType = (node \ "@column_value").text
         DummyRule(new AddColumnRule(order, group, columnName, PartitionColumnTypeEnum.getValueType(columnValueType)), null)
 
-      case "MERGE" => val mergeGroup = (node \ "@merge_group").text
+      case "MERGE" => val mergeGroup = (node \ "@mergeGroup").text
         DummyRule(new MergeRule(order, condition, getMergerGroup(mergeGroup).left.get, group), null)
 
       case "PARTITION" => val scope = (node \ "@scope").text
         val subRules: List[DummyRule] = List[DummyRule]((node \ "rule").toList map { s => ParseRule.fromXML(s) }: _*)
         DummyRule(new PartitionRule(order, scope, condition, group), subRules)
 
-      case "SCHEMA_TRANSFORMATION" => val failedFieldLimit = ParseUtil.parseInt((node \ "@failed_field_limit").text)
-        val failedRowLimit = ParseUtil.parseInt((node \ "@failed_row_limit").text)
-        val mappings = List[FieldMapping]((node \ "field_mapping").toList map { s => ParseFieldMapping.fromXML(s) }: _*)
+      case "SCHEMA_TRANSFORMATION" => val failedFieldLimit = ParseUtil.parseInt((node \ "@failedFieldLimit").text)
+        val failedRowLimit = ParseUtil.parseInt((node \ "@failedRowLimit").text)
+        val mappings = List[FieldMapping]((node \ "fieldMapping").toList map { s => ParseFieldMapping.fromXML(s) }: _*)
         DummyRule(new SchemaTransformationRule(order, condition, group, mappings, failedFieldLimit, failedRowLimit), null)
 
     }

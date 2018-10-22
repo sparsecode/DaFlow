@@ -1,24 +1,21 @@
 <?xml version="1.0"?>
-<?xml-stylesheet type="text/css" href="xmlpartsstyle.css"?>
-<etl_job xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../etl_job_conf/etl_feed_job.xsd">
-    <job_static_param>
-        <feed_name>{hourly_feed_name}</feed_name>
-        <frequency>ONCE</frequency>
-        <publish_stats>false</publish_stats>
-    </job_static_param>
+<etlJob xmlns="uri:etlFramework:workflow:0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="uri:etlFramework:workflow:0.1 ../../etl_job_conf/etl_feed_job.xsd">
+    <jobStaticParam jobName="json_example" frequency="ONCE" publishStats="false"/>
 
     <extract>
-        <feed>
-            <feed_name>json_data</feed_name>
-            <type>JSON</type>
-            <data_path>
-                <initial_path>/Users/abhisheksharma/work/github-proj/etl-framework/etl_examples/sample_data</initial_path>
-                <file_name>
-                    <file_prefix>json_data</file_prefix>
-                    <File_suffix>json</File_suffix>
-                </file_name>
-            </data_path>
-            <validate_extracted_data>false</validate_extracted_data>
+        <feed name="json_data" validateExtractedData="false">
+            <fileSystem fileType="JSON">
+                <dataPath>
+                    <pathPattern>
+                        <initialPath>/Users/abhisheksharma/work/github-proj/etl-framework/etl_examples/sample_data</initialPath>
+                        <fileName>
+                            <prefix>json_data</prefix>
+                            <suffix>json</suffix>
+                        </fileName>
+                    </pathPattern>
+                </dataPath>
+            </fileSystem>
         </feed>
     </extract>
 
@@ -26,12 +23,21 @@
         <rule order="1" type="SELECT" group='1'>
             <condition>test_string2</condition>
         </rule>
-        <validate_transformed_data>false</validate_transformed_data>
+
+        <rule type="SELECT" order="2" group="1">
+            <condition>test_string2</condition>
+        </rule>
+
+        <validateTransformedData>false</validateTransformedData>
     </transform>
 
     <load>
-        <type>FILE_SYSTEM</type>
-        <file_type>JSON</file_type>
-        <file_initial_path>/Users/abhisheksharma/work/github-proj/etl-framework/etl_examples/sample_data/etl-frwrk_result/</file_initial_path>
+        <feed name="json_data">
+            <fileSystem fileType="JSON">
+                <dataPath>
+                    <path>/Users/abhisheksharma/work/github-proj/etl-framework/etl_examples/sample_data/etl-frwrk_result/</path>
+                </dataPath>
+            </fileSystem>
+        </feed>
     </load>
-</etl_job>
+</etlJob>

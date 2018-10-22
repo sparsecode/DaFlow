@@ -3,13 +3,16 @@ package com.abhioncbr.etlFramework.etl_feed.loadData
 import java.text.DecimalFormat
 
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{FIRST_DATE, JOB_STATIC_PARAM, LOAD, SQL_CONTEXT}
-import com.abhioncbr.etlFramework.commons.{Context, Logger}
+import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.job.JobStaticParam
 import com.abhioncbr.etlFramework.commons.load.{Load, PartitionColumnTypeEnum}
+import com.abhioncbr.etlFramework.commons.util.FileUtil
+import com.typesafe.scalalogging.Logger
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 import org.joda.time.DateTime
 
 class LoadDataIntoHive extends LoadData {
+  private val logger = Logger(this.getClass)
   private val sqlContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
 
   private val processFrequency = Context.getContextualObject[JobStaticParam](JOB_STATIC_PARAM).processFrequency
@@ -18,7 +21,7 @@ class LoadDataIntoHive extends LoadData {
   private val tableName = load.tableName
   private val databaseName = load.dbName
   private val partData = load.partData
-  private val hiveTableDataInitialPath = load.partData.partitionFileInitialPath
+  private val hiveTableDataInitialPath = FileUtil.getFilePathString(load.partData.dataPath)
 
   def loadTransformedData(dataFrame: DataFrame,
                           date: Option[DateTime]=Context.getContextualObject[Option[DateTime]](FIRST_DATE)): Either[Boolean, String] = {
@@ -29,7 +32,7 @@ class LoadDataIntoHive extends LoadData {
 
     var output = false
     try{
-      Logger.log.info(s"Writing $processFrequency dataFrame for table $tableName to HDFS ($path). Total number of data rows saved: ${dataFrame.count}")
+      logger.info(s"Writing $processFrequency dataFrame for table $tableName to HDFS ($path). Total number of data rows saved: ${dataFrame.count}")
 
       val fileType = load.fileType
 
@@ -48,7 +51,7 @@ class LoadDataIntoHive extends LoadData {
       }
 
       val partitioningString = PartitionColumnTypeEnum.getPartitioningString(partData)
-      Logger.log.info(s"partitioning string - $partitioningString")
+      logger.info(s"partitioning string - $partitioningString")
 
       sqlContext.sql(
         s"""
@@ -58,7 +61,7 @@ class LoadDataIntoHive extends LoadData {
          """.stripMargin)
       output = true
 
-      Logger.log.info(s"Partition at ($path) registered successfully to $databaseName.$tableName")
+      logger.info(s"Partition at ($path) registered successfully to $databaseName.$tableName")
     }
     Left(output)
   }

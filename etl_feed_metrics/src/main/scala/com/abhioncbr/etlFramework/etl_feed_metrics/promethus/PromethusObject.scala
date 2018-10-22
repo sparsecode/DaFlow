@@ -1,12 +1,13 @@
 package com.abhioncbr.etlFramework.etl_feed_metrics.promethus
 
-import com.abhioncbr.etlFramework.commons.Logger
+import com.typesafe.scalalogging.Logger
 import io.prometheus.client.exporter.PushGateway
 import io.prometheus.client.{CollectorRegistry, Gauge}
 
 import scala.util.{Failure, Success, Try}
 
 class PromethusObject(feedName: String) {
+  private val logger = Logger(this.getClass)
 
   @transient lazy val feedDataStatGauge = Gauge.build()
     .name(feedName.replace("-","_"))
@@ -22,7 +23,7 @@ class PromethusObject(feedName: String) {
 
     Try(pushGateway.push(CollectorRegistry.defaultRegistry, s"${MetricsJobName.replace("-","_")}")) match {
       case Success(u: Unit) => true
-      case Failure(th: Throwable) => Logger.log.info(s"Unable to push metrics. Got an exception ${th.getStackTrace} ")
+      case Failure(th: Throwable) => logger.info(s"Unable to push metrics. Got an exception ${th.getStackTrace} ")
     }
   }
 

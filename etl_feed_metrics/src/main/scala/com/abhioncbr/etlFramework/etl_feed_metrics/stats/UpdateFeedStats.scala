@@ -5,7 +5,7 @@ import java.text.DecimalFormat
 import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{JOB_STATIC_PARAM, SPARK_CONTEXT, SQL_CONTEXT}
 import com.abhioncbr.etlFramework.commons.job.JobStaticParam
-import com.abhioncbr.etlFramework.commons.Logger
+import com.typesafe.scalalogging.Logger
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.SparkContext
@@ -15,6 +15,7 @@ import org.joda.time.DateTime
 import scala.util.Try
 
 class UpdateFeedStats(feed_name: String, firstDate: DateTime = DateTime.now) {
+  private val logger = Logger(this.getClass)
 
   //function for updating etl_feed_stat table through shell script. For airflow-docker image usage, we are going to use other function.
   @deprecated
@@ -29,7 +30,7 @@ class UpdateFeedStats(feed_name: String, firstDate: DateTime = DateTime.now) {
       s"""sh $statScriptPath ${jobStaticParam.feedName} $feed_name $status ${jobStaticParam.processFrequency.toString.toLowerCase}
          |   ${firstDate.toString(DatePattern)} ${new DecimalFormat("00").format(firstDate.getHourOfDay)}
          |   $validated $nonValidated $executionTime $transformed $nonTransformed $reason""".stripMargin
-    Logger.log.info(s"""going to execute command: $shellCommand""")
+    logger.info(s"""going to execute command: $shellCommand""")
 
     import sys.process._
     shellCommand.!
@@ -47,7 +48,7 @@ class UpdateFeedStats(feed_name: String, firstDate: DateTime = DateTime.now) {
       s"""sh $statScriptPath ${jobStaticParam.feedName} $subTask $status ${jobStaticParam.processFrequency.toString.toLowerCase}
          |   ${firstDate.toString(DatePattern)} ${new DecimalFormat("00").format(firstDate.getHourOfDay)}
          |   $validated $nonValidated $executionTime $transformed $nonTransformed $reason""".stripMargin
-    Logger.log.info(s"""going to execute command: $shellCommand""")
+    logger.info(s"""going to execute command: $shellCommand""")
 
     import sys.process._
     shellCommand.!

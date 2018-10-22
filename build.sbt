@@ -41,8 +41,6 @@ libraryDependencies in ThisBuild ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.1.7",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
 
-  "com.chuusai" %% "shapeless" % "2.3.3",
-
   "mysql" % "mysql-connector-java" % "5.1.25"
 )
 
@@ -65,12 +63,12 @@ lazy val etl_feed = project.in(file("etl_feed"))
 lazy val etl_sql_parser = project.in(file("etl_sql_parser"))
   .settings(etl_framework_common_settings: _*)
 
-lazy val etl_job_conf = project.in(file("etl_job_conf"))
-  .dependsOn("etl_commons").aggregate("etl_commons")
-  .settings(etl_framework_common_settings: _*)
-
 lazy val etl_commons = project.in(file("etl_commons"))
   .dependsOn("etl_sql_parser").aggregate("etl_sql_parser")
+  .settings(etl_framework_common_settings: _*)
+
+lazy val etl_job_conf = project.in(file("etl_job_conf"))
+  .dependsOn(etl_commons % "compile->compile;test->test").aggregate("etl_commons")
   .settings(etl_framework_common_settings: _*)
 
 lazy val etl_feed_metrics = project.in(file("etl_feed_metrics"))

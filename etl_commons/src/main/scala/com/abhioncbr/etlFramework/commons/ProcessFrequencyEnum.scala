@@ -13,6 +13,7 @@ object ProcessFrequencyEnum extends Enumeration {
       case "MONTHLY" => ProcessFrequencyEnum.MONTHLY
       case "YEARLY" => ProcessFrequencyEnum.YEARLY
       case "DATE_RANGE"  => ProcessFrequencyEnum.DATE_RANGE
+      case _ =>   throw new RuntimeException(s"'$frequencyString', process frequency not supported.")
     }
     processFrequencyEnum
   }
