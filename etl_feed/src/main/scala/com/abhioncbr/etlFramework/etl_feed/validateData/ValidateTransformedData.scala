@@ -3,12 +3,14 @@ package com.abhioncbr.etlFramework.etl_feed.validateData
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.load.Load
 import com.abhioncbr.etlFramework.commons.transform.TransformUtil
-import com.abhioncbr.etlFramework.commons.{Context, Logger}
+import com.abhioncbr.etlFramework.commons.Context
+import com.typesafe.scalalogging.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 
 class ValidateTransformedData extends ValidateData {
+  private val logger = Logger(this.getClass)
   private val sparkContext: SparkContext = Context.getContextualObject[SparkContext](SPARK_CONTEXT)
   private val sqlContext: SQLContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
 
@@ -18,7 +20,7 @@ class ValidateTransformedData extends ValidateData {
   val partitionColumns: List[String] = Context.getContextualObject[Load](LOAD).partData.partitionColumns.map(column => column.columnName)
 
   def validateSchema(dataFrame: DataFrame): (Boolean, Option[StructType], Option[StructType]) = {
-    Logger.log.info("Validating data frame schema and hive table schema")
+    logger.info("Validating data frame schema and hive table schema")
 
     val dataFrameSchema = dataFrame.schema
 
@@ -32,7 +34,7 @@ class ValidateTransformedData extends ValidateData {
   }
 
   def validateData(dataFrame: DataFrame, structType: StructType, first: Any, second: Any): Array[(DataFrame, DataFrame, Any, Any)] ={
-    Logger.log.info("Validating data frame row schema and hive table schema")
+    logger.info("Validating data frame row schema and hive table schema")
 
     //val temp1 = dataFrame.collect
     //val temp = temp1.partition(row => compareSchema( row, structType))

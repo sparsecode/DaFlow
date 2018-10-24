@@ -2,10 +2,11 @@ package com.abhioncbr.etlFramework.etl_feed.transformData
 
 import com.abhioncbr.etlFramework.commons.transform.Transform
 import com.abhioncbr.etlFramework.commons.transform.TransformationResult
-import com.abhioncbr.etlFramework.commons.Logger
+import com.typesafe.scalalogging.Logger
 import org.apache.spark.sql.DataFrame
 
 class TransformData(transform : Transform) {
+  private val logger = Logger(this.getClass)
 
   def performTransformation(rawDataFrame: DataFrame): Either[Array[TransformationResult], String] = {
     val steps = transform.transformationSteps
@@ -19,9 +20,9 @@ class TransformData(transform : Transform) {
         case Left(b) =>
           stepOutput = Array()
           step.getRules.zipWithIndex.foreach(rule => {
-            Logger.log.info(s"step order: ${step.getOrder}, rule: $rule - checking condition")
+            logger.info(s"step order: ${step.getOrder}, rule: $rule - checking condition")
             if (rule._1._2.condition(step.getInputData)) {
-              Logger.log.info(s"step order: ${step.getOrder}, rule: $rule - executing")
+              logger.info(s"step order: ${step.getOrder}, rule: $rule - executing")
               rule._1._2.execute(step.getInputData) match {
                 case Left(array) => stepOutput = stepOutput ++ array
                 case Right(s) => return Right(s)

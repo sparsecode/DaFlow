@@ -1,6 +1,6 @@
 package com.abhioncbr.etlFramework.etl_feed
 
-import com.abhioncbr.etlFramework.commons.{Context, Logger}
+import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.extract.{Extract, ExtractionType}
 import com.abhioncbr.etlFramework.commons.job.JobStaticParam
@@ -11,10 +11,11 @@ import com.abhioncbr.etlFramework.etl_feed.loadData.{LoadDataIntoFileSystem, Loa
 import com.google.common.base.Objects
 import com.abhioncbr.etlFramework.etl_feed.transformData.TransformData
 import com.abhioncbr.etlFramework.etl_feed_metrics.stats.UpdateFeedStats
-import com.abhioncbr.etlFramework.job_conf.xml.ParseETLJobXml
+import com.abhioncbr.etlFramework.jobConf.xml.ParseETLJobXml
 import org.apache.hadoop.conf.Configuration
 import com.abhioncbr.etlFramework.etl_feed_metrics.stats.JobResult
 import com.abhioncbr.etlFramework.etl_feed.validateData.ValidateTransformedData
+import com.typesafe.scalalogging.Logger
 import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import org.apache.spark.SparkContext
 import org.joda.time.DateTime
@@ -24,6 +25,7 @@ import scala.xml.XML
 
 class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], secondDate: Option[DateTime],
                                  xmlInputFilePath: String, otherParams: Option[Map[String, String]]){
+  private val logger = Logger(this.getClass)
 
   def configureFeedJob: Either[Boolean, String] ={
     Context.addContextualObject[Option[DateTime]](FIRST_DATE, firstDate)
@@ -38,17 +40,17 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
           Context.addContextualObject[Extract] (EXTRACT, tuple._2)
           Context.addContextualObject[Transform] (TRANSFORM, tuple._3)
           Context.addContextualObject[Load] (LOAD, tuple._4)
-        case Right(parseError) => Logger.log.error(parseError)
+        case Right(parseError) => logger.error(parseError)
           return Right(parseError)
       }
-      case Right(xmlLoadError) => Logger.log.error(xmlLoadError)
+      case Right(xmlLoadError) => logger.error(xmlLoadError)
         return Right(xmlLoadError)
     }
 
     val appName = s"etl-$feedName"
     val sparkSession: SparkSession = SparkSession.builder().appName(appName).getOrCreate()
     Context.addContextualObject[Option[Map[String,String]]](OTHER_PARAM, otherParams)
-    Context.addContextualObject[Configuration](HADOOP_CONF, new Configuration)
+    Context.addContextualObject[Configuration](HADOOP_CONF, sparkSession.sparkContext.hadoopConfiguration)
     Context.addContextualObject[SparkContext](SPARK_CONTEXT, sparkSession.sparkContext)
     Context.addContextualObject[SQLContext](SQL_CONTEXT, sparkSession.sqlContext)
 
@@ -58,13 +60,13 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
   def executeFeedJob: Either[Array[JobResult], String]={
     val extractionResult = extract(0)
     if(extractionResult.isRight) return Right(extractionResult.right.get)
-    Logger.log.info("Extraction phase of the feed is completed")
+    logger.info("Extraction phase of the feed is completed")
 
     //TODO: validate extracted data based on condition & boolean operator.
 
     val transformedResult = transformation(extractionResult.left.get)
     if(transformedResult.isRight) return Right(transformedResult.right.get)
-    Logger.log.info("Transformation phase of the feed is completed")
+    logger.info("Transformation phase of the feed is completed")
 
     // validating transformed data, if it is configured to be validated.
     val validateTransformedData: Boolean  = Context.getContextualObject[Transform](TRANSFORM).validateTransformedData
@@ -74,12 +76,12 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
       Left(transformedResult.left.get.map(array => (array.resultDF, null, array.resultInfo1, array.resultInfo1)))
     }
     if(validateResult.isRight) return Right(validateResult.right.get)
-    if(validateTransformedData) Logger.log.info("Validation phase of the feed is completed")
+    if(validateTransformedData) logger.info("Validation phase of the feed is completed")
 
     // loading the transformed data.
     val loadResult = load(validateResult.left.get)
     if(loadResult.isRight) return Right(validateResult.right.get)
-    Logger.log.info ("Load phase of the feed is completed")
+    logger.info ("Load phase of the feed is completed")
 
     Left(loadResult.left.get)
   }
@@ -112,10 +114,10 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
       if(validateSchemaResult._1) {
         output = output ++ validator.validateData(arrayElement.resultDF, validateSchemaResult._2.get, arrayElement.resultInfo1, arrayElement.resultInfo2)
       } else { validateSchemaResult._2 match {
-          case Some(_2) => Logger.log.error("hive table schema & data frame schema does not match. Below are schemas for reference -")
-            Logger.log.error(s"table schema:: ${_2.mkString}")
-            Logger.log.error(s"data frame schema:: ${validateSchemaResult._3.get.mkString}")
-          case None => Logger.log.error(s"provided hive table does not exist.")}
+          case Some(_2) => logger.error("hive table schema & data frame schema does not match. Below are schemas for reference -")
+            logger.error(s"table schema:: ${_2.mkString}")
+            logger.error(s"data frame schema:: ${validateSchemaResult._3.get.mkString}")
+          case None => logger.error(s"provided hive table does not exist.")}
           return Right("Validation failed. Please check the log.")
       }
     })
@@ -152,7 +154,7 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
 }
 
 object LaunchETLSparkJobExecution extends App{
-
+  private val logger = Logger(this.getClass)
   def launch(args: Array[String]): Unit = {
     case class CommandOptions(firstDate: Option[DateTime] = None, feedName : String = "", secondDate: Option[DateTime] = None,
                               xmlInputFilePath: String = "", statScriptFilePath: String = "",
@@ -208,7 +210,7 @@ object LaunchETLSparkJobExecution extends App{
 
     parser.parse(args, CommandOptions()) match {
       case Some(opts) =>
-        Logger.log.info(s"Going to start the execution of the etl feed job: ")
+        logger.info(s"Going to start the execution of the etl feed job: ")
         var exitCode = -1
         val etlExecutor = new LaunchETLSparkJobExecution(opts.feedName, opts.firstDate, opts.secondDate, opts.xmlInputFilePath, opts.otherParams)
 
@@ -229,16 +231,16 @@ object LaunchETLSparkJobExecution extends App{
                 println("job complete.")
               //else
               case Right(s) => updateFeedStats.updateFeedStat(opts.statScriptFilePath, "", 0, 0, end - start, "fail", 0, 0, s)
-                Logger.log.error(s)
+                logger.error(s)
             }
           case Right(s) => updateFeedStats.updateFeedStat(opts.statScriptFilePath, "", 0, 0, 0, "fail", 0, 0, s)
-            Logger.log.error(s)
+            logger.error(s)
         }
 
         //TODO: Promethus push metrics, commented in refactoring [will be triggered based on job static param]
         //pushMetrics(opts.feedName)
 
-        Logger.log.info(s"Etl job finish with exit code: $exitCode")
+        logger.info(s"Etl job finish with exit code: $exitCode")
         System.exit(exitCode)
       case None =>
         parser.showTryHelp()

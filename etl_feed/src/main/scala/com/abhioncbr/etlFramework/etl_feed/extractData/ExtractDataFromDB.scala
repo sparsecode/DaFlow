@@ -6,23 +6,24 @@ import java.util.Properties
 import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.extract.Feed
-import com.abhioncbr.etlFramework.commons.Logger
 import com.abhioncbr.etlFramework.commons.common.GeneralParam
-import com.abhioncbr.etlFramework.commons.common.query.{Query, QueryParamTypeEnum}
+import com.abhioncbr.etlFramework.commons.common.query.{QueryObject, QueryParamTypeEnum}
 import com.abhioncbr.etlFramework.commons.util.FileUtil
+import com.typesafe.scalalogging.Logger
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.{DataFrame, SQLContext}
 
 class ExtractDataFromDB(feed: Feed) extends AbstractExtractData{
-  val query: Option[Query] = feed.query
+  private val logger = Logger(this.getClass)
+  val query: Option[QueryObject] = feed.query
 
   def getRawData: DataFrame = {
     lazy val fs = FileSystem.get(new Configuration())
 
     //reading database properties from property file.
     val propertyFilePath = FileUtil.getFilePathString(query.get.queryFile.configurationFile.get)
-    Logger.log.info(s"db property file path: $propertyFilePath")
+    logger.info(s"db property file path: $propertyFilePath")
 
     val connectionProps = new Properties()
     connectionProps.load(fs.open(new Path(propertyFilePath)))
@@ -37,7 +38,7 @@ class ExtractDataFromDB(feed: Feed) extends AbstractExtractData{
     val queryParams = QueryParamTypeEnum.getParamsValue(sqlQueryParams.toList)
     println("query param values" + queryParams.mkString(" , "))
     val tableQuery = String.format(rawQuery, queryParams:_*)
-    Logger.log.info(s"going to execute jdbc query  \\n: $tableQuery")
+    logger.info(s"going to execute jdbc query  \\n: $tableQuery")
 
     val sqlContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
     sqlContext.read.jdbc(url = dbUri, table = tableQuery, properties = connectionProps)

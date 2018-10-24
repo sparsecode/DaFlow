@@ -1,4 +1,4 @@
-package com.abhioncbr.etlFramework.job_conf.xml
+package com.abhioncbr.etlFramework.jobConf.xml
 
 import java.io._
 
@@ -13,7 +13,7 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 
 object ETLJob{
   def fromXML(node: scala.xml.NodeSeq): ETLJob = {
-      new ETLJob(ParseJobStaticParam.fromXML(node \ "job_static_param"),
+      new ETLJob(ParseJobStaticParam.fromXML(node \ "jobStaticParam"),
         ParseExtractConf.fromXML(node \ "extract"),
         ParseTransform.fromXML(node \ "transform"),
         ParseLoad.fromXML(node \ "load")
@@ -46,8 +46,8 @@ class ParseETLJobXml {
   def parseNode(node: scala.xml.Node): Either[(JobStaticParam, Extract, Transform, Load), String] ={
     val trimmedNode = scala.xml.Utility.trim(node)
     val etlJob = trimmedNode match {
-      case <etl_job>{ children @ _* }</etl_job> => ETLJob.fromXML(trimmedNode)
-      case _ => return Right(s"Unknown entity found instead of '<etl_job>'")
+      case <etlJob>{ children @ _* }</etlJob> => ETLJob.fromXML(trimmedNode)
+      case _ => return Right(s"Unknown entity found instead of '<etlJob>'")
     }
     Left((etlJob.jobStaticParam, etlJob.extract, etlJob.transform, etlJob.load))
   }

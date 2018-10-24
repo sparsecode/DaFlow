@@ -1,51 +1,54 @@
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/css" href="xmlpartsstyle.css"?>
-<etl_job xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../etl_job_conf/etl_feed_job.xsd">
-    <job_static_param>
-        <feed_name>{etl-feed-name}</feed_name>
-        <frequency>HOURLY</frequency>
-    </job_static_param>
+<etlJob xmlns="uri:etlFramework:workflow:0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="uri:etlFramework:workflow:0.1 ../../etl_job_conf/etl_feed_job.xsd">
+    <jobStaticParam jobName="job-name" frequency="DAILY" publishStats="false">
+        <otherParams>
+            <param order="1" name="param1" value="value1" defaultValue="value1"/>
+            <param order="2" name="param2" value="value2" defaultValue="value2"/>
+        </otherParams>
+    </jobStaticParam>
 
     <extract>
-        <type>JSON</type>
-        <format_file_name>true</format_file_name>
-        <file_initial_path>{file-path-suffix}</file_initial_path>
-        <file_name_pattern>{file-name or file-name-regex}</file_name_pattern>
+        <feed feedName="json_data" validateExtractedData="false">
+            <fileSystem fileType="JSON">
+                <dataPath>
+                    <pathPattern>
+                        <initialPath>{json-file-path-suffix}</initialPath>
+                        <fileName>
+                            <prefix>json_data</prefix>
+                            <suffix>json</suffix>
+                        </fileName>
+                    </pathPattern>
+                </dataPath>
+            </fileSystem>
+        </feed>
     </extract>
 
     <transform>
         <rule order='1' type='PARTITION' group='1' scope="MERGE"><condition>{col1} is not null</condition></rule>
 
         <rule order='2' type='EXPLODE' group='11'><condition>{cond2}</condition></rule>
-        <rule order='2' type='SCHEMA_TRANSFORMATION' group='12' failed_field_limit="40" failed_row_limit="50">
-            <field_mapping source_name="{timestamp}" target_name="{client_timestamp}"/>
+        <rule order='2' type='SCHEMA_TRANSFORMATION' group='12' failedFieldLimit="40" failedRowLimit="50">
+            <fieldMapping sourceName="{timestamp}" targetName="{client_timestamp}"/>
         </rule>
 
-        <rule order='3' type='SCHEMA_TRANSFORMATION' group='11' failed_field_limit="40" failed_row_limit="50">
+        <rule order='3' type='SCHEMA_TRANSFORMATION' group='11' failedFieldLimit="40" failedRowLimit="50">
             <condition>records.value</condition>
-            <field_mapping source_name="{timestamp}" target_name="{client_timestamp}"/>
+            <fieldMapping sourceName="{timestamp}" targetName="{client_timestamp}"/>
         </rule>
         <rule order='3' type='NIL' group='12'/>
 
-        <rule order='4' type='MERGE' group='1' merge_group='11,12'/>
+        <rule order='4' type='MERGE' group='1' mergeGroup='11,12'/>
     </transform>
 
     <load>
-        <type>HIVE</type>
-        <db_name>{db-name}</db_name>
-        <task>{load-task-name}</task>
-        <table_name>{table-name}</table_name>
-        <file_type>PARQUET</file_type>
-        <partition_data>
-            <coalesce_partition>false</coalesce_partition>
-            <overwrite_partition>true</overwrite_partition>
-            <partition_file_initial_path>{partition-file-path-initial}</partition_file_initial_path>
-            <partition_columns>
-                <column name="{year}" value="YEAR"/>
-                <column name="{month}" value="MONTH"/>
-                <column name="{day}" value="DAY"/>
-                <column name="{hour}" value="HOUR"/>
-            </partition_columns>
-        </partition_data>
+        <feed name="json_data">
+            <fileSystem fileType="JSON">
+                <dataPath>
+                    <path>/Users/abhisheksharma/work/github-proj/etl-framework/etl_examples/sample_data/etl-frwrk_result/</path>
+                </dataPath>
+            </fileSystem>
+        </feed>
     </load>
-</etl_job>
+</etlJob>

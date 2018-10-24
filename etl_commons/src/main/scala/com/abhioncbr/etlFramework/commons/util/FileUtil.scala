@@ -1,19 +1,18 @@
 package com.abhioncbr.etlFramework.commons.util
 
-import java.nio.file.{Path, Paths}
+
 import java.text.DecimalFormat
 
-import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{JOB_STATIC_PARAM, OTHER_PARAM}
+import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{HADOOP_CONF, JOB_STATIC_PARAM, OTHER_PARAM}
 import com.abhioncbr.etlFramework.commons.common.GeneralParam
 import com.abhioncbr.etlFramework.commons.common.file.{FileNameParam, FilePath, PathInfixParam}
 import com.abhioncbr.etlFramework.commons.job.JobStaticParam
-import com.abhioncbr.etlFramework.commons.{Context, ProcessFrequencyEnum}
+import com.abhioncbr.etlFramework.commons.{Context, NotificationMessages, ProcessFrequencyEnum}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.joda.time.{DateTime, Days, DurationFieldType}
 
 object FileUtil {
-  val processFrequency: ProcessFrequencyEnum.frequencyType = Context.getContextualObject[JobStaticParam](JOB_STATIC_PARAM).processFrequency
-
-
   def getFilePathString(filePath: FilePath): String = {
     val pathPrefixString = filePath.pathPrefix.getOrElse("")
     val groupsString = getInfixPathString[Array[PathInfixParam]](filePath.groupPatterns)
@@ -22,16 +21,26 @@ object FileUtil {
     s"""$pathPrefixString$groupsString$feedString$fileNameString"""
   }
 
-  def getFilePathObject(filePathString: String): FilePath = {
-    val parsedPath: Path = Paths.get(filePathString)
-    val pathPrefix = parsedPath.getParent.toString
-    FilePath(Some(pathPrefix),
-      fileName = Some(parseFileName(parsedPath.getFileName.toString, parsedPath.getFileSystem.getSeparator)))
+  def getFilePathObject(filePathString: String, fileNameSeparator: String = "."): Either[FilePath, String]= {
+    val conf = Context.getContextualObject[Configuration](HADOOP_CONF)
+
+    try {
+      val path: Path = new Path(filePathString)
+      val fileSystem: FileSystem = path.getFileSystem(conf)
+      if (fileSystem.exists(path)) {
+        val pathPrefix = path.getParent.toString
+        val filePath = FilePath(Some(pathPrefix), fileName = Some(parseFileName(path.getName, fileNameSeparator)))
+        return Left(filePath)
+      }
+      Right(NotificationMessages.fileNotExist(filePathString))
+    } catch {
+      case ex: Exception => Right(ex.getMessage)
+    }
   }
 
-  private def parseFileName(rawFileName: String, separator: String): FileNameParam ={
-    val nameParts: Array[String] = rawFileName.split(separator)
-    FileNameParam(Some(nameParts(0)), Some(nameParts(1)), Some(separator))
+  private def parseFileName(rawFileName: String, fileNameSeparator: String = "."): FileNameParam ={
+    val nameParts: Array[String] = rawFileName.split(s"[$fileNameSeparator]")
+    FileNameParam(Some(nameParts(0)), Some(nameParts(1)), Some(fileNameSeparator))
   }
 
   private def getFormattedString(pattern: String, args: Option[Array[String]]): String = String.format(pattern, args.get:_*)
@@ -65,6 +74,7 @@ object FileUtil {
 
 
   private def getProcessFrequencyPattern(firstDate: Option[DateTime], secondDate: Option[DateTime]): String = {
+    val processFrequency: ProcessFrequencyEnum.frequencyType = Context.getContextualObject[JobStaticParam](JOB_STATIC_PARAM).processFrequency
     import com.abhioncbr.etlFramework.commons.ProcessFrequencyEnum._
     processFrequency match {
       case ONCE => ""
