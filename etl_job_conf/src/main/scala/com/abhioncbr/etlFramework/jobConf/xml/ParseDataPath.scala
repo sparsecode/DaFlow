@@ -1,6 +1,5 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.common.GeneralParam
 import com.abhioncbr.etlFramework.commons.common.file.{FileNameParam, FilePath, PathInfixParam}
 import com.typesafe.scalalogging.Logger
 
@@ -35,7 +34,7 @@ object ParseGroupPatterns {
     val pathInfixParam : PathInfixParam = PathInfixParam(order = Some(ParseUtil.parseInt((node \ "order").text)),
       infixPattern= (node \ "groupNamePattern").text,
       formatInfix = Some(ParseUtil.parseBoolean((node \ "formatGroupName").text)),
-      formatInfixArgs = Some(Array[GeneralParam]((node \ "formatArgValues" \ "param").toList map { s => ParseGeneralParams.fromXML(s) }: _*)))
+      formatInfixArgs = Some(ParseGeneralParams.fromXML(node, nodeTag= "formatArgValues")))
     pathInfixParam
   }
 }
@@ -44,20 +43,15 @@ object ParseFeedPattern {
   def fromXML(node: scala.xml.NodeSeq): PathInfixParam = {
     val pathInfixParam : PathInfixParam = PathInfixParam( infixPattern= (node \ "feedNamePattern").text,
       formatInfix = Some(ParseUtil.parseBoolean((node \ "formatFeedName").text)),
-      formatInfixArgs = Some(Array[GeneralParam]((node \ "formatArgValues" \ "param").toList map { s => ParseGeneralParams.fromXML(s) }: _*)))
+      formatInfixArgs = Some(ParseGeneralParams.fromXML(node, nodeTag= "formatArgValues")))
     pathInfixParam
   }
 }
 
 object ParseFileName {
   def fromXML(node: scala.xml.NodeSeq): FileNameParam = {
-    val fileName: FileNameParam = FileNameParam(fileNamePrefix = Some((node \ "prefix").text),
-      fileNameSuffix = Some((node \ "suffix").text), fileNameSeparator = getFileSeparator((node \ "separator").text) )
+    val fileName: FileNameParam = FileNameParam(fileNamePrefix = ParseUtil.parseNodeText(node \ "prefix"),
+      fileNameSuffix = ParseUtil.parseNodeText(node \ "suffix"), fileNameSeparator = ParseUtil.parseNodeText(node \ "separator", Some(".")))
       fileName
    }
-
-  private def getFileSeparator(text: String) : Option[String] = text match {
-    case "" => Some(".")
-    case _ => Some(text)
-  }
 }

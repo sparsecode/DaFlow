@@ -27,7 +27,7 @@ class UpdateFeedStats(feed_name: String, firstDate: DateTime = DateTime.now) {
     val reason = if (failureReason.isEmpty) "None" else s""" "${failureReason.split("[ ]").mkString("_")}" """.trim
 
     val shellCommand =
-      s"""sh $statScriptPath ${jobStaticParam.feedName} $feed_name $status ${jobStaticParam.processFrequency.toString.toLowerCase}
+      s"""sh $statScriptPath ${jobStaticParam.jobName} $feed_name $status ${jobStaticParam.processFrequency.toString.toLowerCase}
          |   ${firstDate.toString(DatePattern)} ${new DecimalFormat("00").format(firstDate.getHourOfDay)}
          |   $validated $nonValidated $executionTime $transformed $nonTransformed $reason""".stripMargin
     logger.info(s"""going to execute command: $shellCommand""")
@@ -42,10 +42,10 @@ class UpdateFeedStats(feed_name: String, firstDate: DateTime = DateTime.now) {
     val DatePattern = "yyyy-MM-dd"
 
     val reason = if (failureReason.isEmpty) "None" else s""" "${failureReason.split("[ ]").mkString("_")}" """.trim
-    val subTask = if (jobSubtask.isEmpty) jobStaticParam.feedName else jobSubtask
+    val subTask = if (jobSubtask.isEmpty) jobStaticParam.jobName else jobSubtask
 
     val shellCommand =
-      s"""sh $statScriptPath ${jobStaticParam.feedName} $subTask $status ${jobStaticParam.processFrequency.toString.toLowerCase}
+      s"""sh $statScriptPath ${jobStaticParam.jobName} $subTask $status ${jobStaticParam.processFrequency.toString.toLowerCase}
          |   ${firstDate.toString(DatePattern)} ${new DecimalFormat("00").format(firstDate.getHourOfDay)}
          |   $validated $nonValidated $executionTime $transformed $nonTransformed $reason""".stripMargin
     logger.info(s"""going to execute command: $shellCommand""")
@@ -63,15 +63,15 @@ class UpdateFeedStats(feed_name: String, firstDate: DateTime = DateTime.now) {
 
     val sc: SparkContext = Context.getContextualObject[SparkContext](SPARK_CONTEXT)
     val rdd = sc.parallelize(Seq(Seq(feed_name, status, jobStaticParam.processFrequency.toString.toLowerCase, new java.sql.Date(firstDate.getMillis), new DecimalFormat("00").format(firstDate.getHourOfDay),
-      reason, transformed , nonTransformed, validated, nonValidated, executionTime, jobStaticParam.feedName)))
+      reason, transformed , nonTransformed, validated, nonValidated, executionTime, jobStaticParam.jobName)))
     val rowRdd = rdd.map(v => org.apache.spark.sql.Row(v: _*))
 
     val sqlContext: SQLContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
-    val statDF = sqlContext.sql(s"""select * from $hiveDbName.$tableName where job_name='${jobStaticParam.feedName}'""".stripMargin)
+    val statDF = sqlContext.sql(s"""select * from $hiveDbName.$tableName where job_name='${jobStaticParam.jobName}'""".stripMargin)
     val newRow = sqlContext.createDataFrame(rowRdd, statDF.schema)
     val updatedStatDF = statDF.union(newRow)
 
-    val path = s"$pathInitial/$hiveDbName/$tableName/${jobStaticParam.feedName}/"
+    val path = s"$pathInitial/$hiveDbName/$tableName/${jobStaticParam.jobName}/"
     val tmpPath = path + "_tmp"
 
     try{
@@ -86,7 +86,7 @@ class UpdateFeedStats(feed_name: String, firstDate: DateTime = DateTime.now) {
       sqlContext.sql(
         s"""
            |ALTER TABLE $hiveDbName.$tableName
-           | ADD IF NOT EXISTS PARTITION (job_name ='${jobStaticParam.feedName}')
+           | ADD IF NOT EXISTS PARTITION (job_name ='${jobStaticParam.jobName}')
            | LOCATION '$path'
          """.stripMargin)
 

@@ -1,6 +1,5 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.common.FieldMapping
 import com.abhioncbr.etlFramework.commons.load.PartitionColumnTypeEnum
 import com.abhioncbr.etlFramework.commons.transform._
 
@@ -50,7 +49,7 @@ object ParseRule {
 
       case "SCHEMA_TRANSFORMATION" => val failedFieldLimit = ParseUtil.parseInt((node \ "@failedFieldLimit").text)
         val failedRowLimit = ParseUtil.parseInt((node \ "@failedRowLimit").text)
-        val mappings = List[FieldMapping]((node \ "fieldMapping").toList map { s => ParseFieldMapping.fromXML(s) }: _*)
+        val mappings = ParseFieldMappings.fromXML(node) //List[FieldMapping]((node \ "fieldMapping").toList map { s => ParseFieldMapping.fromXML(s) }: _*)
         DummyRule(new SchemaTransformationRule(order, condition, group, mappings, failedFieldLimit, failedRowLimit), null)
 
     }

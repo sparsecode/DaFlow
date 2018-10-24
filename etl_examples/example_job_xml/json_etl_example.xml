@@ -4,7 +4,7 @@
     <jobStaticParam jobName="json_example" frequency="ONCE" publishStats="false"/>
 
     <extract>
-        <feed name="json_data" validateExtractedData="false">
+        <feed feedName="json_data" validateExtractedData="false">
             <fileSystem fileType="JSON">
                 <dataPath>
                     <pathPattern>

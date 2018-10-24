@@ -120,7 +120,7 @@ Two Options:
     </xs:complexType>
     <xs:complexType name="Params">
         <xs:sequence>
-            <xs:element name="Param" maxOccurs="unbounded" minOccurs="0">
+            <xs:element name="param" maxOccurs="unbounded" minOccurs="0">
                 <xs:complexType>
                     <xs:attribute name="order" type="xs:int"/>
                     <xs:attribute name="name" type="xs:string"/>
@@ -189,7 +189,7 @@ Two Options:
     <xs:complexType name="RuleType">
         <xs:all id="RuleSequence">
             <xs:element name="fieldMapping" type="workflow:FieldMapping" minOccurs="0"/>
-            <xs:element name="condition" type="xs:string"/>
+            <xs:element name="condition" type="xs:string" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="type" use="required" type="workflow:TransformationRule"/>
         <xs:attribute name="order" use="required" type="workflow:TransformationRuleOrder"/>

@@ -1,16 +1,28 @@
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/css" href="xmlpartsstyle.css"?>
-<etl_job xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../etl_job_conf/etl_feed_job.xsd">
-    <job_static_param>
-        <feed_name>{etl_feed_name}</feed_name>
-        <frequency>HOURLY</frequency>
-    </job_static_param>
+<etlJob xmlns="uri:etlFramework:workflow:0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="uri:etlFramework:workflow:0.1 ../../etl_job_conf/etl_feed_job.xsd">
+    <jobStaticParam jobName="job-name" frequency="DAILY" publishStats="false">
+        <otherParams>
+            <param order="1" name="param1" value="value1" defaultValue="value1"/>
+            <param order="2" name="param2" value="value2" defaultValue="value2"/>
+        </otherParams>
+    </jobStaticParam>
 
     <extract>
-        <type>JSON</type>
-        <format_file_name>true</format_file_name>
-        <file_initial_path>{file-path-suffix}</file_initial_path>
-        <file_name_pattern>{file-name}</file_name_pattern>
+        <feed feedName="json_data" validateExtractedData="false">
+            <fileSystem fileType="JSON">
+                <dataPath>
+                    <pathPattern>
+                        <initialPath>{json-file-path-suffix}</initialPath>
+                        <fileName>
+                            <prefix>json_data</prefix>
+                            <suffix>json</suffix>
+                        </fileName>
+                    </pathPattern>
+                </dataPath>
+            </fileSystem>
+        </feed>
     </extract>
 
     <transform>
@@ -26,7 +38,7 @@
             <condition>{col2}, {col3}, {col4}, {col5}</condition>
         </rule>
 
-        <rule order="4" type="SCHEMA_TRANSFORMATION" group="1" failed_field_limit="0" failed_row_limit="10">
+        <rule order="4" type="SCHEMA_TRANSFORMATION" group="1" failedFieldLimit="10" failedRowLimit="10">
         </rule>
     </transform>
 
@@ -47,4 +59,4 @@
             </partition_columns>
         </partition_data>
     </load>
-</etl_job>
+</etlJob>

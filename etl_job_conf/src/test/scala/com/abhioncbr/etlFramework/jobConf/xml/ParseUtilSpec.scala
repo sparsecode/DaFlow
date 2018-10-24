@@ -3,7 +3,7 @@ package com.abhioncbr.etlFramework.jobConf.xml
 import com.abhioncbr.etlFramework.commons.{CommonSpec, NotificationMessages}
 import com.abhioncbr.etlFramework.commons.common.file.FilePath
 
-class ParseUtilSpec extends CommonSpec {
+class ParseUtilSpec extends XmlJobConfBase {
 
   "parseBoolean" should "return false boolean object when blank string or null is passed as an argument" in {
     val booleanObject: Boolean = ParseUtil.parseBoolean( text = "")
