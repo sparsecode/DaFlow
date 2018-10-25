@@ -1,10 +1,8 @@
-<?xml version="1.0"?>
-<etlJob xmlns="uri:etlFramework:workflow:0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="uri:etlFramework:workflow:0.1 ../../etl_job_conf/etl_feed_job.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<etlJob xmlns="uri:etlFramework:workflow:0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="uri:etlFramework:workflow:0.1 ../../etl_job_conf/etl_feed_job.xsd">
     <jobStaticParam jobName="json_example" frequency="ONCE" publishStats="false"/>
-
     <extract>
-        <feed feedName="json_data" validateExtractedData="false">
+        <feed feedName="json_data" validateExtractedData="true">
             <fileSystem fileType="JSON">
                 <dataPath>
                     <pathPattern>
@@ -18,19 +16,15 @@
             </fileSystem>
         </feed>
     </extract>
-
     <transform>
         <rule order="1" type="SELECT" group='1'>
             <condition>test_string2</condition>
         </rule>
-
         <rule type="SELECT" order="2" group="1">
             <condition>test_string2</condition>
         </rule>
-
         <validateTransformedData>false</validateTransformedData>
     </transform>
-
     <load>
         <feed name="json_data">
             <fileSystem fileType="JSON">

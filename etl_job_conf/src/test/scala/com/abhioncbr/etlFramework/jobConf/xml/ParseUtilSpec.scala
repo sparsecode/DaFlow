@@ -1,6 +1,6 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.{CommonSpec, NotificationMessages}
+import com.abhioncbr.etlFramework.commons.NotificationMessages
 import com.abhioncbr.etlFramework.commons.common.file.FilePath
 
 class ParseUtilSpec extends XmlJobConfBase {

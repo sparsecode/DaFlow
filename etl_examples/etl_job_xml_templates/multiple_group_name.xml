@@ -46,7 +46,7 @@
         <feed name="json_data">
             <fileSystem fileType="JSON">
                 <dataPath>
-                    <path>/Users/abhisheksharma/work/github-proj/etl-framework/etl_examples/sample_data/etl-frwrk_result/</path>
+                    <path>{path}</path>
                 </dataPath>
             </fileSystem>
         </feed>
