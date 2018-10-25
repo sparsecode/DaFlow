@@ -43,20 +43,12 @@
     </transform>
 
     <load>
-        <type>HIVE</type>
-        <task>{load-task-name}</task>
-        <db_name>{db-name}</db_name>
-        <table_name>{table-name}</table_name>
-        <file_type>PARQUET</file_type>
-        <partition_data>
-            <coalesce_partition>true</coalesce_partition>
-            <overwrite_partition>true</overwrite_partition>
-            <coalesce_partition_count>10</coalesce_partition_count>
-            <partition_file_initial_path>{partition-file-path-initial}</partition_file_initial_path>
-            <partition_columns>
-                <column name="{colx}" value="DATE"/>
-                <column name="{coly}" value="HOUR"/>
-            </partition_columns>
-        </partition_data>
+        <feed name="json_data">
+            <fileSystem fileType="JSON">
+                <dataPath>
+                    <path>{path}</path>
+                </dataPath>
+            </fileSystem>
+        </feed>
     </load>
 </etlJob>

@@ -234,7 +234,7 @@ Two Options:
             </xs:choice>
         </xs:sequence>
         <xs:attribute name="feedName" use="required" type="xs:string"/>
-        <xs:attribute name="validateExtractedData" default="false" use="required" type="xs:boolean"/>
+        <xs:attribute name="validateExtractedData" use="required" type="xs:boolean"/>
     </xs:complexType>
     <xs:complexType name="Extract">
         <xs:sequence>
@@ -249,7 +249,7 @@ Two Options:
         <xs:all>
             <xs:element name="otherParams" minOccurs="0" type="workflow:Params"/>
         </xs:all>
-        <xs:attribute name="publishStats" use="required" default="false" type="xs:boolean"/>
+        <xs:attribute name="publishStats" use="required" type="xs:boolean"/>
         <xs:attribute name="jobName" use="required" type="xs:string"/>
         <xs:attribute name="frequency" use="required" type="workflow:ProcessFrequency"/>
     </xs:complexType>
