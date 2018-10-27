@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.1" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:workflow="uri:etlFramework:workflow:0.1" elementFormDefault="qualified"
            targetNamespace="uri:etlFramework:workflow:0.1">
 <!-- START: Common enumerations used in xsd schema. -->
@@ -90,8 +90,8 @@ Two Options:
     <xs:complexType name="FeedPattern">
         <xs:all>
             <xs:element name="feedNamePattern" type="xs:string"/>
-            <xs:element name="formatFeedName" type="xs:boolean"/>
-            <xs:element name="formatArgValues" type="workflow:Params"/>
+            <xs:element name="formatFeedName" minOccurs="0" default="false" type="xs:boolean"/>
+            <xs:element name="formatArgValues" minOccurs="0" type="workflow:Params"/>
         </xs:all>
     </xs:complexType>
     <xs:complexType name="PathPattern">

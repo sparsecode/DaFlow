@@ -39,12 +39,12 @@ class ParseGeneralParamsSpec extends XmlJobConfBase{
   }
 
   "ParseGeneralParams-fromXML" should "return array of GeneralParam objects of length 2" in {
-    val xmlContent: String =s"""<node><formatArgValues>
+    val xmlContent: String =s"""<formatArgValues>
          |<param order="1" name="{col1}" value="{val1}" defaultValue="{val1}"/>
          |<param order="2" name="{col2}" value="{val2}" defaultValue="{val2}"/>
-         |</formatArgValues></node>""".stripMargin
+         |</formatArgValues>""".stripMargin
 
-    val generalParamObjectArray: Array[GeneralParam] = ParseGeneralParams.fromXML(node(xmlContent), nodeTag = "formatArgValues")
+    val generalParamObjectArray: Array[GeneralParam] = ParseGeneralParams.fromXML(node(xmlContent))
     generalParamObjectArray should not equal null
     generalParamObjectArray.length should equal (2)
 
@@ -59,13 +59,11 @@ class ParseGeneralParamsSpec extends XmlJobConfBase{
     generalParamObjectArray(1).paramDefaultValue should equal ("{val2}")
   }
 
-  "ParseGeneralParams-fromXML" should "return array of GeneralParam objects of lenfth 0" in {
-    val xmlContent: String =s"""<node><formatArgValues>
-                               |<param order="1" name="{col1}" value="{val1}" defaultValue="{val1}"/>
-                               |<param order="2" name="{col2}" value="{val2}" defaultValue="{val2}"/>
-                               |</formatArgValues></node>""".stripMargin
+  "ParseGeneralParams-fromXML" should "return array of GeneralParam objects of length 0" in {
+    val xmlContent: String =s"""<formatArgValues>
+                               |</formatArgValues>""".stripMargin
 
-    val generalParamObjectArray: Array[GeneralParam] = ParseGeneralParams.fromXML(node(xmlContent), nodeTag = "query")
+    val generalParamObjectArray: Array[GeneralParam] = ParseGeneralParams.fromXML(node(xmlContent))
     generalParamObjectArray should not equal null
     generalParamObjectArray.length should equal (0)
   }

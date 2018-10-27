@@ -68,13 +68,13 @@ class ParseUtilSpec extends XmlJobConfBase {
   }
 
   "parseFilePathString" should "should return Either[Right] object when blank string is passed as an argument" in {
-    val filePathObject: Either[FilePath, String] = ParseUtil.parseFilePathString("")
+    val filePathObject: Either[FilePath, String] = ParseUtil.parseFilePathString(text = "")
     filePathObject should not equal null
     filePathObject.isRight should be (true)
     filePathObject.isLeft should be (false)
     filePathObject.right.get should be ("Can not create a Path from an empty string")
 
-    val anotherFilePathObject: Either[FilePath, String] = ParseUtil.parseFilePathString(null)
+    val anotherFilePathObject: Either[FilePath, String] = ParseUtil.parseFilePathString(text= null)
     anotherFilePathObject should not equal null
     anotherFilePathObject.isRight should be (true)
     anotherFilePathObject.isLeft should be (false)

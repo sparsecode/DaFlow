@@ -15,6 +15,23 @@
                 <dataPath>
                     <pathPattern>
                         <initialPath>{json-file-path-suffix}</initialPath>
+                        <groupPattern>
+                            <member>
+                                <order>1</order>
+                                <groupNamePattern>group_%s</groupNamePattern>
+                                <formatGroupName>true</formatGroupName>
+                                <formatArgValues>
+                                    <param order="1" name="abc" value="group" defaultValue="group"/>
+                                </formatArgValues>
+                            </member>
+                        </groupPattern>
+                        <feedPattern>
+                            <feedNamePattern>feed_%s</feedNamePattern>
+                            <formatFeedName>true</formatFeedName>
+                            <formatArgValues>
+                                <param order="1" name="xyz" value="json" defaultValue="json"/>
+                            </formatArgValues>
+                        </feedPattern>
                         <fileName>
                             <prefix>json_data</prefix>
                             <suffix>json</suffix>
