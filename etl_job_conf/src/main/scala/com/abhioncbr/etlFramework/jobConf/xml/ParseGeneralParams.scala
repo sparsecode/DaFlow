@@ -3,8 +3,8 @@ package com.abhioncbr.etlFramework.jobConf.xml
 import com.abhioncbr.etlFramework.commons.common.GeneralParam
 
 object ParseGeneralParams {
-  def fromXML(node: scala.xml.NodeSeq, nodeTag: String): Array[GeneralParam] = {
-    Array[GeneralParam]((node \ nodeTag \ "param").toList map { s => ParseGeneralParam.fromXML(s) }: _*)
+  def fromXML(node: scala.xml.NodeSeq): Array[GeneralParam] = {
+    Array[GeneralParam]((node \ "param").toList map { s => ParseGeneralParam.fromXML(s) }: _*)
   }
 }
 

@@ -3,7 +3,7 @@ import sbt.Keys.libraryDependencies
 name := "etl_framework"
 
 lazy val etl_framework_common_settings = Seq(
-  scalacOptions += "-target:jvm-1.7",
+  scalacOptions += "-target:jvm-1.8",
   version := "0.1.0",
   organization := "com.abhioncbr.etlFramework",
   scalaVersion := "2.11.11"
@@ -45,20 +45,20 @@ libraryDependencies in ThisBuild ++= Seq(
 )
 
 lazy val etl_framework = project.in(file("."))
-  .dependsOn("etl_feed").aggregate("etl_feed")
+  .dependsOn("etl_core").aggregate("etl_core")
   .dependsOn("etl_commons").aggregate("etl_commons")
   .dependsOn("etl_job_conf").aggregate("etl_job_conf")
-  .dependsOn("etl_feed_metrics").aggregate("etl_feed_metrics")
+  .dependsOn("etl_metrics").aggregate("etl_metrics")
   .dependsOn("etl_sql_parser").aggregate("etl_sql_parser")
   .settings(etl_framework_common_settings: _*)
 
-lazy val etl_feed = project.in(file("etl_feed"))
+lazy val etl_core = project.in(file("etl_core"))
   .dependsOn("etl_commons").aggregate("etl_commons")
   .dependsOn("etl_sql_parser").aggregate("etl_sql_parser")
   .dependsOn("etl_job_conf").aggregate("etl_job_conf")
-  .dependsOn("etl_feed_metrics").aggregate("etl_feed_metrics")
+  .dependsOn("etl_metrics").aggregate("etl_metrics")
   .settings(etl_framework_common_settings: _*)
-  .settings(mainClass in assembly := Some("com.abhioncbr.etlFramework.etl_feed.LaunchETLExecution"))
+  .settings(mainClass in assembly := Some("com.abhioncbr.etlFramework.etl_core.LaunchETLExecution"))
 
 lazy val etl_sql_parser = project.in(file("etl_sql_parser"))
   .settings(etl_framework_common_settings: _*)
@@ -71,6 +71,6 @@ lazy val etl_job_conf = project.in(file("etl_job_conf"))
   .dependsOn(etl_commons % "compile->compile;test->test").aggregate("etl_commons")
   .settings(etl_framework_common_settings: _*)
 
-lazy val etl_feed_metrics = project.in(file("etl_feed_metrics"))
+lazy val etl_metrics = project.in(file("etl_metrics"))
   .dependsOn("etl_commons").aggregate("etl_commons")
   .settings(etl_framework_common_settings: _*)

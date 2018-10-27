@@ -1,7 +1,7 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
 import com.abhioncbr.etlFramework.commons.common.file.FilePath
-import com.abhioncbr.etlFramework.commons.common.query.{QueryObject, QueryFilesParam}
+import com.abhioncbr.etlFramework.commons.common.query.QueryObject
 import com.abhioncbr.etlFramework.commons.extract.{Extract, ExtractionType, Feed}
 
 object ParseExtractConf {

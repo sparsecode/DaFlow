@@ -8,7 +8,7 @@ object ParseQuery {
   def fromXML(node: scala.xml.NodeSeq): Option[QueryObject] = {
     val configurationFile: Option[FilePath] = ParseDataPath.fromXML(node \ "configurationFile")
     val queryFile: Option[FilePath] = ParseDataPath.fromXML(node \ "sqlQueryFile")
-    val queryArgs: Option[Array[GeneralParam]] = Some(ParseGeneralParams.fromXML(node, nodeTag= "queryParams"))
+    val queryArgs: Option[Array[GeneralParam]] = ParseUtil.parseNode[Array[GeneralParam]](node \ "queryParams",None, ParseGeneralParams.fromXML) //Some(ParseGeneralParams.fromXML(node, nodeTag= "queryParams"))
 
     if(configurationFile.isEmpty && queryFile.isEmpty) None
     else {
