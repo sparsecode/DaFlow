@@ -7,7 +7,7 @@
 
     <extract>
         <feed feedName="feed1" validateExtractedData="false">
-            <jdbc>
+            <jdbc type="DB">
                 <query>
                     <sqlQueryFile><path>{sql-query-file-path.sql}</path></sqlQueryFile>
                     <configurationFile><path>{db-property-file-path}</path></configurationFile>

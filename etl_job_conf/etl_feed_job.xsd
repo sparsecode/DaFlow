@@ -2,6 +2,12 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:workflow="uri:etlFramework:workflow:0.1" elementFormDefault="qualified"
            targetNamespace="uri:etlFramework:workflow:0.1">
 <!-- START: Common enumerations used in xsd schema. -->
+    <xs:simpleType name="JDBCType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="DB"/>
+            <xs:enumeration value="HIVE"/>
+        </xs:restriction>
+    </xs:simpleType>
     <xs:simpleType name="SupportedFileType">
         <xs:restriction base="xs:string">
             <xs:enumeration value="PARQUET"/>
@@ -225,6 +231,7 @@ Two Options:
         <xs:all>
             <xs:element name="query" minOccurs="0" type="workflow:Query"/>
         </xs:all>
+        <xs:attribute name="type" use="required" type="workflow:JDBCType"/>
     </xs:complexType>
     <xs:complexType name="ExtractFeed">
         <xs:sequence>

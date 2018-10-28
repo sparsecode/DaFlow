@@ -7,16 +7,18 @@ import com.typesafe.scalalogging.Logger
 object ParseDataPath {
   private val logger = Logger(this.getClass)
 
-  def fromXML(node: scala.xml.NodeSeq): Option[FilePath] = {
+  def fromXML(node: scala.xml.NodeSeq): FilePath = {
     val parsedPath =  ParseUtil.parseNode[Either[FilePath,String]](node \ "path", None, ParseUtil.parseFilePathString)
     val parsedPathPattern =  ParseUtil.parseNode[FilePath](node \ "pathPattern", None, ParseDataPath.parsePathPattern)
 
     if(parsedPath.isDefined) {
       parsedPath.get match {
-        case Left(output) => Some(output)
-        case Right(message) => logger.warn(s"[ParseDataPath: fromXML: ] - $message"); None
+        case Left(output) => output
+
+        //TODO : Handling exception
+        case Right(message) => logger.warn(s"[ParseDataPath: fromXML: ] - $message"); null
       }
-    } else parsedPathPattern
+    } else parsedPathPattern.get
   }
 
   def parsePathPattern(node: scala.xml.NodeSeq): FilePath = {

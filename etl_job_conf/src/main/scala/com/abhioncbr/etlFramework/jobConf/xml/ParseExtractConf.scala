@@ -13,14 +13,19 @@ object ParseExtractConf {
 
 object ParseFeedConf {
   def fromXML(node: scala.xml.NodeSeq): Feed = {
-    val feedName: String =(node \ "@feedName").text
-    val dataPath: Option[FilePath] = ParseDataPath.fromXML(node \ "fileSystem" \ "dataPath")
-    val query: Option[QueryObject] = ParseQuery.fromXML(node \ "jdbc" \ "query")
+    val feedName: String = (node \ "@feedName").text
+    val dataPath: Option[FilePath] = ParseUtil.parseNode[FilePath](node \ "fileSystem" \ "dataPath", None, ParseDataPath.fromXML)
+    val query: Option[QueryObject] = ParseUtil.parseNode[QueryObject](node \ "jdbc" \ "query", None, ParseQuery.fromXML)
     val validateExtractedData: Boolean = ParseUtil.parseBoolean((node \ "@validateExtractedData").text)
 
+    val extractionType: ExtractionType.valueType = if(dataPath.isDefined)
+      ExtractionType.getValueType( valueTypeString = "FILE_SYSTEM")
+    else if(query.isDefined)
+      ExtractionType.getValueType( valueTypeString = (node \ "jdbc" \ "@type").text )
+    else ExtractionType.UNSUPPORTED
 
     val feed: Feed = Feed(feedName = feedName,
-      extractionType = ExtractionType.getValueType((node \ "type").text),
+      extractionType = extractionType,
       dataPath = dataPath , query =query, validateExtractedData = validateExtractedData)
     feed
   }

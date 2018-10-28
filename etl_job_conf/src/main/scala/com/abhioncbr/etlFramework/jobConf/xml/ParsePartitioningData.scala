@@ -9,7 +9,7 @@ object ParsePartitioningData {
     val overwrite = ParseUtil.parseBoolean((node \ "overwritePartition").text)
     val coalesceCount = ParseUtil.parseInt((node \ "coalescePartitionCount").text)
     val partitionColumns = List[PartitionColumn]((node \ "partitionColumns" \ "column").toList map { s => ParsePartitionColumn.fromXML(s) }: _*)
-    val dataPath: FilePath = ParseDataPath.fromXML(node \ "dataPath").get
+    val dataPath: FilePath = ParseDataPath.fromXML(node \ "dataPath")
     PartitioningData(coalesce = coalesce, overwrite = overwrite, coalesceCount = coalesceCount, partitionColumns = partitionColumns, dataPath = dataPath)
   }
 }

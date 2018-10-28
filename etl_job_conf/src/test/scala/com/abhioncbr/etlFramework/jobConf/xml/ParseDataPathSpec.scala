@@ -207,13 +207,30 @@ class ParseDataPathSpec extends XmlJobConfBase{
   "ParseDataPath" should "return FilePath object parsed from path string" in {
     val path = s"${System.getProperty("user.dir")}/etl_examples/sample_data/json_data.json"
     val xmlContent = s"<dataPath><path>$path</path></dataPath>"
-    val filePathObject: Option[FilePath] = ParseDataPath.fromXML(node(xmlContent))
+    val filePathObject: FilePath = ParseDataPath.fromXML(node(xmlContent))
     filePathObject should not equal null
-    filePathObject.get should not equal null
-    filePathObject.get.pathPrefix should be (Some(s"${System.getProperty("user.dir")}/etl_examples/sample_data"))
-    filePathObject.get.groupPatterns should be (None)
-    filePathObject.get.feedPattern should be (None)
-    filePathObject.get.fileName should not equal null
-    filePathObject.get.fileName.get.fileNamePrefix should be (Some("json_data"))
+    filePathObject.pathPrefix should be (Some(s"${System.getProperty("user.dir")}/etl_examples/sample_data"))
+    filePathObject.groupPatterns should be (None)
+    filePathObject.feedPattern should be (None)
+    filePathObject.fileName should not equal null
+    filePathObject.fileName.get.fileNamePrefix should be (Some("json_data"))
+  }
+
+  "ParseDataPath" should "return FilePath object parsed from pathpatther string" in {
+    val xmlContent = s"""<dataPath><pathPattern>
+          <initialPath>{json-file-path-suffix}</initialPath>
+          <fileName>
+              <prefix>json_data</prefix>
+              <suffix>json</suffix>
+          </fileName>
+    </pathPattern></dataPath>""".stripMargin
+
+    val filePathObject: FilePath = ParseDataPath.fromXML(node(xmlContent))
+    filePathObject should not equal null
+    filePathObject.pathPrefix should be (Some("{json-file-path-suffix}"))
+    filePathObject.groupPatterns should be (None)
+    filePathObject.feedPattern should be (None)
+    filePathObject.fileName should not equal null
+    filePathObject.fileName.get.fileNamePrefix should be (Some("json_data"))
   }
 }
