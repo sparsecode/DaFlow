@@ -5,7 +5,6 @@
     <xs:simpleType name="JDBCType">
         <xs:restriction base="xs:string">
             <xs:enumeration value="DB"/>
-            <xs:enumeration value="HIVE"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="SupportedFileType">
@@ -231,7 +230,7 @@ Two Options:
         <xs:all>
             <xs:element name="query" minOccurs="0" type="workflow:Query"/>
         </xs:all>
-        <xs:attribute name="type" use="required" type="workflow:JDBCType"/>
+        <xs:attribute name="databaseType" use="required" type="workflow:JDBCType"/>
     </xs:complexType>
     <xs:complexType name="ExtractFeed">
         <xs:sequence>

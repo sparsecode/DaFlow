@@ -6,7 +6,7 @@ import com.abhioncbr.etlFramework.commons.extract.{Extract, ExtractionType}
 import com.abhioncbr.etlFramework.commons.job.JobStaticParam
 import com.abhioncbr.etlFramework.commons.load.{Load, LoadType}
 import com.abhioncbr.etlFramework.commons.transform.{Transform, TransformationResult}
-import com.abhioncbr.etlFramework.etl_feed.extractData.{ExtractDataFromDB, ExtractDataFromHive, ExtractDataFromJson}
+import com.abhioncbr.etlFramework.etl_feed.extractData.{ExtractDataFromDB, ExtractDataFromHive, ExtractDataFromFileSystem}
 import com.abhioncbr.etlFramework.etl_feed.loadData.{LoadDataIntoFileSystem, LoadDataIntoHive}
 import com.google.common.base.Objects
 import com.abhioncbr.etlFramework.etl_feed.transformData.TransformData
@@ -89,10 +89,10 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
   private def extract: Array[Either[DataFrame, String]] = {
     val extract: Extract = Context.getContextualObject[Extract](EXTRACT)
     extract.feeds.map(feed => feed.extractionType match {
-      case ExtractionType.JSON => Left(new ExtractDataFromJson(feed).getRawData)
+      case ExtractionType.FILE_SYSTEM => Left(new ExtractDataFromFileSystem(feed).getRawData)
       case ExtractionType.JDBC => Left(new ExtractDataFromDB(feed).getRawData)
       case ExtractionType.HIVE => Left(new ExtractDataFromHive(feed).getRawData)
-      case _ => Right(s"extracting data from ${feed.extractionType} is not supported right now.")
+      case ExtractionType.UNSUPPORTED => Right(s"extracting data from ${feed.extractionType} is not supported right now.")
     })
   }
 

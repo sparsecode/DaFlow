@@ -14,18 +14,15 @@ object ParseExtractConf {
 object ParseFeedConf {
   def fromXML(node: scala.xml.NodeSeq): Feed = {
     val feedName: String = (node \ "@feedName").text
-    val dataPath: Option[FilePath] = ParseUtil.parseNode[FilePath](node \ "fileSystem" \ "dataPath", None, ParseDataPath.fromXML)
-    val query: Option[QueryObject] = ParseUtil.parseNode[QueryObject](node \ "jdbc" \ "query", None, ParseQuery.fromXML)
+    val extractionSubType: String = (node \ "_").head.attributes.value.text.toUpperCase
     val validateExtractedData: Boolean = ParseUtil.parseBoolean((node \ "@validateExtractedData").text)
+    val extractionType: ExtractionType.valueType = ExtractionType.getValueType( valueTypeString = (node \ "_").head.label.toUpperCase)
 
-    val extractionType: ExtractionType.valueType = if(dataPath.isDefined)
-      ExtractionType.getValueType( valueTypeString = "FILE_SYSTEM")
-    else if(query.isDefined)
-      ExtractionType.getValueType( valueTypeString = (node \ "jdbc" \ "@type").text )
-    else ExtractionType.UNSUPPORTED
+    val query: Option[QueryObject] = ParseUtil.parseNode[QueryObject](node \ "jdbc" \ "query", None, ParseQuery.fromXML)
+    val dataPath: Option[FilePath] = ParseUtil.parseNode[FilePath](node \ "fileSystem" \ "dataPath", None, ParseDataPath.fromXML)
 
     val feed: Feed = Feed(feedName = feedName,
-      extractionType = extractionType,
+      extractionType = extractionType, extractionSubType = extractionSubType,
       dataPath = dataPath , query =query, validateExtractedData = validateExtractedData)
     feed
   }
