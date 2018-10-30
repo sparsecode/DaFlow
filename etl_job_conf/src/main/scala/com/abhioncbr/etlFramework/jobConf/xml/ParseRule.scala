@@ -38,7 +38,7 @@ object ParseRule {
 
       case "ADD_COLUMN" => val columnName = (node \ "@column_name").text
         val columnValueType = (node \ "@column_value").text
-        DummyRule(new AddColumnRule(order, group, columnName, PartitionColumnTypeEnum.getValueType(columnValueType)), null)
+        DummyRule(new AddColumnRule(order, group, columnName, columnValueType), null)
 
       case "MERGE" => val mergeGroup = (node \ "@mergeGroup").text
         DummyRule(new MergeRule(order, condition, getMergerGroup(mergeGroup).left.get, group), null)

@@ -4,9 +4,9 @@ import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.extract.{Extract, ExtractionType}
 import com.abhioncbr.etlFramework.commons.job.JobStaticParam
-import com.abhioncbr.etlFramework.commons.load.{Load, LoadType}
+import com.abhioncbr.etlFramework.commons.load.{Load, LoadFeed, LoadType}
 import com.abhioncbr.etlFramework.commons.transform.{Transform, TransformationResult}
-import com.abhioncbr.etlFramework.etl_feed.extractData.{ExtractDataFromDB, ExtractDataFromHive, ExtractDataFromFileSystem}
+import com.abhioncbr.etlFramework.etl_feed.extractData.{ExtractDataFromDB, ExtractDataFromFileSystem, ExtractDataFromHive}
 import com.abhioncbr.etlFramework.etl_feed.loadData.{LoadDataIntoFileSystem, LoadDataIntoHive}
 import com.google.common.base.Objects
 import com.abhioncbr.etlFramework.etl_feed.transformData.TransformData
@@ -135,7 +135,7 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
     val FALSE = false
     //TODO: load tables for multiple data frames
     val loadResult: Array[JobResult] = validationArrayDF.map( validate => {
-      val loadType = Context.getContextualObject[Load](LOAD).loadType
+      val loadType = Context.getContextualObject[LoadFeed](LOAD).loadType
       val loadResult: Either[Boolean, String] = loadType match {
         case LoadType.HIVE => (new LoadDataIntoHive).loadTransformedData(validate._1)
         case LoadType.FILE_SYSTEM => (new LoadDataIntoFileSystem).loadTransformedData(validate._1)

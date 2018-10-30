@@ -18,8 +18,8 @@
                         <groupPattern>
                             <member>
                                 <order>1</order>
-                                <groupNamePattern>group_%s</groupNamePattern>
-                                <formatGroupName>true</formatGroupName>
+                                <catalogNamePattern>group_%s</catalogNamePattern>
+                                <formatCatalogName>true</formatCatalogName>
                                 <formatArgValues>
                                     <param order="1" name="abc" value="group" defaultValue="group"/>
                                 </formatArgValues>

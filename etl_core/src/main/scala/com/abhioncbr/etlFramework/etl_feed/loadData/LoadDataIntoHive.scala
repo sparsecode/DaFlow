@@ -5,7 +5,7 @@ import java.text.DecimalFormat
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{FIRST_DATE, JOB_STATIC_PARAM, LOAD, SQL_CONTEXT}
 import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.job.JobStaticParam
-import com.abhioncbr.etlFramework.commons.load.{Load, PartitionColumnTypeEnum}
+import com.abhioncbr.etlFramework.commons.load.{LoadFeed, PartitionColumnTypeEnum}
 import com.abhioncbr.etlFramework.commons.util.FileUtil
 import com.typesafe.scalalogging.Logger
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
@@ -17,11 +17,11 @@ class LoadDataIntoHive extends LoadData {
 
   private val processFrequency = Context.getContextualObject[JobStaticParam](JOB_STATIC_PARAM).processFrequency
 
-  private val load = Context.getContextualObject[Load](LOAD)
-  private val tableName = load.tableName
-  private val databaseName = load.dbName
-  private val partData = load.partData
-  private val hiveTableDataInitialPath = FileUtil.getFilePathString(load.partData.dataPath)
+  private val load = Context.getContextualObject[LoadFeed](LOAD)
+  private val tableName = load.attributesMap("tableName")
+  private val databaseName = load.attributesMap("databaseName")
+  private val partData = load.partitioningData.get
+  private val hiveTableDataInitialPath = FileUtil.getFilePathString(load.dataPath)
 
   def loadTransformedData(dataFrame: DataFrame,
                           date: Option[DateTime]=Context.getContextualObject[Option[DateTime]](FIRST_DATE)): Either[Boolean, String] = {
@@ -34,7 +34,7 @@ class LoadDataIntoHive extends LoadData {
     try{
       logger.info(s"Writing $processFrequency dataFrame for table $tableName to HDFS ($path). Total number of data rows saved: ${dataFrame.count}")
 
-      val fileType = load.fileType
+      val fileType = load.attributesMap("fileType")
 
       //coalesce the data frame if it is set true in feed xml
       if(partData.coalesce){

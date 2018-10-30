@@ -1,8 +1,8 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.extract.{Extract, ExtractionType, Feed}
+import com.abhioncbr.etlFramework.commons.extract.{Extract, ExtractionType, ExtractFeed}
 
-class ParseExtractConfSpec extends XmlJobConfBase {
+class ParseExtractSpec extends XmlJobConfBase {
 
   "ParseFeedConf" should "return Feed object with dataPath variable" in {
     val xmlContent = s""" <feed feedName="json_data_feed" validateExtractedData="false">
@@ -18,9 +18,9 @@ class ParseExtractConfSpec extends XmlJobConfBase {
                 </dataPath>
             </fileSystem>
         </feed>""".stripMargin
-    val feedObject: Feed = ParseFeedConf.fromXML(node(xmlContent))
+    val feedObject: ExtractFeed = ParseExtractFeed.fromXML(node(xmlContent))
     feedObject should not equal null
-    feedObject.feedName should be ("json_data_feed")
+    feedObject.extractFeedName should be ("json_data_feed")
     feedObject.validateExtractedData should be (false)
     feedObject.extractionType should be (ExtractionType.FILE_SYSTEM)
 
@@ -41,9 +41,9 @@ class ParseExtractConfSpec extends XmlJobConfBase {
                         |     </query>
                         |  </jdbc>
                         |</feed>""".stripMargin
-    val feedObject: Feed = ParseFeedConf.fromXML(node(xmlContent))
+    val feedObject: ExtractFeed = ParseExtractFeed.fromXML(node(xmlContent))
     feedObject should not equal null
-    feedObject.feedName should be ("feed1")
+    feedObject.extractFeedName should be ("feed1")
     feedObject.validateExtractedData should be (true)
     feedObject.extractionType should be (ExtractionType.JDBC)
 
@@ -84,15 +84,15 @@ class ParseExtractConfSpec extends XmlJobConfBase {
                         |  </fileSystem>
                         | </feed>
                         |</extract>""".stripMargin
-    val extractObject: Extract = ParseExtractConf.fromXML(node(xmlContent))
+    val extractObject: Extract = ParseExtract.fromXML(node(xmlContent))
     extractObject should not equal null
     extractObject.feeds should not equal null
     extractObject.feeds.length should be (2)
 
-    extractObject.feeds.head.feedName should be ("feed1")
+    extractObject.feeds.head.extractFeedName should be ("feed1")
     extractObject.feeds.head.extractionType should be (ExtractionType.JDBC)
 
-    extractObject.feeds.tail.head.feedName should be ("feed2")
+    extractObject.feeds.tail.head.extractFeedName should be ("feed2")
     extractObject.feeds.tail.head.validateExtractedData should be (false)
   }
 }

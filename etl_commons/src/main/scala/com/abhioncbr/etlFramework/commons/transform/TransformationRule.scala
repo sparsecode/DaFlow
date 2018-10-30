@@ -4,7 +4,7 @@ package com.abhioncbr.etlFramework.commons.transform
 import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.common.FieldMapping
-import com.abhioncbr.etlFramework.commons.load.{Load, PartitionColumnTypeEnum}
+import com.abhioncbr.etlFramework.commons.load.LoadFeed
 import com.abhioncbr.etlFramework.sql_parser.{Clause, SQLParser}
 import com.typesafe.scalalogging.Logger
 import org.apache.spark.rdd.RDD
@@ -93,13 +93,13 @@ abstract class abstractTransformationRule(order:Int, group: Int = 0, condition: 
 
 //Added on Sept-17, for adding column in to dataframe(currently, column values is only of type partition column)
 //TODO: Need to enhance in-future to support column values based on some logic.
-class AddColumnRule(order:Int, group: Int = 0, columnName: String, columnValueType: PartitionColumnTypeEnum.valueType) extends TransformationRule {
+class AddColumnRule(order:Int, group: Int = 0, columnName: String, columnValueType: String) extends TransformationRule {
   override def getOrder: Int = order
   override def getGroup: Int = group
   override def condition(f: Int => DataFrame): Boolean = true
   override def execute(f: Int => DataFrame): Either[Array[TransformationResult], String] = {
     import org.apache.spark.sql.functions.lit
-    val value:Column = lit(PartitionColumnTypeEnum.getDataValue(columnValueType))
+    val value:Column = lit("")
 
     val inputDataFrame:DataFrame = f.apply(group)
 
@@ -211,9 +211,9 @@ class SchemaTransformationRule(order: Int, ruleCondition: String, group: Int, fi
 
   def condition(inputDataFrame: DataFrame): Boolean = {
     val sqlContext: SQLContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
-    val tableName = Context.getContextualObject[Load](LOAD).tableName
-    val databaseName = Context.getContextualObject[Load](LOAD).dbName
-    val partitionColumns: List[String] = Context.getContextualObject[Load](LOAD).partData.partitionColumns.map(column => column.columnName)
+    val tableName = Context.getContextualObject[LoadFeed](LOAD).attributesMap("tableName")
+    val databaseName = Context.getContextualObject[LoadFeed](LOAD).attributesMap("databaseName")
+    val partitionColumns: List[String] = Context.getContextualObject[LoadFeed](LOAD).partitioningData.get.partitionColumns.map(column => column.paramName)
 
     val temp = TransformUtil.tableMetadata(tableName, databaseName, sqlContext, partitionColumns)
 

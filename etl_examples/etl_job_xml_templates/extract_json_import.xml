@@ -33,11 +33,8 @@
 
     <load>
         <feed name="feed1">
-            <hive dbName="{db-name}" tableName="{table-name}" fileType="PARQUET">
-                <partitionData>
-                    <coalescePartition>true</coalescePartition>
-                    <overwritePartition>true</overwritePartition>
-                    <coalescePartitionCount>10</coalescePartitionCount>
+            <hive dataBaseName="{db-name}" tableName="{table-name}" fileType="PARQUET">
+                <partitionData coalescePartition="true" overwritePartition="true" coalescePartitionCount="10">
                     <partitionColumns>
                         <column name="date" value="DATE"/>
                     </partitionColumns>
