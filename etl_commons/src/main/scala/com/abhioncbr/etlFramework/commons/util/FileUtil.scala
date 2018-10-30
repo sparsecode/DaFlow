@@ -28,8 +28,12 @@ object FileUtil {
       val path: Path = new Path(filePathString)
       val fileSystem: FileSystem = path.getFileSystem(conf)
       if (fileSystem.exists(path)) {
-        val pathPrefix = path.getParent.toString
-        val filePath = FilePath(Some(pathPrefix), fileName = Some(parseFileName(path.getName, fileNameSeparator)))
+        val pathPrefix: String = path.getParent.toString
+
+        val filePath: FilePath= if(!path.getName.contains(fileNameSeparator))
+          FilePath(Some(pathPrefix), feedPattern = Some(PathInfixParam(infixPattern = path.getName)))
+        else FilePath(Some(pathPrefix),  fileName = Some(parseFileName(path.getName, fileNameSeparator)))
+
         return Left(filePath)
       }
       Right(NotificationMessages.fileNotExist(filePathString))
@@ -39,8 +43,8 @@ object FileUtil {
   }
 
   private def parseFileName(rawFileName: String, fileNameSeparator: String = "."): FileNameParam ={
-    val nameParts: Array[String] = rawFileName.split(s"[$fileNameSeparator]")
-    FileNameParam(Some(nameParts(0)), Some(nameParts(1)), Some(fileNameSeparator))
+    val nameParts: List[String] = rawFileName.split(s"[$fileNameSeparator]").toList
+    FileNameParam(nameParts.lift(0), nameParts.lift(1), Some(fileNameSeparator))
   }
 
   private def getFormattedString(pattern: String, args: Option[Array[String]]): String = String.format(pattern, args.get:_*)

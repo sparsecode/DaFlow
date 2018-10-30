@@ -7,7 +7,7 @@ object LoadType extends Enumeration {
   def getValueType(valueTypeString: String): LoadType.valueType = {
     val valueType = valueTypeString match {
       case "JDBC" => LoadType.JDBC
-      case "FILE_SYSTEM" => LoadType.FILE_SYSTEM
+      case "FILESYSTEM" => LoadType.FILE_SYSTEM
       case "HIVE" => LoadType.HIVE
     }
     valueType
@@ -16,7 +16,7 @@ object LoadType extends Enumeration {
   def getDataValue(valueType: LoadType.valueType):  String= {
     val output = valueType match {
       case JDBC => "JDBC"
-      case FILE_SYSTEM => "FILE_SYSTEM"
+      case FILE_SYSTEM => "FILESYSTEM"
       case HIVE => "HIVE"
     }
     output
