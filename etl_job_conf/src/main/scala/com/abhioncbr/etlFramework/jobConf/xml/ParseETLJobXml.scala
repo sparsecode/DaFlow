@@ -6,7 +6,7 @@ import com.abhioncbr.etlFramework.commons.ContextConstantEnum.HADOOP_CONF
 import com.abhioncbr.etlFramework.commons.extract.Extract
 import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.job.{ETLJob, JobStaticParam}
-import com.abhioncbr.etlFramework.commons.load.Load
+import com.abhioncbr.etlFramework.commons.load.{Load, LoadFeed}
 import com.abhioncbr.etlFramework.commons.transform.Transform
 import javax.xml.XMLConstants
 import javax.xml.transform.stream.StreamSource
@@ -19,7 +19,7 @@ import scala.util.Try
 object ETLJob{
   def fromXML(node: scala.xml.NodeSeq): ETLJob = {
       new ETLJob(ParseJobStaticParam.fromXML(node \ "jobStaticParam"),
-        ParseExtractConf.fromXML(node \ "extract"),
+        ParseExtract.fromXML(node \ "extract"),
         ParseTransform.fromXML(node \ "transform"),
         ParseLoad.fromXML(node \ "load")
     )

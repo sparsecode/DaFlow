@@ -1,7 +1,7 @@
 package com.abhioncbr.etlFramework.etl_feed.validateData
 
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
-import com.abhioncbr.etlFramework.commons.load.Load
+import com.abhioncbr.etlFramework.commons.load.LoadFeed
 import com.abhioncbr.etlFramework.commons.transform.TransformUtil
 import com.abhioncbr.etlFramework.commons.Context
 import com.typesafe.scalalogging.Logger
@@ -15,9 +15,10 @@ class ValidateTransformedData extends ValidateData {
   private val sqlContext: SQLContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
 
 
-  private val tableName = Context.getContextualObject[Load](LOAD).tableName
-  private val databaseName = Context.getContextualObject[Load](LOAD).dbName
-  val partitionColumns: List[String] = Context.getContextualObject[Load](LOAD).partData.partitionColumns.map(column => column.columnName)
+  private val tableName = Context.getContextualObject[LoadFeed](LOAD).attributesMap("tableName")
+  private val databaseName = Context.getContextualObject[LoadFeed](LOAD).attributesMap("databaseName")
+  val partitionColumns: List[String] = Context.getContextualObject[LoadFeed](LOAD).partitioningData.get.partitionColumns.map(column => column.paramName)
+
 
   def validateSchema(dataFrame: DataFrame): (Boolean, Option[StructType], Option[StructType]) = {
     logger.info("Validating data frame schema and hive table schema")

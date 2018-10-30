@@ -7,11 +7,11 @@
 
     <extract>
         <feed feedName="feed1" validateExtractedData="false">
-            <jdbc>
+            <jdbc databaseType="DB">
                 <query>
                     <sqlQueryFile><path>{sql-query-file-path.sql}</path></sqlQueryFile>
                     <configurationFile><path>{db-property-file-path}</path></configurationFile>
-                    <queryParams><param order="1" name="{col1}" value="FIRST_DATE" /></queryParams>
+                    <queryParams><param order="1" name="{col1}" value="FIRST_DATE"  /></queryParams>
                 </query>
             </jdbc>
         </feed>
@@ -25,13 +25,10 @@
 
     <load>
         <feed name="feed1">
-            <hive dbName="{db-name}" tableName="{table-name}" fileType="PARQUET">
-                <partitionData>
-                    <coalescePartition>true</coalescePartition>
-                    <overwritePartition>true</overwritePartition>
-                    <coalescePartitionCount>10</coalescePartitionCount>
+            <hive dataBaseName="{db-name}" tableName="{table-name}" fileType="PARQUET">
+                <partitionData coalescePartition="true" overwritePartition="true" coalescePartitionCount="10">
                     <partitionColumns>
-                        <column name="date" value="DATE"/>
+                        <column name="" value=""/>
                     </partitionColumns>
                 </partitionData>
                 <dataPath>

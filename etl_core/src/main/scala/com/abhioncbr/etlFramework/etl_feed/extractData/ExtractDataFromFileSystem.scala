@@ -1,6 +1,6 @@
 package com.abhioncbr.etlFramework.etl_feed.extractData
 
-import com.abhioncbr.etlFramework.commons.extract.{Extract, Feed}
+import com.abhioncbr.etlFramework.commons.extract.ExtractFeed
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.common.file.FilePath
@@ -8,7 +8,7 @@ import com.abhioncbr.etlFramework.commons.util.FileUtil
 import com.typesafe.scalalogging.Logger
 import org.apache.spark.sql.{DataFrame, SQLContext}
 
-class ExtractDataFromJson(feed: Feed) extends ExtractData {
+class ExtractDataFromFileSystem(feed: ExtractFeed) extends ExtractData {
    private val logger = Logger(this.getClass)
    val dataPath: Option[FilePath]= feed.dataPath
 

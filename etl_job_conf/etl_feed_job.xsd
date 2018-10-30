@@ -2,6 +2,11 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:workflow="uri:etlFramework:workflow:0.1" elementFormDefault="qualified"
            targetNamespace="uri:etlFramework:workflow:0.1">
 <!-- START: Common enumerations used in xsd schema. -->
+    <xs:simpleType name="JDBCType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="DB"/>
+        </xs:restriction>
+    </xs:simpleType>
     <xs:simpleType name="SupportedFileType">
         <xs:restriction base="xs:string">
             <xs:enumeration value="PARQUET"/>
@@ -60,6 +65,19 @@
             <xs:enumeration value="DATE_RANGE"/>
         </xs:restriction>
     </xs:simpleType>
+    <xs:complexType name="ParamAttributes">
+        <xs:attribute name="order" type="xs:int"/>
+        <xs:attribute name="otherInfo" type="xs:string"/>
+        <xs:attribute name="defaultValue" type="xs:string"/>
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="type" default="string" type="xs:string"/>
+        <xs:attribute name="value" use="required" type="xs:string"/>
+    </xs:complexType>
+    <xs:complexType name="Params">
+        <xs:sequence>
+            <xs:element name="param" maxOccurs="unbounded" minOccurs="0" type="workflow:ParamAttributes"/>
+        </xs:sequence>
+    </xs:complexType>
 <!-- END: Common enumerations used in xsd schema. -->
 
 <!-- START: File Path xsd descriptors.
@@ -79,8 +97,8 @@ Two Options:
                 <xs:complexType>
                     <xs:all>
                         <xs:element name="order" type="xs:int"/>
-                        <xs:element name="groupNamePattern" type="xs:string"/>
-                        <xs:element name="formatGroupName" default="false" minOccurs="0" type="xs:boolean"/>
+                        <xs:element name="catalogNamePattern" type="xs:string"/>
+                        <xs:element name="formatCatalogName" default="false" minOccurs="0" type="xs:boolean"/>
                         <xs:element name="formatArgValues" minOccurs="0" type="workflow:Params"/>
                     </xs:all>
                 </xs:complexType>
@@ -118,58 +136,37 @@ Two Options:
             <xs:element name="queryParams" minOccurs="0" type="workflow:Params"/>
         </xs:all>
     </xs:complexType>
-    <xs:complexType name="Params">
-        <xs:sequence>
-            <xs:element name="param" maxOccurs="unbounded" minOccurs="0">
-                <xs:complexType>
-                    <xs:attribute name="order" type="xs:int"/>
-                    <xs:attribute name="name" type="xs:string"/>
-                    <xs:attribute name="value" type="xs:string"/>
-                    <xs:attribute name="defaultValue" type="xs:string"/>
-                </xs:complexType>
-            </xs:element>
-        </xs:sequence>
-    </xs:complexType>
 <!-- END: Other common xsd descriptors. -->
 
 <!-- START: Load xsd descriptors.-->
     <xs:complexType name="PartitionData">
         <xs:all>
-            <xs:element name="coalescePartition" type="xs:boolean"/>
-            <xs:element name="overwritePartition" type="xs:boolean"/>
-            <xs:element name="coalescePartitionCount" type="xs:integer"/>
             <xs:element name="partitionColumns">
                 <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="column" maxOccurs="unbounded" minOccurs="0">
-                            <xs:complexType>
-                                <xs:attribute name="name" type="xs:string"/>
-                                <xs:attribute name="value" type="workflow:PartitionColumnValue"/>
-                            </xs:complexType>
-                        </xs:element>
-                    </xs:sequence>
+                    <xs:sequence><xs:element name="column" maxOccurs="unbounded" type="workflow:ParamAttributes"/></xs:sequence>
                 </xs:complexType>
             </xs:element>
         </xs:all>
+        <xs:attribute name="coalescePartition" type="xs:boolean"/>
+        <xs:attribute name="overwritePartition" type="xs:boolean"/>
+        <xs:attribute name="coalescePartitionCount" type="xs:integer"/>
     </xs:complexType>
     <xs:complexType name="Hive">
         <xs:all>
             <xs:element name="partitionData" type="workflow:PartitionData"/>
             <xs:element name="dataPath" type="workflow:DataPath"/>
         </xs:all>
-        <xs:attribute name="dbName" use="required" type="xs:string"/>
         <xs:attribute name="tableName" use="required" type="xs:string"/>
+        <xs:attribute name="dataBaseName" use="required" type="xs:string"/>
         <xs:attribute name="fileType" use="required" type="workflow:SupportedFileType"/>
     </xs:complexType>
     <xs:complexType name="LoadFileSystem">
-        <xs:all>
-            <xs:element name="dataSet" minOccurs="0" type="xs:string"/>
-            <xs:element name="feedName" minOccurs="0" type="xs:string"/>
-            <xs:element name="dataPath" type="workflow:DataPath"/>
-        </xs:all>
+        <xs:all><xs:element name="dataPath" type="workflow:DataPath"/></xs:all>
+        <xs:attribute name="feedName" type="xs:string"/>
+        <xs:attribute name="catalogName" type="xs:string"/>
         <xs:attribute name="fileType" use="required" type="workflow:SupportedFileType"/>
     </xs:complexType>
-    <xs:complexType name="Loadfeed">
+    <xs:complexType name="LoadFeed">
         <xs:sequence>
             <xs:choice >
                 <xs:element name="hive" type="workflow:Hive"/>
@@ -179,9 +176,7 @@ Two Options:
         <xs:attribute name="name" use="required" type="xs:string"/>
     </xs:complexType>
     <xs:complexType name="Load">
-        <xs:sequence>
-            <xs:element name="feed" maxOccurs="unbounded" type="workflow:Loadfeed"/>
-        </xs:sequence>
+        <xs:sequence><xs:element name="feed" maxOccurs="unbounded" type="workflow:LoadFeed"/></xs:sequence>
     </xs:complexType>
 <!-- END: Load xsd descriptors. -->
 
@@ -208,7 +203,6 @@ Two Options:
     <xs:complexType name="Transform">
         <xs:sequence>
             <xs:element name="rule" type="workflow:RuleType" maxOccurs="unbounded"/>
-            <!-- TODO: validate transformed data [needs more condition for validation, currently it is only boolean operator] -->
             <xs:element name="validateTransformedData" minOccurs="0" default="false"  type="xs:boolean" />
         </xs:sequence>
     </xs:complexType>
@@ -216,15 +210,12 @@ Two Options:
 
 <!-- START: Extract schema xsd descriptors. -->
     <xs:complexType name="ExtractFileSystem">
-        <xs:all>
-            <xs:element name="dataPath" type="workflow:DataPath"/>
-        </xs:all>
+        <xs:all><xs:element name="dataPath" type="workflow:DataPath"/></xs:all>
         <xs:attribute name="fileType" use="required" type="workflow:SupportedFileType"/>
     </xs:complexType>
     <xs:complexType name="JDBC">
-        <xs:all>
-            <xs:element name="query" minOccurs="0" type="workflow:Query"/>
-        </xs:all>
+        <xs:all><xs:element name="query" minOccurs="0" type="workflow:Query"/></xs:all>
+        <xs:attribute name="databaseType" use="required" type="workflow:JDBCType"/>
     </xs:complexType>
     <xs:complexType name="ExtractFeed">
         <xs:sequence>
@@ -237,33 +228,28 @@ Two Options:
         <xs:attribute name="validateExtractedData" use="required" type="xs:boolean"/>
     </xs:complexType>
     <xs:complexType name="Extract">
-        <xs:sequence>
-           <xs:element name="feed" maxOccurs="unbounded" type="workflow:ExtractFeed">
-           </xs:element>
-        </xs:sequence>
+        <xs:sequence><xs:element name="feed" maxOccurs="unbounded" type="workflow:ExtractFeed"/></xs:sequence>
     </xs:complexType>
 <!-- END: Extract schema xsd descriptors. -->
 
 <!-- START: JobStaticParam schema xsd descriptors. -->
     <xs:complexType name="JobStaticParam">
-        <xs:all>
-            <xs:element name="otherParams" minOccurs="0" type="workflow:Params"/>
-        </xs:all>
-        <xs:attribute name="publishStats" use="required" type="xs:boolean"/>
+        <xs:all><xs:element name="otherParams" minOccurs="0" type="workflow:Params"/></xs:all>
         <xs:attribute name="jobName" use="required" type="xs:string"/>
+        <xs:attribute name="publishStats" use="required" type="xs:boolean"/>
         <xs:attribute name="frequency" use="required" type="workflow:ProcessFrequency"/>
     </xs:complexType>
 <!-- END: JobStaticParam schema xsd descriptors.-->
 
 <!-- START: etlJob schema xsd descriptors. -->
-    <xs:element name="etlJob" type="workflow:ETLJob"/>
     <xs:complexType name="ETLJob">
         <xs:all>
-            <xs:element name="jobStaticParam" type="workflow:JobStaticParam" />
+            <xs:element name="load" type="workflow:Load" />
             <xs:element name="extract" type="workflow:Extract"/>
             <xs:element name="transform" type="workflow:Transform"/>
-            <xs:element name="load" type="workflow:Load" />
+            <xs:element name="jobStaticParam" type="workflow:JobStaticParam" />
         </xs:all>
     </xs:complexType>
+    <xs:element name="etlJob" type="workflow:ETLJob"/>
 <!-- END: etlJob schema xsd descriptors. -->
 </xs:schema>

@@ -1,19 +1,24 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
 import com.abhioncbr.etlFramework.commons.common.file.FilePath
-import com.abhioncbr.etlFramework.commons.load.{Load, LoadType}
+import com.abhioncbr.etlFramework.commons.load.{Load, LoadFeed, LoadType, PartitioningData}
 
 object ParseLoad {
-  def fromXML(node: scala.xml.NodeSeq): Load = {
-    Load(subTask = (node \ "task").text,
-      loadType = LoadType.getValueType((node \ "type").text),
-      dbName = (node \ "db_name").text, tableName = (node \ "table_name").text,
-      datasetName= (node \ "dataset").text, feedName= (node \ "feed_name").text,
-      dataPath = FilePath(pathPrefix = Some((node \ "file_initial_path").text),
-        groupPatterns = None,
-        feedPattern = None, //Some(PathInfixParam((node \ "file_name_pattern").text, Some((node \ "format_file_name").text.toBoolean))),
-        fileName = None //Some(FileNameParam(Some((node \ "file_prefix").text)))
-      ), //(node \ "file_initial_path").text,
-      fileType = (node \ "file_type").text, partData = ParsePartitioningData.fromXML(node \ "partition_data"))
+  def fromXML(node: scala.xml.NodeSeq): Load = {val load: Load = Load(feeds = Array[LoadFeed]((node \ "feed" ).toList map { s => ParseLoadFeed.fromXML(s) }: _*))
+    load
   }
 }
+
+object ParseLoadFeed {
+  def fromXML(node: scala.xml.NodeSeq): LoadFeed = {
+    val loadFeedName : String = (node \ "@feedName").text
+    val loadType: LoadType.valueType = LoadType.getValueType( valueTypeString = (node \ "_").head.label.toUpperCase)
+    val attributesMap: Map[String, String] = (node \ "_").head.attributes.map(meta => (meta.key, meta.value.toString)).toMap
+    val dataPath: FilePath = ParseUtil.parseNode[FilePath](node \ "_" \ "dataPath", None, ParseDataPath.fromXML).orNull
+    val partitioningData: Option[PartitioningData] = ParseUtil.parseNode[PartitioningData](node \ "hive" \"partition_data", None, ParsePartitioningData.fromXML)
+
+    val feed: LoadFeed = LoadFeed(loadFeedName = loadFeedName, loadType = loadType, attributesMap = attributesMap, dataPath = dataPath, partitioningData = partitioningData)
+    feed
+  }
+}
+
