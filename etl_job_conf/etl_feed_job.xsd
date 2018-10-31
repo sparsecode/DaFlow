@@ -198,12 +198,12 @@ Two Options:
     </xs:complexType>
     <xs:complexType name="FieldMapping">
         <xs:attribute name="sourceName" use="required" type="xs:string"/>
-        <xs:attribute name="targetName" use="required" type="xs:string" />
+        <xs:attribute name="targetName" use="required" type="xs:string"/>
     </xs:complexType>
     <xs:complexType name="Transform">
         <xs:sequence>
             <xs:element name="rule" type="workflow:RuleType" maxOccurs="unbounded"/>
-            <xs:element name="validateTransformedData" minOccurs="0" default="false"  type="xs:boolean" />
+            <xs:element name="validateTransformedData" minOccurs="0" default="false"  type="xs:boolean"/>
         </xs:sequence>
     </xs:complexType>
 <!-- END: Transform schema xsd descriptors.  -->
