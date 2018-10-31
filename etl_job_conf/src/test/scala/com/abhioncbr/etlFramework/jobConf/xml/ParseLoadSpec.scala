@@ -10,7 +10,7 @@ class ParseLoadSpec extends XmlJobConfBase {
             <hive dataBaseName="{db-name}" tableName="{table-name}" fileType="PARQUET">
                 <partitionData coalescePartition="true" overwritePartition="true" coalescePartitionCount="10">
                     <partitionColumns>
-                        <column name="" value=""/>
+                        <column name="Date" value="date"/>
                     </partitionColumns>
                 </partitionData>
                 <dataPath>
@@ -58,6 +58,5 @@ class ParseLoadSpec extends XmlJobConfBase {
     parseLoadFeedObject.dataPath.pathPrefix should be (Some(s"{json-file-path-suffix}"))
     parseLoadFeedObject.dataPath.fileName.get.fileNamePrefix should be (Some("json_data"))
     parseLoadFeedObject.dataPath.fileName.get.fileNameSuffix should be (Some("json"))
-
   }
 }
