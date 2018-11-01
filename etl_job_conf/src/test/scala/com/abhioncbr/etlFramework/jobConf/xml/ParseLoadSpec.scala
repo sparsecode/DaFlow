@@ -1,6 +1,6 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.load.LoadFeed
+import com.abhioncbr.etlFramework.commons.load.LoadFeedConf
 
 class ParseLoadSpec extends XmlJobConfBase {
 
@@ -18,7 +18,7 @@ class ParseLoadSpec extends XmlJobConfBase {
                 </dataPath>
             </hive>
         </feed>"""
-    val parseLoadFeedObject: LoadFeed = ParseLoadFeed.fromXML(node(xmlContent))
+    val parseLoadFeedObject: LoadFeedConf = ParseLoadFeed.fromXML(node(xmlContent))
     parseLoadFeedObject should not be null
     parseLoadFeedObject.loadFeedName should be ("feed1")
     parseLoadFeedObject.attributesMap.size should be (3)
@@ -48,7 +48,7 @@ class ParseLoadSpec extends XmlJobConfBase {
                               </dataPath>
                             </fileSystem>
                         </feed>"""
-    val parseLoadFeedObject: LoadFeed = ParseLoadFeed.fromXML(node(xmlContent))
+    val parseLoadFeedObject: LoadFeedConf = ParseLoadFeed.fromXML(node(xmlContent))
     parseLoadFeedObject should not be null
     parseLoadFeedObject.loadFeedName should be ("json_data")
     parseLoadFeedObject.attributesMap.size should be (1)

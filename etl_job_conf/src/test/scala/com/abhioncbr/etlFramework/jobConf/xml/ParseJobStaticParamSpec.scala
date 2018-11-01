@@ -1,12 +1,12 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.job.JobStaticParam
+import com.abhioncbr.etlFramework.commons.job.JobStaticParamConf
 
 class ParseJobStaticParamSpec extends XmlJobConfBase {
 
   "ParseJobStaticParam-fromXML" should "return JobStaticParam object" in {
     val xmlContent: String = s"""<jobStaticParam jobName="Job1" frequency="ONCE" publishStats="false"/>"""
-    val jobStaticParamObject: JobStaticParam = ParseJobStaticParam.fromXML(node(xmlContent))
+    val jobStaticParamObject: JobStaticParamConf = ParseJobStaticParam.fromXML(node(xmlContent))
     jobStaticParamObject should not equal null
     jobStaticParamObject.jobName should be ("Job1")
     jobStaticParamObject.processFrequency.toString should be ("ONCE")
@@ -21,7 +21,7 @@ class ParseJobStaticParamSpec extends XmlJobConfBase {
          |<param order="2" name="{col2}" value="{val2}" defaultValue="{val2}"/>
          |</otherParams></jobStaticParam>
        """.stripMargin
-    val jobStaticParamObject: JobStaticParam = ParseJobStaticParam.fromXML(node(xmlContent))
+    val jobStaticParamObject: JobStaticParamConf = ParseJobStaticParam.fromXML(node(xmlContent))
     jobStaticParamObject should not equal null
     jobStaticParamObject.jobName should be ("Job1")
     jobStaticParamObject.processFrequency.toString should be ("ONCE")

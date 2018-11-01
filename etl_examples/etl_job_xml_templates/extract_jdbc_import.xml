@@ -18,9 +18,12 @@
     </extract>
 
     <transform>
-        <rule order="1" type="SCHEMA_TRANSFORMATION" group="1" failedFieldLimit="10" failedRowLimit="10">
-            <condition>test_string2</condition>
-        </rule>
+        <step order="1">
+            <rule type="SCHEMA_TRANSFORMATION" group="1" failedFieldLimit="10" failedRowLimit="10">
+                <condition>test_string2</condition>
+            </rule>
+        </step>
+
     </transform>
 
     <load>

@@ -17,13 +17,17 @@
         </feed>
     </extract>
     <transform>
-        <rule order="1" type="SELECT" group='1'>
-            <condition>test_string2</condition>
-        </rule>
-        <rule type="SELECT" order="2" group="1">
-            <condition>test_string2</condition>
-        </rule>
-        <validateTransformedData>false</validateTransformedData>
+        <step order="1">
+            <rule type="SELECT" group='1'>
+                <condition>test_string2</condition>
+            </rule>
+        </step>
+
+        <step order="1">
+            <rule type="SELECT" group="1">
+                <condition>test_string2</condition>
+            </rule>
+        </step>
     </transform>
     <load>
         <feed name="json_data">

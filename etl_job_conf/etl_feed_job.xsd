@@ -181,30 +181,29 @@ Two Options:
 <!-- END: Load xsd descriptors. -->
 
 <!-- START: Transform schema xsd descriptors. -->
-    <xs:complexType name="RuleType">
-        <xs:all id="RuleSequence">
-            <xs:element name="fieldMapping" type="workflow:FieldMapping" minOccurs="0"/>
-            <xs:element name="condition" type="xs:string" minOccurs="0"/>
-        </xs:all>
-        <xs:attribute name="type" use="required" type="workflow:TransformationRule"/>
-        <xs:attribute name="order" use="required" type="workflow:TransformationRuleOrder"/>
-        <xs:attribute name="group" use="required" type="workflow:TransformationRuleGroup"/>
-
-        <xs:attribute name="scope" type="workflow:PartitionScope"/>
-        <xs:attribute name="mergeGroup" type="workflow:MergeGroupType"/>
-
-        <xs:attribute name="failedRowLimit" type="xs:positiveInteger"/>
-        <xs:attribute name="failedFieldLimit" type="xs:positiveInteger"/>
-    </xs:complexType>
     <xs:complexType name="FieldMapping">
         <xs:attribute name="sourceName" use="required" type="xs:string"/>
         <xs:attribute name="targetName" use="required" type="xs:string"/>
     </xs:complexType>
+    <xs:complexType name="TransformRule">
+        <xs:all id="RuleComponents">
+            <xs:element name="fieldMapping" type="workflow:FieldMapping" minOccurs="0"/>
+            <xs:element name="condition" type="xs:string" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="type" use="required" type="workflow:TransformationRule"/>
+        <xs:attribute name="group" use="required" type="workflow:TransformationRuleGroup"/>
+        <xs:attribute name="scope" type="workflow:PartitionScope"/>
+        <xs:attribute name="mergeGroup" type="workflow:MergeGroupType"/>
+        <xs:attribute name="failedRowLimit" type="xs:positiveInteger"/>
+        <xs:attribute name="failedFieldLimit" type="xs:positiveInteger"/>
+    </xs:complexType>
+    <xs:complexType name="TransformStep">
+        <xs:sequence><xs:element name="rule" type="workflow:TransformRule" maxOccurs="unbounded"/></xs:sequence>
+        <xs:attribute name="order" use="required" type="workflow:TransformationRuleOrder"/>
+    </xs:complexType>
     <xs:complexType name="Transform">
-        <xs:sequence>
-            <xs:element name="rule" type="workflow:RuleType" maxOccurs="unbounded"/>
-            <xs:element name="validateTransformedData" minOccurs="0" default="false"  type="xs:boolean"/>
-        </xs:sequence>
+        <xs:sequence><xs:element name="step" type="workflow:TransformStep" maxOccurs="unbounded"/></xs:sequence>
+        <xs:attribute name="validateTransformedData" default="false"  type="xs:boolean"/>
     </xs:complexType>
 <!-- END: Transform schema xsd descriptors.  -->
 

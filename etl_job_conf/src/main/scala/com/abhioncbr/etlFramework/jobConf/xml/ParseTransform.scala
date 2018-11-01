@@ -1,20 +1,10 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.transform.{DummyRule, Transform, TransformationRule, TransformationStep}
-
-import scala.collection.immutable.ListMap
+import com.abhioncbr.etlFramework.commons.transform.{TransformConf, TransformStepConf}
 
 object ParseTransform {
-  def fromXML(node: scala.xml.NodeSeq): Transform = {
-    val rules = List[DummyRule]((node \ "rule").toList map { s => ParseRule.fromXML(s) }: _*).flatten(dummy => ParseRule.getRules(dummy))
-    Transform(transformationSteps = getTransformationStep(rules), validateTransformedData = ParseUtil.parseBoolean((node \ "validateTransformedData").text))
-  }
-
-  def getTransformationStep(rules: List[TransformationRule]) : List[TransformationStep] ={
-    val orderedRule = rules.map(rule => (rule.getOrder,rule)).groupBy(_._1).map { case (k,v) => (k,v.map(_._2))}
-    val transformationStepsMap = orderedRule.keys.zip(orderedRule.values.map(list => list.map(rule => (rule.getGroup, rule)).toMap))
-    val transformationSteps: List[TransformationStep] = ListMap(transformationStepsMap.toSeq.sortBy(_._1):_*).
-      map(entry => new TransformationStep(entry._1,entry._2)).toList
-    transformationSteps
+  def fromXML(node: scala.xml.NodeSeq): TransformConf = {
+    val steps: List[TransformStepConf] = List[TransformStepConf]((node \ "step").toList map { s => ParseTransformStep.fromXML(s) }: _*)
+    TransformConf(transformSteps = steps, validateTransformedData = ParseUtil.parseBoolean((node \ "@validateTransformedData").text))
   }
 }
