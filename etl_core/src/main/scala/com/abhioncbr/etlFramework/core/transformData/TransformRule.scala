@@ -5,7 +5,7 @@ import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.common.FieldMapping
 import com.abhioncbr.etlFramework.commons.load.LoadFeedConf
 import com.abhioncbr.etlFramework.commons.transform.TransformResult
-import com.abhioncbr.etlFramework.sql_parser.{Clause, SQLParser}
+import com.abhioncbr.etlFramework.sqlParser.{Clause, SQLParser}
 import com.typesafe.scalalogging.Logger
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{DataType, StructType}
@@ -184,11 +184,11 @@ class PartitionRule(scope: String, ruleCondition: String, group: String)
 
   private def setCondition(conditions: Seq[Clause]): Unit = {
     conditions.foreach {
-      case notNullClause: com.abhioncbr.etlFramework.sql_parser.NotNull =>
+      case notNullClause: com.abhioncbr.etlFramework.sqlParser.NotNull =>
         condition = s"${notNullClause.getFields("field")} IS NOT NULL"
         notCondition = s"${notNullClause.getFields("field")} IS NULL"
 
-      case nullClause: com.abhioncbr.etlFramework.sql_parser.Null =>
+      case nullClause: com.abhioncbr.etlFramework.sqlParser.Null =>
         condition = s"${nullClause.getFields("field")} IS NULL"
         notCondition = s"${nullClause.getFields("field")} IS NOT NULL"
     }

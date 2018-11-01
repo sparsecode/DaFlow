@@ -58,7 +58,7 @@ lazy val etl_core = project.in(file("etl_core"))
   .dependsOn("etl_job_conf").aggregate("etl_job_conf")
   .dependsOn("etl_metrics").aggregate("etl_metrics")
   .settings(etl_framework_common_settings: _*)
-  .settings(mainClass in assembly := Some("com.abhioncbr.etlFramework.etl_core.LaunchETLExecution"))
+  .settings(mainClass in assembly := Some("com.abhioncbr.etlFramework.core.LaunchETLExecution"))
 
 lazy val etl_sql_parser = project.in(file("etl_sql_parser"))
   .settings(etl_framework_common_settings: _*)
