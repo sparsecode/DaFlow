@@ -1,12 +1,12 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.common.GeneralParam
+import com.abhioncbr.etlFramework.commons.common.GeneralParamConf
 
 
 class ParseGeneralParamsSpec extends XmlJobConfBase{
   "ParseGeneralParam-fromXML" should "return GeneralParam object when xml node content is passed as an argument" in {
     val xmlContent: String = s"""<param order="1" name="{col1}" value="FIRST_DATE" defaultValue="SECOND_DATE"/>"""
-    val generalParamObject: GeneralParam = ParseGeneralParam.fromXML(node(xmlContent))
+    val generalParamObject: GeneralParamConf = ParseGeneralParam.fromXML(node(xmlContent))
     generalParamObject should not equal null
 
     generalParamObject.order should equal (1)
@@ -18,7 +18,7 @@ class ParseGeneralParamsSpec extends XmlJobConfBase{
 
   "ParseGeneralParam-fromXML" should "return GeneralParam object with  no variable values when xml node content is passed as an argument" in {
     val xmlContent: String = s"""<param/>"""
-    val generalParamObject: GeneralParam = ParseGeneralParam.fromXML(node(xmlContent))
+    val generalParamObject: GeneralParamConf = ParseGeneralParam.fromXML(node(xmlContent))
     generalParamObject should not equal null
 
     generalParamObject.order should equal (-1)
@@ -28,7 +28,7 @@ class ParseGeneralParamsSpec extends XmlJobConfBase{
     generalParamObject.paramDefaultValue should equal ("")
 
     val xmlOtherContent: String = s"""<abc/>"""
-    val generalParamsOtherObject: GeneralParam = ParseGeneralParam.fromXML(node(xmlOtherContent))
+    val generalParamsOtherObject: GeneralParamConf = ParseGeneralParam.fromXML(node(xmlOtherContent))
     generalParamsOtherObject should not equal null
 
     generalParamsOtherObject.order should equal (-1)
@@ -44,7 +44,7 @@ class ParseGeneralParamsSpec extends XmlJobConfBase{
          |<param order="2" name="{col2}" value="{val2}" defaultValue="{val2}"/>
          |</formatArgValues>""".stripMargin
 
-    val generalParamObjectArray: Array[GeneralParam] = ParseGeneralParams.fromXML(node(xmlContent))
+    val generalParamObjectArray: Array[GeneralParamConf] = ParseGeneralParams.fromXML(node(xmlContent))
     generalParamObjectArray should not equal null
     generalParamObjectArray.length should equal (2)
 
@@ -63,7 +63,7 @@ class ParseGeneralParamsSpec extends XmlJobConfBase{
     val xmlContent: String =s"""<formatArgValues>
                                |</formatArgValues>""".stripMargin
 
-    val generalParamObjectArray: Array[GeneralParam] = ParseGeneralParams.fromXML(node(xmlContent))
+    val generalParamObjectArray: Array[GeneralParamConf] = ParseGeneralParams.fromXML(node(xmlContent))
     generalParamObjectArray should not equal null
     generalParamObjectArray.length should equal (0)
   }

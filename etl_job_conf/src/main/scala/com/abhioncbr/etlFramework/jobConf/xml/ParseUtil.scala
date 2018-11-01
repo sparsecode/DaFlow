@@ -1,6 +1,6 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.common.file.DataPath
+import com.abhioncbr.etlFramework.commons.common.DataPath
 import com.abhioncbr.etlFramework.commons.util.FileUtil
 
 import scala.util.Try

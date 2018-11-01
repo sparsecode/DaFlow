@@ -1,6 +1,6 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.load.PartitioningData
+import com.abhioncbr.etlFramework.commons.load.PartitioningDataConf
 
 class ParsePartitioningRuleSpec extends XmlJobConfBase {
 
@@ -10,7 +10,7 @@ class ParsePartitioningRuleSpec extends XmlJobConfBase {
                          <column name="Date" value="date"/>
                       </partitionColumns>
                     </partitionData>""".stripMargin
-    val partitioningDataObject: PartitioningData = ParsePartitioningData.fromXML(node(xmlContent))
+    val partitioningDataObject: PartitioningDataConf = ParsePartitioningData.fromXML(node(xmlContent))
     partitioningDataObject should not equal null
     partitioningDataObject.coalesce should be (true)
     partitioningDataObject.overwrite should be (true)
@@ -27,7 +27,7 @@ class ParsePartitioningRuleSpec extends XmlJobConfBase {
                          <column name="Date" value="date"/>
                       </partitionColumns>
                     </partitionData>""".stripMargin
-    val partitioningDataObject: PartitioningData = ParsePartitioningData.fromXML(node(xmlContent))
+    val partitioningDataObject: PartitioningDataConf = ParsePartitioningData.fromXML(node(xmlContent))
     partitioningDataObject should not equal null
     partitioningDataObject.coalesce should be (false)
     partitioningDataObject.overwrite should be (true)

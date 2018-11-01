@@ -1,12 +1,12 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.common.FieldMapping
+import com.abhioncbr.etlFramework.commons.common.FieldMappingConf
 
 class ParseFieldMappingSpec extends XmlJobConfBase {
 
   "ParseFieldMapping-fromXML" should "return FieldMapping object" in {
     val xmlContent: String = s"""<fieldMapping sourceName="source" targetName="target"/>"""
-    val filedMappingObject: FieldMapping  = ParseFieldMapping.fromXML(node(xmlContent))
+    val filedMappingObject: FieldMappingConf  = ParseFieldMapping.fromXML(node(xmlContent))
     filedMappingObject should not equal null
     filedMappingObject.sourceFieldName should be ("source")
     filedMappingObject.targetFieldName should be ("target")
@@ -21,7 +21,7 @@ class ParseFieldMappingSpec extends XmlJobConfBase {
          |<fieldMapping sourceName="source3" targetName="target3"/>
          |</node>
        """.stripMargin
-    val filedMappingArrayObject: List[FieldMapping]  = ParseFieldMappings.fromXML(node(xmlContent))
+    val filedMappingArrayObject: List[FieldMappingConf]  = ParseFieldMappings.fromXML(node(xmlContent))
     filedMappingArrayObject should not equal null
     filedMappingArrayObject.length should be (3)
     filedMappingArrayObject.head.sourceFieldName should be ("source1")
