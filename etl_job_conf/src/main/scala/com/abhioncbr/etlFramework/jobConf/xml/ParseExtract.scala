@@ -1,8 +1,8 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.common.file.FilePath
-import com.abhioncbr.etlFramework.commons.common.query.QueryObject
-import com.abhioncbr.etlFramework.commons.extract.{ExtractConf, ExtractionType, ExtractFeedConf}
+import com.abhioncbr.etlFramework.commons.common.QueryObject
+import com.abhioncbr.etlFramework.commons.common.file.DataPath
+import com.abhioncbr.etlFramework.commons.extract.{ExtractConf, ExtractFeedConf, ExtractionType}
 
 object ParseExtract {
   def fromXML(node: scala.xml.NodeSeq): ExtractConf = {
@@ -19,7 +19,7 @@ object ParseExtractFeed {
     val extractionType: ExtractionType.valueType = ExtractionType.getValueType( valueTypeString = (node \ "_").head.label.toUpperCase)
 
     val query: Option[QueryObject] = ParseUtil.parseNode[QueryObject](node \ "jdbc" \ "query", None, ParseQuery.fromXML)
-    val dataPath: Option[FilePath] = ParseUtil.parseNode[FilePath](node \ "fileSystem" \ "dataPath", None, ParseDataPath.fromXML)
+    val dataPath: Option[DataPath] = ParseUtil.parseNode[DataPath](node \ "fileSystem" \ "dataPath", None, ParseDataPath.fromXML)
 
     val feed: ExtractFeedConf = ExtractFeedConf(extractFeedName = feedName,
       extractionType = extractionType, extractionSubType = extractionSubType,

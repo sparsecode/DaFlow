@@ -1,7 +1,7 @@
 package com.abhioncbr.etlFramework.core.loadData
 
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{JOB_STATIC_PARAM_CONF, LOAD_CONF}
-import com.abhioncbr.etlFramework.commons.common.file.FilePath
+import com.abhioncbr.etlFramework.commons.common.file.DataPath
 import com.abhioncbr.etlFramework.commons.job.JobStaticParamConf
 import com.abhioncbr.etlFramework.commons.load.LoadFeedConf
 import com.abhioncbr.etlFramework.commons.util.FileUtil
@@ -17,7 +17,7 @@ class LoadDataIntoFileSystem extends LoadData {
   private val load = Context.getContextualObject[LoadFeedConf](LOAD_CONF)
   private val datasetName: String = load.attributesMap.getOrElse("catalogName", "")
   private val feedName = load.attributesMap.getOrElse("feedName", "")
-  private val dataPath: FilePath = load.dataPath
+  private val dataPath: DataPath = load.dataPath
 
   def loadTransformedData(dataFrame: DataFrame, date: Option[DateTime] = None): Either[Boolean, String] = {
     val path = FileUtil.getFilePathString(dataPath)

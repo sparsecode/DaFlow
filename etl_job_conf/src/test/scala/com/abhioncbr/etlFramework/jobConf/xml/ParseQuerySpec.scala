@@ -1,6 +1,6 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.common.query.QueryObject
+import com.abhioncbr.etlFramework.commons.common.QueryObject
 
 class ParseQuerySpec extends XmlJobConfBase {
 

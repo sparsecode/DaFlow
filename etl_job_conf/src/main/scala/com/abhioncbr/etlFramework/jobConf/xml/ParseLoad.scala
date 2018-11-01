@@ -1,6 +1,6 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.common.file.FilePath
+import com.abhioncbr.etlFramework.commons.common.file.DataPath
 import com.abhioncbr.etlFramework.commons.load.{LoadConf, LoadFeedConf, LoadType, PartitioningData}
 
 object ParseLoad {
@@ -14,7 +14,7 @@ object ParseLoadFeed {
     val loadFeedName : String = (node \ "@name").text
     val loadType: LoadType.valueType = LoadType.getValueType( valueTypeString = (node \ "_").head.label.toUpperCase)
     val attributesMap: Map[String, String] = (node \ "_").head.attributes.map(meta => (meta.key, meta.value.toString)).toMap
-    val dataPath: FilePath = ParseUtil.parseNode[FilePath](node \ "_" \ "dataPath", None, ParseDataPath.fromXML).orNull
+    val dataPath: DataPath = ParseUtil.parseNode[DataPath](node \ "_" \ "dataPath", None, ParseDataPath.fromXML).orNull
     val partitioningData: Option[PartitioningData] = ParseUtil.parseNode[PartitioningData](node \ "hive" \"partitionData", None, ParsePartitioningData.fromXML)
 
     val feed: LoadFeedConf = LoadFeedConf(loadFeedName = loadFeedName, loadType = loadType, attributesMap = attributesMap, dataPath = dataPath, partitioningData = partitioningData)

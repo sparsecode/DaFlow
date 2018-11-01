@@ -5,8 +5,7 @@ import java.io.{BufferedReader, InputStreamReader}
 import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.extract.ExtractFeedConf
-import com.abhioncbr.etlFramework.commons.common.GeneralParam
-import com.abhioncbr.etlFramework.commons.common.query.{QueryObject, QueryParamTypeEnum}
+import com.abhioncbr.etlFramework.commons.common.{GeneralParam, QueryObject}
 import com.abhioncbr.etlFramework.commons.util.FileUtil
 import com.typesafe.scalalogging.Logger
 import org.apache.hadoop.conf.Configuration
@@ -26,7 +25,7 @@ class ExtractDataFromHive(feed: ExtractFeedConf) extends AbstractExtractData{
     val rawQuery = Stream.continually(tableQueryReader.readLine()).takeWhile(_ != null).toArray[String].mkString.stripMargin
 
     val sqlQueryParams: Array[GeneralParam] = query.get.queryArgs.get
-    val queryParams = QueryParamTypeEnum.getParamsValue(sqlQueryParams.toList)
+    val queryParams = ExtractUtil.getParamsValue(sqlQueryParams.toList)
     println("query param values" + queryParams.mkString(" , "))
     val tableQuery = String.format(rawQuery, queryParams:_*)
     logger.info(s"going to execute hive query  \\n: $tableQuery")

@@ -1,15 +1,15 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
 import com.abhioncbr.etlFramework.commons.common.GeneralParam
-import com.abhioncbr.etlFramework.commons.common.file.{FileNameParam, FilePath, PathInfixParam}
+import com.abhioncbr.etlFramework.commons.common.file.{FileNameParam, DataPath, PathInfixParam}
 import com.typesafe.scalalogging.Logger
 
 object ParseDataPath {
   private val logger = Logger(this.getClass)
 
-  def fromXML(node: scala.xml.NodeSeq): FilePath = {
-    val parsedPath =  ParseUtil.parseNode[Either[FilePath,String]](node \ "path", None, ParseUtil.parseFilePathString)
-    val parsedPathPattern =  ParseUtil.parseNode[FilePath](node \ "pathPattern", None, ParseDataPath.parsePathPattern)
+  def fromXML(node: scala.xml.NodeSeq): DataPath = {
+    val parsedPath =  ParseUtil.parseNode[Either[DataPath,String]](node \ "path", None, ParseUtil.parseFilePathString)
+    val parsedPathPattern =  ParseUtil.parseNode[DataPath](node \ "pathPattern", None, ParseDataPath.parsePathPattern)
 
     if(parsedPath.isDefined) {
       parsedPath.get match {
@@ -21,8 +21,8 @@ object ParseDataPath {
     } else parsedPathPattern.get
   }
 
-  def parsePathPattern(node: scala.xml.NodeSeq): FilePath = {
-    val dataPath: FilePath = FilePath(pathPrefix = Some((node \ "initialPath").text),
+  def parsePathPattern(node: scala.xml.NodeSeq): DataPath = {
+    val dataPath: DataPath = DataPath(pathPrefix = Some((node \ "initialPath").text),
       groupPatterns = ParseUtil.parseNode[Array[PathInfixParam]](node \ "groupPattern", None, ParseGroupPatterns.fromXML),
       feedPattern = ParseUtil.parseNode[PathInfixParam](node \ "feedPattern", None, ParseFeedPattern.fromXML),
       fileName = ParseUtil.parseNode[FileNameParam](node \ "fileName", None, ParseFileName.fromXML)
