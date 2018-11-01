@@ -1,6 +1,6 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.common.file.{FileNameParam, DataPath, PathInfixParam}
+import com.abhioncbr.etlFramework.commons.common.{DataPath, FileNameParam, PathInfixParam}
 
 class ParseDataPathSpec extends XmlJobConfBase{
 

@@ -1,7 +1,7 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.common.GeneralParam
-import com.abhioncbr.etlFramework.commons.common.file.{FileNameParam, DataPath, PathInfixParam}
+import com.abhioncbr.etlFramework.commons.common
+import com.abhioncbr.etlFramework.commons.common.{DataPath, FileNameParam, GeneralParamConf, PathInfixParam}
 import com.typesafe.scalalogging.Logger
 
 object ParseDataPath {
@@ -22,7 +22,7 @@ object ParseDataPath {
   }
 
   def parsePathPattern(node: scala.xml.NodeSeq): DataPath = {
-    val dataPath: DataPath = DataPath(pathPrefix = Some((node \ "initialPath").text),
+    val dataPath: DataPath = common.DataPath(pathPrefix = Some((node \ "initialPath").text),
       groupPatterns = ParseUtil.parseNode[Array[PathInfixParam]](node \ "groupPattern", None, ParseGroupPatterns.fromXML),
       feedPattern = ParseUtil.parseNode[PathInfixParam](node \ "feedPattern", None, ParseFeedPattern.fromXML),
       fileName = ParseUtil.parseNode[FileNameParam](node \ "fileName", None, ParseFileName.fromXML)
@@ -43,7 +43,7 @@ object ParseGroupPattern {
       order = ParseUtil.parseNode[Int](node \ "order", None, ParseUtil.parseInt),
       infixPattern= (node \ "groupNamePattern").text,
       formatInfix = ParseUtil.parseNode[Boolean](node \ "formatGroupName", None, ParseUtil.parseBoolean),
-      formatInfixArgs = ParseUtil.parseNode[Array[GeneralParam]](node \ "formatArgValues", None, ParseGeneralParams.fromXML) )//Some(ParseGeneralParams.fromXML(node, nodeTag= "formatArgValues")))
+      formatInfixArgs = ParseUtil.parseNode[Array[GeneralParamConf]](node \ "formatArgValues", None, ParseGeneralParams.fromXML) )//Some(ParseGeneralParams.fromXML(node, nodeTag= "formatArgValues")))
     pathInfixParam
   }
 }
@@ -52,7 +52,7 @@ object ParseFeedPattern {
   def fromXML(node: scala.xml.NodeSeq): PathInfixParam = {
     val pathInfixParam : PathInfixParam = PathInfixParam( infixPattern= (node \ "feedNamePattern").text,
       formatInfix = ParseUtil.parseNode[Boolean](node \ "formatFeedName", None, ParseUtil.parseBoolean),
-      formatInfixArgs = ParseUtil.parseNode[Array[GeneralParam]](node \ "formatArgValues", None, ParseGeneralParams.fromXML) )//Some(ParseGeneralParams.fromXML(node, nodeTag= "formatArgValues")))
+      formatInfixArgs = ParseUtil.parseNode[Array[GeneralParamConf]](node \ "formatArgValues", None, ParseGeneralParams.fromXML) )//Some(ParseGeneralParams.fromXML(node, nodeTag= "formatArgValues")))
     pathInfixParam
   }
 }

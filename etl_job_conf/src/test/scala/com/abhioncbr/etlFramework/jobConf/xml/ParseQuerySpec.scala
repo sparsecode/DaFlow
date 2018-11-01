@@ -1,6 +1,6 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.common.QueryObject
+import com.abhioncbr.etlFramework.commons.common.QueryConf
 
 class ParseQuerySpec extends XmlJobConfBase {
 
@@ -10,7 +10,7 @@ class ParseQuerySpec extends XmlJobConfBase {
                             <configurationFile><path>{db-property-file-path}</path></configurationFile>
                             <queryParams><param order="1" name="{col1}" value="FIRST_DATE"  /></queryParams>
                           </query>"""
-    val queryObject: QueryObject = ParseQuery.fromXML(node(xmlContent))
+    val queryObject: QueryConf = ParseQuery.fromXML(node(xmlContent))
     queryObject should not equal null
     queryObject.queryFile should not equal null
     queryObject.queryFile.configurationFile.isDefined should be (true)
@@ -32,7 +32,7 @@ class ParseQuerySpec extends XmlJobConfBase {
                             </sqlQueryFile>
                             <queryParams><param order="1" name="{col1}" value="FIRST_DATE"/></queryParams>
                           </query>"""
-    val queryObject: QueryObject = ParseQuery.fromXML(node(xmlContent))
+    val queryObject: QueryConf = ParseQuery.fromXML(node(xmlContent))
     queryObject should not equal null
     queryObject.queryFile should not equal null
     queryObject.queryFile.configurationFile.isDefined should be (false)
@@ -58,7 +58,7 @@ class ParseQuerySpec extends XmlJobConfBase {
                               </pathPattern>
                             </sqlQueryFile>
                           </query>"""
-    val queryObject: QueryObject = ParseQuery.fromXML(node(xmlContent))
+    val queryObject: QueryConf = ParseQuery.fromXML(node(xmlContent))
     queryObject should not equal null
     queryObject.queryFile should not equal null
     queryObject.queryFile.configurationFile.isDefined should be (false)

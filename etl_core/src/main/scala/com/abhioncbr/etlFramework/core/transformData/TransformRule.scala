@@ -2,7 +2,7 @@ package com.abhioncbr.etlFramework.core.transformData
 
 import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
-import com.abhioncbr.etlFramework.commons.common.FieldMapping
+import com.abhioncbr.etlFramework.commons.common.FieldMappingConf
 import com.abhioncbr.etlFramework.commons.load.LoadFeedConf
 import com.abhioncbr.etlFramework.commons.transform.TransformResult
 import com.abhioncbr.etlFramework.sqlParser.{Clause, SQLParser}
@@ -196,7 +196,7 @@ class PartitionRule(scope: String, ruleCondition: String, group: String)
 }
 
 //TODO: rule condition more dynamic
-class SchemaTransformationRule(ruleCondition: String, group: String, fieldMapping: List[FieldMapping], failedFieldLimit: Int, failedRowLimit: Int)
+class SchemaTransformationRule(ruleCondition: String, group: String, fieldMapping: List[FieldMappingConf], failedFieldLimit: Int, failedRowLimit: Int)
   extends abstractTransformationRule(group, ruleCondition) {
   private val logger = Logger(this.getClass)
   private var tableSchema:StructType = _

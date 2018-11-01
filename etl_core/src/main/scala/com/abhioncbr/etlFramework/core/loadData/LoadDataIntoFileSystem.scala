@@ -1,11 +1,11 @@
 package com.abhioncbr.etlFramework.core.loadData
 
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{JOB_STATIC_PARAM_CONF, LOAD_CONF}
-import com.abhioncbr.etlFramework.commons.common.file.DataPath
 import com.abhioncbr.etlFramework.commons.job.JobStaticParamConf
 import com.abhioncbr.etlFramework.commons.load.LoadFeedConf
 import com.abhioncbr.etlFramework.commons.util.FileUtil
 import com.abhioncbr.etlFramework.commons.Context
+import com.abhioncbr.etlFramework.commons.common.DataPath
 import com.typesafe.scalalogging.Logger
 import org.apache.spark.sql.{DataFrame, SaveMode}
 import org.joda.time.DateTime

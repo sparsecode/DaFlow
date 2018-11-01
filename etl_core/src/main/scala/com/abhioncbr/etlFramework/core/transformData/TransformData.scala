@@ -7,9 +7,9 @@ import org.apache.spark.sql.DataFrame
 class TransformData(transform : Transform) {
   private val logger = Logger(this.getClass)
 
-  def performTransformation(rawDataFrame: DataFrame): Either[Array[TransformResult], String] = {
+  def performTransformation(rawDataFrame: Array[DataFrame]): Either[Array[TransformResult], String] = {
     val steps = transform.transformSteps
-    var stepOutput: Array[TransformResult] = Array(TransformResult(rawDataFrame, null, null))
+    var stepOutput: Array[TransformResult] = rawDataFrame.map(dataFrame => TransformResult(dataFrame, null, null))
 
     //iterating over transformation steps
     steps.foreach(step => {

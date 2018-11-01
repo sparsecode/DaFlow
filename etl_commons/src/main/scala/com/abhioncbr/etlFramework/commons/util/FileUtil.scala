@@ -4,10 +4,9 @@ package com.abhioncbr.etlFramework.commons.util
 import java.text.DecimalFormat
 
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{HADOOP_CONF, JOB_STATIC_PARAM_CONF, OTHER_PARAM}
-import com.abhioncbr.etlFramework.commons.common.GeneralParam
-import com.abhioncbr.etlFramework.commons.common.file.{FileNameParam, DataPath, PathInfixParam}
+import com.abhioncbr.etlFramework.commons.common.{DataPath, FileNameParam, GeneralParamConf, PathInfixParam}
 import com.abhioncbr.etlFramework.commons.job.JobStaticParamConf
-import com.abhioncbr.etlFramework.commons.{Context, NotificationMessages, ProcessFrequencyEnum}
+import com.abhioncbr.etlFramework.commons.{Context, NotificationMessages, ProcessFrequencyEnum, common}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.joda.time.{DateTime, Days, DurationFieldType}
@@ -32,7 +31,7 @@ object FileUtil {
 
         val filePath: DataPath= if(!path.getName.contains(fileNameSeparator))
           DataPath(Some(pathPrefix), feedPattern = Some(PathInfixParam(infixPattern = path.getName)))
-        else DataPath(Some(pathPrefix),  fileName = Some(parseFileName(path.getName, fileNameSeparator)))
+        else common.DataPath(Some(pathPrefix),  fileName = Some(parseFileName(path.getName, fileNameSeparator)))
 
         return Left(filePath)
       }
@@ -68,11 +67,11 @@ object FileUtil {
     output
   }
 
-  def mapFormatArgs(generalParams: Option[Array[GeneralParam]]): Option[Array[String]] ={
+  def mapFormatArgs(generalParams: Option[Array[GeneralParamConf]]): Option[Array[String]] ={
     val programParams = Context.getContextualObject[Option[Map[String,String]]](OTHER_PARAM).get
     generalParams.getOrElse(None) match {
       case None => None
-      case params: Array[GeneralParam] => Some(params.map(param => programParams.getOrElse(param.paramName, param.paramValue)))
+      case params: Array[GeneralParamConf] => Some(params.map(param => programParams.getOrElse(param.paramName, param.paramValue)))
     }
   }
 

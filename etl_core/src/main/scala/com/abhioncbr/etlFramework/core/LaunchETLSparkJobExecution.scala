@@ -58,13 +58,14 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
   }
 
   def executeFeedJob: Either[Array[JobResult], String]={
-    val extractionResult = extract(0)
-    if(extractionResult.isRight) return Right(extractionResult.right.get)
+    val extractionResult = extract
+    val extractionRight: Array[String] = extractionResult.filter(_.isRight).map(_.right.get)
+    if(extractionRight.length > 0) return Right(extractionRight.mkString(" , "))
     logger.info("Extraction phase of the feed is completed")
 
     //TODO: validate extracted data based on condition & boolean operator.
 
-    val transformedResult = transformation(extractionResult.left.get)
+    val transformedResult = transformation(extractionResult.map(_.left.get))
     if(transformedResult.isRight) return Right(transformedResult.right.get)
     logger.info("Transformation phase of the feed is completed")
 
@@ -96,9 +97,9 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
     })
   }
 
-  private def transformation(extractionDF: DataFrame): Either[Array[TransformResult], String] = {
+  private def transformation(extractionDF: Array[DataFrame]): Either[Array[TransformResult], String] = {
     //testing whether extracted data frame is having data or not. If not then, error message is returned.
-    if(extractionDF.first == null) return Right("Extracted data frame contains no data row")
+    if(extractionDF.head.first == null) return Right("Extracted data frame contains no data row")
     val transform: Transform  = TransformUtil.prepareTransformation(Context.getContextualObject[TransformConf](TRANSFORM_CONF))
     new TransformData(transform).performTransformation(extractionDF)
   }
