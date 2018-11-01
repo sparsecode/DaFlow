@@ -3,10 +3,10 @@ package com.abhioncbr.etlFramework.commons.util
 
 import java.text.DecimalFormat
 
-import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{HADOOP_CONF, JOB_STATIC_PARAM, OTHER_PARAM}
+import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{HADOOP_CONF, JOB_STATIC_PARAM_CONF, OTHER_PARAM}
 import com.abhioncbr.etlFramework.commons.common.GeneralParam
 import com.abhioncbr.etlFramework.commons.common.file.{FileNameParam, FilePath, PathInfixParam}
-import com.abhioncbr.etlFramework.commons.job.JobStaticParam
+import com.abhioncbr.etlFramework.commons.job.JobStaticParamConf
 import com.abhioncbr.etlFramework.commons.{Context, NotificationMessages, ProcessFrequencyEnum}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
@@ -78,7 +78,7 @@ object FileUtil {
 
 
   private def getProcessFrequencyPattern(firstDate: Option[DateTime], secondDate: Option[DateTime]): String = {
-    val processFrequency: ProcessFrequencyEnum.frequencyType = Context.getContextualObject[JobStaticParam](JOB_STATIC_PARAM).processFrequency
+    val processFrequency: ProcessFrequencyEnum.frequencyType = Context.getContextualObject[JobStaticParamConf](JOB_STATIC_PARAM_CONF).processFrequency
     import com.abhioncbr.etlFramework.commons.ProcessFrequencyEnum._
     processFrequency match {
       case ONCE => ""

@@ -1,6 +1,6 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.extract.{Extract, ExtractionType, ExtractFeed}
+import com.abhioncbr.etlFramework.commons.extract.{ExtractConf, ExtractionType, ExtractFeedConf}
 
 class ParseExtractSpec extends XmlJobConfBase {
 
@@ -18,7 +18,7 @@ class ParseExtractSpec extends XmlJobConfBase {
                 </dataPath>
             </fileSystem>
         </feed>""".stripMargin
-    val feedObject: ExtractFeed = ParseExtractFeed.fromXML(node(xmlContent))
+    val feedObject: ExtractFeedConf = ParseExtractFeed.fromXML(node(xmlContent))
     feedObject should not equal null
     feedObject.extractFeedName should be ("json_data_feed")
     feedObject.validateExtractedData should be (false)
@@ -41,7 +41,7 @@ class ParseExtractSpec extends XmlJobConfBase {
                         |     </query>
                         |  </jdbc>
                         |</feed>""".stripMargin
-    val feedObject: ExtractFeed = ParseExtractFeed.fromXML(node(xmlContent))
+    val feedObject: ExtractFeedConf = ParseExtractFeed.fromXML(node(xmlContent))
     feedObject should not equal null
     feedObject.extractFeedName should be ("feed1")
     feedObject.validateExtractedData should be (true)
@@ -84,7 +84,7 @@ class ParseExtractSpec extends XmlJobConfBase {
                         |  </fileSystem>
                         | </feed>
                         |</extract>""".stripMargin
-    val extractObject: Extract = ParseExtract.fromXML(node(xmlContent))
+    val extractObject: ExtractConf = ParseExtract.fromXML(node(xmlContent))
     extractObject should not equal null
     extractObject.feeds should not equal null
     extractObject.feeds.length should be (2)

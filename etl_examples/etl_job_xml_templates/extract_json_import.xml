@@ -21,14 +21,18 @@
     </extract>
 
     <transform>
-        <rule order="1" type="SELECT" group='1'>
-            <condition>{col1}, {col2}, {col3}</condition>
-        </rule>
+        <step order="1">
+            <rule type="SELECT" group='1'>
+                <condition>{col1}, {col2}, {col3}</condition>
+            </rule>
+        </step>
 
-        <rule order="2" type="SCHEMA_TRANSFORMATION" group="1" failedFieldLimit="10" failedRowLimit="10">
-            <condition>{col1}, {col2}, {col3}</condition>
-            <fieldMapping sourceName="{example-http-agent}" targetName="{example-http_agent}"/>
-        </rule>
+        <step order="2">
+            <rule type="SCHEMA_TRANSFORMATION" group="1" failedFieldLimit="10" failedRowLimit="10">
+                <condition>{col1}, {col2}, {col3}</condition>
+                <fieldMapping sourceName="{example-http-agent}" targetName="{example-http_agent}"/>
+            </rule>
+        </step>
     </transform>
 
     <load>

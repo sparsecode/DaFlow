@@ -26,20 +26,28 @@
     </extract>
 
     <transform>
-        <rule order='1' type='PARTITION' group='1' scope="MERGE"><condition>{col1} is not null</condition></rule>
+        <step order="1">
+            <rule type='PARTITION' group='1' scope="MERGE"><condition>{col1} is not null</condition></rule>
+        </step>
 
-        <rule order='2' type='EXPLODE' group='11'><condition>{cond2}</condition></rule>
-        <rule order='2' type='SCHEMA_TRANSFORMATION' group='12' failedFieldLimit="40" failedRowLimit="50">
-            <fieldMapping sourceName="{timestamp}" targetName="{client_timestamp}"/>
-        </rule>
+        <step order="2">
+            <rule type='EXPLODE' group='11'><condition>{cond2}</condition></rule>
+            <rule type='SCHEMA_TRANSFORMATION' group='12' failedFieldLimit="40" failedRowLimit="50">
+                <fieldMapping sourceName="{timestamp}" targetName="{client_timestamp}"/>
+            </rule>
+        </step>
 
-        <rule order='3' type='SCHEMA_TRANSFORMATION' group='11' failedFieldLimit="40" failedRowLimit="50">
-            <condition>records.value</condition>
-            <fieldMapping sourceName="{timestamp}" targetName="{client_timestamp}"/>
-        </rule>
-        <rule order='3' type='NIL' group='12'/>
+        <step order="3">
+            <rule type='SCHEMA_TRANSFORMATION' group='11' failedFieldLimit="40" failedRowLimit="50">
+                <condition>records.value</condition>
+                <fieldMapping sourceName="{timestamp}" targetName="{client_timestamp}"/>
+            </rule>
+            <rule type='NIL' group='12'/>
+        </step>
 
-        <rule order='4' type='MERGE' group='1' mergeGroup='11,12'/>
+        <step order="4">
+            <rule type='MERGE' group='1' mergeGroup='11,12'/>
+        </step>
     </transform>
 
     <load>
