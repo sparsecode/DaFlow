@@ -1,7 +1,6 @@
-package com.abhioncbr.etlFramework.sql_parser
+package com.abhioncbr.etlFramework.sqlParser
 
 import com.typesafe.scalalogging.Logger
-import org.joda.time.format.DateTimeFormat
 
 import scala.util.parsing.combinator._
 
@@ -95,43 +94,4 @@ class SQLParser extends JavaTokenParsers {
     }
     None
   }
-}
-
-object SQLParser extends App{
-  val parser = new SQLParser
-  println(parser.getSelectClause("data_data ").get)
-  println(parser.getSelectClause("event, facebook_id, google_id, http-agent, ip_address, user_email, date_time, user_id, version, lazada_rest_proxy_event_timestamp").get)
-  println(parser.getSelectClause("a").get)
-  println(parser.getSelectClause("a.b").get)
-  println(parser.getSelectClause("data_data, data.products, products ").get)
-  println(parser.getSelectClause("data_data,data.products,products ").get)
-  println(parser.getSelectClause("data.order_id, data.order_nr, data.anonymous_id, data.user_id, data.session_id, data.source, data.products, data.payment_type, data.fingerprint, data.device_id").get)
-  println(parser.getWhereClause("a= 'b'").get)
-  println(parser.getWhereClause("a = 1.1").get)
-  println(parser.getWhereClause("a.b = 1").get)
-  println(parser.getWhereClause("records.like = 1").get)
-  println(parser.getWhereClause("hostname like 'my%'").get)
-  println(parser.getWhereClause("records.like IS NULL").get)
-  println(parser.getWhereClause("a.b IS NULL").get)
-  println(parser.getWhereClause("a.b IS NOT NULL").get)
-  println(parser.getWhereClause("a.b LIKE '%aa'").get)
-  println(parser.getWhereClause("a LIKE '%aa'").get)
-  println(parser.getWhereClause("a IS NULL").get)
-  println(parser.getWhereClause("records_red  IS NULL").get)
-  println(parser.getWhereClause("records_red between 10 and 20").get)
-  println(parser.getWhereClause("records_red between 10.11 and 20.12").get)
-  println(parser.getWhereClause("a between 0.11 and -1.32").get)
-  println(parser.getWhereClause(s"""a between "a" AND "b"""").get)
-
-  val DatePattern = "yyyy-MM-dd HH:mm:ss"
-  val dateParser  = DateTimeFormat.forPattern(DatePattern)
-  val first_date = dateParser.parseDateTime("2017-02-26 23:00:00")
-  println(first_date.year.get)
-  println(first_date.monthOfYear.get)
-  println(first_date.dayOfMonth.get)
-  println(first_date.hourOfDay.get())
-
-
-  //known issue ~ not supporting
-  //println(parser.getWhereClause(s"""a between 'a' AND 'b'""").get)
 }
