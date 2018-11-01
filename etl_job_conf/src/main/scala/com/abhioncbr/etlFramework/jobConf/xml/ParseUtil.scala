@@ -1,6 +1,6 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.common.file.FilePath
+import com.abhioncbr.etlFramework.commons.common.file.DataPath
 import com.abhioncbr.etlFramework.commons.util.FileUtil
 
 import scala.util.Try
@@ -15,6 +15,6 @@ object ParseUtil {
   def parseInt(node: scala.xml.NodeSeq): Int = parseInt(node.text)
   def parseInt(text: String): Int = Try(text.toInt).getOrElse(-1)
 
-  def parseFilePathString(node: scala.xml.NodeSeq): Either[FilePath, String] = parseFilePathString(node.text)
-  def parseFilePathString(text: String, fileNameSeparator: String = "."): Either[FilePath, String] = FileUtil.getFilePathObject(text, fileNameSeparator)
+  def parseFilePathString(node: scala.xml.NodeSeq): Either[DataPath, String] = parseFilePathString(node.text)
+  def parseFilePathString(text: String, fileNameSeparator: String = "."): Either[DataPath, String] = FileUtil.getFilePathObject(text, fileNameSeparator)
 }

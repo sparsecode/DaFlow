@@ -1,6 +1,6 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.common.file.{FileNameParam, FilePath, PathInfixParam}
+import com.abhioncbr.etlFramework.commons.common.file.{FileNameParam, DataPath, PathInfixParam}
 
 class ParseDataPathSpec extends XmlJobConfBase{
 
@@ -171,7 +171,7 @@ class ParseDataPathSpec extends XmlJobConfBase{
               <suffix>json</suffix>
           </fileName>
     </pathPattern>""".stripMargin
-    val filePathObject: FilePath = ParseDataPath.parsePathPattern(node(xmlContent))
+    val filePathObject: DataPath = ParseDataPath.parsePathPattern(node(xmlContent))
     filePathObject should not equal null
 
     filePathObject.pathPrefix should not equal null
@@ -195,7 +195,7 @@ class ParseDataPathSpec extends XmlJobConfBase{
           </fileName>
     </pathPattern>""".stripMargin
 
-    val filePathObject: FilePath = ParseDataPath.parsePathPattern(node(xmlContent))
+    val filePathObject: DataPath = ParseDataPath.parsePathPattern(node(xmlContent))
     filePathObject should not equal null
 
     filePathObject.pathPrefix should not equal null
@@ -207,7 +207,7 @@ class ParseDataPathSpec extends XmlJobConfBase{
   "ParseDataPath" should "return FilePath object parsed from path string" in {
     val path = s"${System.getProperty("user.dir")}/etl_examples/sample_data/json_data.json"
     val xmlContent = s"<dataPath><path>$path</path></dataPath>"
-    val filePathObject: FilePath = ParseDataPath.fromXML(node(xmlContent))
+    val filePathObject: DataPath = ParseDataPath.fromXML(node(xmlContent))
     filePathObject should not equal null
     filePathObject.pathPrefix should be (Some(s"${System.getProperty("user.dir")}/etl_examples/sample_data"))
     filePathObject.groupPatterns should be (None)
@@ -225,7 +225,7 @@ class ParseDataPathSpec extends XmlJobConfBase{
           </fileName>
     </pathPattern></dataPath>""".stripMargin
 
-    val filePathObject: FilePath = ParseDataPath.fromXML(node(xmlContent))
+    val filePathObject: DataPath = ParseDataPath.fromXML(node(xmlContent))
     filePathObject should not equal null
     filePathObject.pathPrefix should be (Some("{json-file-path-suffix}"))
     filePathObject.groupPatterns should be (None)

@@ -1,7 +1,7 @@
 package com.abhioncbr.etlFramework.jobConf.xml
 
 import com.abhioncbr.etlFramework.commons.NotificationMessages
-import com.abhioncbr.etlFramework.commons.common.file.FilePath
+import com.abhioncbr.etlFramework.commons.common.file.DataPath
 
 class ParseUtilSpec extends XmlJobConfBase {
 
@@ -68,13 +68,13 @@ class ParseUtilSpec extends XmlJobConfBase {
   }
 
   "parseFilePathString" should "should return Either[Right] object when blank string is passed as an argument" in {
-    val filePathObject: Either[FilePath, String] = ParseUtil.parseFilePathString(text = "")
+    val filePathObject: Either[DataPath, String] = ParseUtil.parseFilePathString(text = "")
     filePathObject should not equal null
     filePathObject.isRight should be (true)
     filePathObject.isLeft should be (false)
     filePathObject.right.get should be ("Can not create a Path from an empty string")
 
-    val anotherFilePathObject: Either[FilePath, String] = ParseUtil.parseFilePathString(text= null)
+    val anotherFilePathObject: Either[DataPath, String] = ParseUtil.parseFilePathString(text= null)
     anotherFilePathObject should not equal null
     anotherFilePathObject.isRight should be (true)
     anotherFilePathObject.isLeft should be (false)
@@ -83,7 +83,7 @@ class ParseUtilSpec extends XmlJobConfBase {
 
   "parseFilePathString" should "should return Either[Left] object when value is passed as an argument" in {
     val path = s"${System.getProperty("user.dir")}/etl_examples/sample_data/json_data.json"
-    val filePathObject: Either[FilePath, String] = ParseUtil.parseFilePathString(path)
+    val filePathObject: Either[DataPath, String] = ParseUtil.parseFilePathString(path)
     filePathObject should not equal null
     filePathObject.isRight should be (false)
     filePathObject.isLeft should be (true)
@@ -93,7 +93,7 @@ class ParseUtilSpec extends XmlJobConfBase {
 
   "parseFilePathString" should "should return Either[Right] object when value is passed as an argument" in {
     val path = s"${System.getProperty("user.dir")}/etl_examples/sample_data/json_data.json1"
-    val filePathObject: Either[FilePath, String] = ParseUtil.parseFilePathString(path)
+    val filePathObject: Either[DataPath, String] = ParseUtil.parseFilePathString(path)
     filePathObject should not equal null
     filePathObject.isRight should be (true)
     filePathObject.isLeft should be (false)
