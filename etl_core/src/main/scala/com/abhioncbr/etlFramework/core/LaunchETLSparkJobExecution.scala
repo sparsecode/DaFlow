@@ -4,7 +4,7 @@ import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.extract.{ExtractConf, ExtractionType}
 import com.abhioncbr.etlFramework.commons.job.JobStaticParamConf
-import com.abhioncbr.etlFramework.commons.load.{LoadConf, LoadFeedConf, LoadType}
+import com.abhioncbr.etlFramework.commons.load.{LoadConf, LoadType}
 import com.abhioncbr.etlFramework.commons.transform.{TransformConf, TransformResult}
 import com.abhioncbr.etlFramework.core.extractData.{ExtractDataFromDB, ExtractDataFromFileSystem, ExtractDataFromHive}
 import com.abhioncbr.etlFramework.core.loadData.{LoadDataIntoFileSystem, LoadDataIntoHive}
@@ -31,6 +31,13 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
     Context.addContextualObject[Option[DateTime]](FIRST_DATE, firstDate)
     Context.addContextualObject[Option[DateTime]](SECOND_DATE, secondDate)
 
+    val appName = s"etl-$feedName"
+    val sparkSession: SparkSession = SparkSession.builder().appName(appName).getOrCreate()
+    Context.addContextualObject[Option[Map[String,String]]](OTHER_PARAM, otherParams)
+    Context.addContextualObject[Configuration](HADOOP_CONF, sparkSession.sparkContext.hadoopConfiguration)
+    Context.addContextualObject[SparkContext](SPARK_CONTEXT, sparkSession.sparkContext)
+    Context.addContextualObject[SQLContext](SQL_CONTEXT, sparkSession.sqlContext)
+
     val FALSE = false
     val parse = new ParseETLJobXml
     parse.parseXml(xmlInputFilePath, FALSE) match {
@@ -46,13 +53,6 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
       case Right(xmlLoadError) => logger.error(xmlLoadError)
         return Right(xmlLoadError)
     }
-
-    val appName = s"etl-$feedName"
-    val sparkSession: SparkSession = SparkSession.builder().appName(appName).getOrCreate()
-    Context.addContextualObject[Option[Map[String,String]]](OTHER_PARAM, otherParams)
-    Context.addContextualObject[Configuration](HADOOP_CONF, sparkSession.sparkContext.hadoopConfiguration)
-    Context.addContextualObject[SparkContext](SPARK_CONTEXT, sparkSession.sparkContext)
-    Context.addContextualObject[SQLContext](SQL_CONTEXT, sparkSession.sqlContext)
 
     Left(true)
   }
@@ -136,11 +136,16 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
     val FALSE = false
     //TODO: load tables for multiple data frames
     val loadResult: Array[JobResult] = validationArrayDF.map( validate => {
-      val loadType = Context.getContextualObject[LoadFeedConf](LOAD_CONF).loadType
+      val loadConf = Context.getContextualObject[LoadConf](LOAD_CONF)
+
+      //TODO: handle mapping of the transform feeds with load feeds.
+      val feed = loadConf.feeds.head
+      val loadType = feed.loadType
+
       val loadResult: Either[Boolean, String] = loadType match {
-        case LoadType.HIVE => (new LoadDataIntoHive).loadTransformedData(validate._1)
-        case LoadType.FILE_SYSTEM => (new LoadDataIntoFileSystem).loadTransformedData(validate._1)
+        case LoadType.HIVE => new LoadDataIntoHive(feed).loadTransformedData(validate._1)
         case LoadType.JDBC => Right(s"loading data to $loadType is not supported right now.")
+        case LoadType.FILE_SYSTEM => new LoadDataIntoFileSystem(feed).loadTransformedData(validate._1)
         case _ => Right(s"loading data to $loadType is not supported right now.")
       }
       //writing output data tuple.

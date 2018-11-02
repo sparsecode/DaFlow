@@ -22,12 +22,6 @@
                 <condition>test_string2</condition>
             </rule>
         </step>
-
-        <step order="1">
-            <rule type="SELECT" group="1">
-                <condition>test_string2</condition>
-            </rule>
-        </step>
     </transform>
     <load>
         <feed name="json_data">

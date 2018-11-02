@@ -23,7 +23,7 @@ object ParseDataPath {
 
   def parsePathPattern(node: scala.xml.NodeSeq): DataPath = {
     val dataPath: DataPath = common.DataPath(pathPrefix = Some((node \ "initialPath").text),
-      groupPatterns = ParseUtil.parseNode[Array[PathInfixParam]](node \ "groupPattern", None, ParseGroupPatterns.fromXML),
+      cataloguePatterns = ParseUtil.parseNode[Array[PathInfixParam]](node \ "groupPattern", None, ParseGroupPatterns.fromXML),
       feedPattern = ParseUtil.parseNode[PathInfixParam](node \ "feedPattern", None, ParseFeedPattern.fromXML),
       fileName = ParseUtil.parseNode[FileNameParam](node \ "fileName", None, ParseFileName.fromXML)
     )
