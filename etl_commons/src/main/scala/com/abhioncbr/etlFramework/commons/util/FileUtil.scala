@@ -13,11 +13,11 @@ import org.joda.time.{DateTime, Days, DurationFieldType}
 
 object FileUtil {
   def getFilePathString(filePath: DataPath): String = {
-    val pathPrefixString = filePath.pathPrefix.getOrElse("")
-    val groupsString = getInfixPathString[Array[PathInfixParam]](filePath.groupPatterns)
-    val feedString = getInfixPathString[PathInfixParam](filePath.feedPattern)
-    val fileNameString = getFileNameString(filePath.fileName)
-    s"""$pathPrefixString$groupsString$feedString$fileNameString"""
+    val pathPrefixString: String = appendDirSeparator(filePath.pathPrefix.getOrElse(""))
+    val catalogueString: String = appendDirSeparator(getInfixPathString[Array[PathInfixParam]](filePath.cataloguePatterns))
+    val feedString: String = appendDirSeparator(getInfixPathString[PathInfixParam](filePath.feedPattern))
+    val fileNameString: String = getFileNameString(filePath.fileName)
+    s"""$pathPrefixString$catalogueString$feedString$fileNameString"""
   }
 
   def getFilePathObject(filePathString: String, fileNameSeparator: String = "."): Either[DataPath, String]= {
@@ -41,6 +41,11 @@ object FileUtil {
     }
   }
 
+  private def appendDirSeparator(subPath: String): String ={
+    if(subPath.isEmpty || subPath.toCharArray.last == '/') { subPath }
+    else s"$subPath/"
+  }
+
   private def parseFileName(rawFileName: String, fileNameSeparator: String = "."): FileNameParam ={
     val nameParts: List[String] = rawFileName.split(s"[$fileNameSeparator]").toList
     FileNameParam(nameParts.lift(0), nameParts.lift(1), Some(fileNameSeparator))
@@ -50,7 +55,7 @@ object FileUtil {
 
   private def getFileNameString(fileNameParamOption: Option[FileNameParam]): String = {
     fileNameParamOption.getOrElse(None) match {
-      case fileNameParam: FileNameParam => s"""/${fileNameParam.fileNamePrefix.getOrElse("*")}${fileNameParam.fileNameSeparator.get}${fileNameParam.fileNameSuffix.getOrElse("*")}"""
+      case fileNameParam: FileNameParam => s"""${fileNameParam.fileNamePrefix.getOrElse("*")}${fileNameParam.fileNameSeparator.get}${fileNameParam.fileNameSuffix.getOrElse("*")}"""
       case None => ""
     }
 
@@ -58,9 +63,9 @@ object FileUtil {
 
   private def getInfixPathString[T](infixObject: Option[T]): String ={
     val output = infixObject.getOrElse(None) match {
-      case groups: Array[PathInfixParam] => groups.
+      case catalogue: Array[PathInfixParam] => catalogue.
         map(gr => if(gr.formatInfix.get) getFormattedString(gr.infixPattern, mapFormatArgs(gr.formatInfixArgs)) else gr.infixPattern).
-        mkString("/", "/", "")
+        mkString("/")
       case feed: PathInfixParam => if(feed.formatInfix.get) getFormattedString(feed.infixPattern, mapFormatArgs(feed.formatInfixArgs)) else feed.infixPattern
       case None => ""
     }

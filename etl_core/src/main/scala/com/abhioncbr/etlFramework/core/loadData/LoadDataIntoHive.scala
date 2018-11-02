@@ -2,7 +2,7 @@ package com.abhioncbr.etlFramework.core.loadData
 
 import java.text.DecimalFormat
 
-import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{FIRST_DATE, JOB_STATIC_PARAM_CONF, LOAD_CONF, SQL_CONTEXT}
+import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{FIRST_DATE, JOB_STATIC_PARAM_CONF, SQL_CONTEXT}
 import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.job.JobStaticParamConf
 import com.abhioncbr.etlFramework.commons.load.LoadFeedConf
@@ -11,17 +11,16 @@ import com.typesafe.scalalogging.Logger
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 import org.joda.time.DateTime
 
-class LoadDataIntoHive extends LoadData {
+class LoadDataIntoHive(feed: LoadFeedConf) extends LoadData {
   private val logger = Logger(this.getClass)
   private val sqlContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
 
   private val processFrequency = Context.getContextualObject[JobStaticParamConf](JOB_STATIC_PARAM_CONF).processFrequency
 
-  private val load = Context.getContextualObject[LoadFeedConf](LOAD_CONF)
-  private val tableName = load.attributesMap("tableName")
-  private val databaseName = load.attributesMap("databaseName")
-  private val partData = load.partitioningData.get
-  private val hiveTableDataInitialPath = FileUtil.getFilePathString(load.dataPath)
+  private val tableName = feed.attributesMap("tableName")
+  private val databaseName = feed.attributesMap("databaseName")
+  private val partData = feed.partitioningData.get
+  private val hiveTableDataInitialPath = FileUtil.getFilePathString(feed.dataPath)
 
   def loadTransformedData(dataFrame: DataFrame,
                           date: Option[DateTime]=Context.getContextualObject[Option[DateTime]](FIRST_DATE)): Either[Boolean, String] = {
@@ -34,7 +33,7 @@ class LoadDataIntoHive extends LoadData {
     try{
       logger.info(s"Writing $processFrequency dataFrame for table $tableName to HDFS ($path). Total number of data rows saved: ${dataFrame.count}")
 
-      val fileType = load.attributesMap("fileType")
+      val fileType = feed.attributesMap("fileType")
 
       //coalesce the data frame if it is set true in feed xml
       if(partData.coalesce){

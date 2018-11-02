@@ -204,18 +204,17 @@ object TransformUtil {
 
   private def getRule(transformRule: TransformRuleConf): TransformRule = {
     val group: String = transformRule.ruleAttributesMap("group")
-    val condition: String = transformRule.ruleAttributesMap("condition")
 
     transformRule.ruleType match {
       case "NIL" => new NilRule(group)
 
-      case "DROP" => new SimpleFunctionRule(transformRule.ruleType, condition, group)
+      case "DROP" => new SimpleFunctionRule(transformRule.ruleType, transformRule.condition, group)
 
-      case "FILTER" =>new SimpleFunctionRule(transformRule.ruleType, condition, group)
+      case "FILTER" =>new SimpleFunctionRule(transformRule.ruleType, transformRule.condition, group)
 
-      case "SELECT" =>new SimpleFunctionRule(transformRule.ruleType, condition, group)
+      case "SELECT" =>new SimpleFunctionRule(transformRule.ruleType, transformRule.condition, group)
 
-      case "EXPLODE" =>new SimpleFunctionRule(transformRule.ruleType, condition, group)
+      case "EXPLODE" =>new SimpleFunctionRule(transformRule.ruleType, transformRule.condition, group)
 
       case "ADD_COLUMN" =>
         val columnName = transformRule.ruleAttributesMap("columnName")
@@ -223,16 +222,16 @@ object TransformUtil {
         new AddColumnRule(group, columnName, columnValueType)
 
       case "MERGE" => val mergeGroup = transformRule.ruleAttributesMap("mergeGroup")
-        new MergeRule(condition, getMergerGroup(mergeGroup).left.get, group)
+        new MergeRule(transformRule.condition, getMergerGroup(mergeGroup).left.get, group)
 
       case "PARTITION" => val scope = transformRule.ruleAttributesMap("scope")
-        new PartitionRule(scope, condition, group)
+        new PartitionRule(scope, transformRule.condition, group)
 
       case "SCHEMA_TRANSFORMATION" =>
         val failedFieldLimit = transformRule.ruleAttributesMap("failedFieldLimit").toInt
         val failedRowLimit = transformRule.ruleAttributesMap("failedRowLimit").toInt
         val mappings = null //ParseFieldMappings.fromXML(node) //List[FieldMapping]((node \ "fieldMapping").toList map { s => ParseFieldMapping.fromXML(s) }: _*)
-        new SchemaTransformationRule(condition, group, mappings, failedFieldLimit, failedRowLimit)
+        new SchemaTransformationRule(transformRule.condition, group, mappings, failedFieldLimit, failedRowLimit)
     }
   }
 }

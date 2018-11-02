@@ -175,13 +175,13 @@ class ParseDataPathSpec extends XmlJobConfBase{
     filePathObject should not equal null
 
     filePathObject.pathPrefix should not equal null
-    filePathObject.groupPatterns should not equal null
+    filePathObject.cataloguePatterns should not equal null
     filePathObject.feedPattern should not equal null
     filePathObject.fileName should not equal null
 
     filePathObject.pathPrefix.get should be ("{json-file-path-suffix}")
 
-    filePathObject.groupPatterns.get.length should be (1)
+    filePathObject.cataloguePatterns.get.length should be (1)
     filePathObject.feedPattern.get.formatInfixArgs should not equal null
     filePathObject.fileName.get.fileNamePrefix should be (Some("json_data"))
   }
@@ -199,7 +199,7 @@ class ParseDataPathSpec extends XmlJobConfBase{
     filePathObject should not equal null
 
     filePathObject.pathPrefix should not equal null
-    filePathObject.groupPatterns should equal (None)
+    filePathObject.cataloguePatterns should equal (None)
     filePathObject.feedPattern should equal (None)
     filePathObject.fileName should not equal null
   }
@@ -210,7 +210,7 @@ class ParseDataPathSpec extends XmlJobConfBase{
     val filePathObject: DataPath = ParseDataPath.fromXML(node(xmlContent))
     filePathObject should not equal null
     filePathObject.pathPrefix should be (Some(s"${System.getProperty("user.dir")}/etl_examples/sample_data"))
-    filePathObject.groupPatterns should be (None)
+    filePathObject.cataloguePatterns should be (None)
     filePathObject.feedPattern should be (None)
     filePathObject.fileName should not equal null
     filePathObject.fileName.get.fileNamePrefix should be (Some("json_data"))
@@ -228,7 +228,7 @@ class ParseDataPathSpec extends XmlJobConfBase{
     val filePathObject: DataPath = ParseDataPath.fromXML(node(xmlContent))
     filePathObject should not equal null
     filePathObject.pathPrefix should be (Some("{json-file-path-suffix}"))
-    filePathObject.groupPatterns should be (None)
+    filePathObject.cataloguePatterns should be (None)
     filePathObject.feedPattern should be (None)
     filePathObject.fileName should not equal null
     filePathObject.fileName.get.fileNamePrefix should be (Some("json_data"))
