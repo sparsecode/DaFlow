@@ -1,24 +1,44 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.abhioncbr.etlFramework.jobConf.xml
 
 import com.abhioncbr.etlFramework.commons.common
-import com.abhioncbr.etlFramework.commons.common.{DataPath, FileNameParam, GeneralParamConf, PathInfixParam}
+import com.abhioncbr.etlFramework.commons.common.DataPath
+import com.abhioncbr.etlFramework.commons.common.FileNameParam
+import com.abhioncbr.etlFramework.commons.common.GeneralParamConf
+import com.abhioncbr.etlFramework.commons.common.PathInfixParam
 import com.typesafe.scalalogging.Logger
 
 object ParseDataPath {
   private val logger = Logger(this.getClass)
 
   def fromXML(node: scala.xml.NodeSeq): DataPath = {
-    val parsedPath =  ParseUtil.parseNode[Either[DataPath,String]](node \ "path", None, ParseUtil.parseFilePathString)
-    val parsedPathPattern =  ParseUtil.parseNode[DataPath](node \ "pathPattern", None, ParseDataPath.parsePathPattern)
+    val parsedPath = ParseUtil.parseNode[Either[DataPath, String]](node \ "path", None, ParseUtil.parseFilePathString)
+    val parsedPathPattern = ParseUtil.parseNode[DataPath](node \ "pathPattern", None, ParseDataPath.parsePathPattern)
 
     if(parsedPath.isDefined) {
-      parsedPath.get match {
+      val dataPath: DataPath = parsedPath.get match {
         case Left(output) => output
-
-        //TODO : Handling exception
+        // TODO/FIXME : Handling exception
         case Right(message) => logger.warn(s"[ParseDataPath: fromXML: ] - $message"); null
       }
-    } else parsedPathPattern.get
+      dataPath
+    } else { parsedPathPattern.get }
   }
 
   def parsePathPattern(node: scala.xml.NodeSeq): DataPath = {
@@ -41,18 +61,18 @@ object ParseGroupPattern {
   def fromXML(node: scala.xml.NodeSeq): PathInfixParam = {
     val pathInfixParam : PathInfixParam = PathInfixParam(
       order = ParseUtil.parseNode[Int](node \ "order", None, ParseUtil.parseInt),
-      infixPattern= (node \ "groupNamePattern").text,
+      infixPattern = (node \ "groupNamePattern").text,
       formatInfix = ParseUtil.parseNode[Boolean](node \ "formatGroupName", None, ParseUtil.parseBoolean),
-      formatInfixArgs = ParseUtil.parseNode[Array[GeneralParamConf]](node \ "formatArgValues", None, ParseGeneralParams.fromXML) )//Some(ParseGeneralParams.fromXML(node, nodeTag= "formatArgValues")))
+      formatInfixArgs = ParseUtil.parseNode[Array[GeneralParamConf]](node \ "formatArgValues", None, ParseGeneralParams.fromXML) )
     pathInfixParam
   }
 }
 
 object ParseFeedPattern {
   def fromXML(node: scala.xml.NodeSeq): PathInfixParam = {
-    val pathInfixParam : PathInfixParam = PathInfixParam( infixPattern= (node \ "feedNamePattern").text,
+    val pathInfixParam : PathInfixParam = PathInfixParam(infixPattern = (node \ "feedNamePattern").text,
       formatInfix = ParseUtil.parseNode[Boolean](node \ "formatFeedName", None, ParseUtil.parseBoolean),
-      formatInfixArgs = ParseUtil.parseNode[Array[GeneralParamConf]](node \ "formatArgValues", None, ParseGeneralParams.fromXML) )//Some(ParseGeneralParams.fromXML(node, nodeTag= "formatArgValues")))
+      formatInfixArgs = ParseUtil.parseNode[Array[GeneralParamConf]](node \ "formatArgValues", None, ParseGeneralParams.fromXML))
     pathInfixParam
   }
 }
@@ -64,5 +84,5 @@ object ParseFileName {
       fileNameSuffix = ParseUtil.parseNode[String](node \ "suffix", None, ParseUtil.parseNodeText),
       fileNameSeparator = ParseUtil.parseNode[String](node \ "separator", Some("."), ParseUtil.parseNodeText))
       fileName
-   }
+  }
 }

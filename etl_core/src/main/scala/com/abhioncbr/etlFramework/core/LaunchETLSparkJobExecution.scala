@@ -1,8 +1,26 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.abhioncbr.etlFramework.core
 
 import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
-import com.abhioncbr.etlFramework.commons.extract.{ExtractConf, ExtractionType}
+import com.abhioncbr.etlFramework.commons.extract.ExtractConf
+import com.abhioncbr.etlFramework.commons.extract.ExtractionType
 import com.abhioncbr.etlFramework.commons.job.JobStaticParamConf
 import com.abhioncbr.etlFramework.commons.load.{LoadConf, LoadType}
 import com.abhioncbr.etlFramework.commons.transform.{TransformConf, TransformResult}
@@ -74,7 +92,8 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
     val validateResult: Either[Array[(DataFrame, DataFrame, Any, Any)], String]  = if(validateTransformedData) {
       validate(transformedResult.left.get)
     } else {
-      Left(transformedResult.left.get.map(array => (array.resultDF, null, array.resultInfo1, array.resultInfo1)))
+      Left(transformedResult.left.get.map(array => (array.resultDF, null, array.otherAttributes.get("validCount"),
+        array.otherAttributes.get("invalidCount"))))
     }
     if(validateResult.isRight) return Right(validateResult.right.get)
     if(validateTransformedData) logger.info("Validation phase of the feed is completed")
@@ -113,7 +132,8 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
       val validator = new ValidateTransformedData
       val validateSchemaResult = validator.validateSchema (arrayElement.resultDF)
       if(validateSchemaResult._1) {
-        output = output ++ validator.validateData(arrayElement.resultDF, validateSchemaResult._2.get, arrayElement.resultInfo1, arrayElement.resultInfo2)
+        output = output ++ validator.validateData(arrayElement.resultDF, validateSchemaResult._2.get, arrayElement
+          .otherAttributes.get("validCount"), arrayElement.otherAttributes.get("invalidCount"))
       } else { validateSchemaResult._2 match {
           case Some(_2) => logger.error("hive table schema & data frame schema does not match. Below are schemas for reference -")
             logger.error(s"table schema:: ${_2.mkString}")

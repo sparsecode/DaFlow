@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.abhioncbr.etlFramework.jobConf.xml
 
 import com.abhioncbr.etlFramework.commons.load.LoadFeedConf
@@ -14,28 +31,27 @@ class ParseLoadSpec extends XmlJobConfBase {
                     </partitionColumns>
                 </partitionData>
                 <dataPath>
-                    <path>$path</path>
+                  <path>$path</path>
                 </dataPath>
             </hive>
         </feed>"""
     val parseLoadFeedObject: LoadFeedConf = ParseLoadFeed.fromXML(node(xmlContent))
-    parseLoadFeedObject should not be null
+    parseLoadFeedObject should not be None
     parseLoadFeedObject.loadFeedName should be ("feed1")
     parseLoadFeedObject.attributesMap.size should be (3)
     parseLoadFeedObject.attributesMap("dataBaseName") should be ("{db-name}")
     parseLoadFeedObject.attributesMap("tableName") should be ("{table-name}")
     parseLoadFeedObject.attributesMap("fileType") should be ("PARQUET")
-    parseLoadFeedObject.partitioningData should not be null
+    parseLoadFeedObject.partitioningData should not be None
     parseLoadFeedObject.partitioningData.get.coalesce should be (true)
-    parseLoadFeedObject.dataPath should not be null
+    parseLoadFeedObject.dataPath should not be None
     parseLoadFeedObject.dataPath.pathPrefix should be (Some(s"${System.getProperty("user.dir")}/etl_examples"))
-    parseLoadFeedObject.dataPath.feedPattern should not be null
+    parseLoadFeedObject.dataPath.feedPattern should not be None
     parseLoadFeedObject.dataPath.feedPattern.get.infixPattern should be ("sample_data")
   }
 
   "ParseLoadFeed" should "return LoadFeed object with all fileSystem based variables" in {
-    val path = s"${System.getProperty("user.dir")}/etl_examples/sample_data/"
-    val xmlContent = s"""<feed name="json_data">
+    val xmlContent = """<feed name="json_data">
                             <fileSystem fileType="JSON">
                               <dataPath>
                                 <pathPattern>
@@ -49,13 +65,13 @@ class ParseLoadSpec extends XmlJobConfBase {
                             </fileSystem>
                         </feed>"""
     val parseLoadFeedObject: LoadFeedConf = ParseLoadFeed.fromXML(node(xmlContent))
-    parseLoadFeedObject should not be null
+    parseLoadFeedObject should not be None
     parseLoadFeedObject.loadFeedName should be ("json_data")
     parseLoadFeedObject.attributesMap.size should be (1)
     parseLoadFeedObject.attributesMap("fileType") should be ("JSON")
     parseLoadFeedObject.partitioningData should be (None)
-    parseLoadFeedObject.dataPath should not be null
-    parseLoadFeedObject.dataPath.pathPrefix should be (Some(s"{json-file-path-suffix}"))
+    parseLoadFeedObject.dataPath should not be None
+    parseLoadFeedObject.dataPath.pathPrefix should be (Some("{json-file-path-suffix}"))
     parseLoadFeedObject.dataPath.fileName.get.fileNamePrefix should be (Some("json_data"))
     parseLoadFeedObject.dataPath.fileName.get.fileNameSuffix should be (Some("json"))
   }

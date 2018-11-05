@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.abhioncbr.etlFramework.jobConf.xml
 
 import com.abhioncbr.etlFramework.commons.common.QueryConf
@@ -5,14 +22,14 @@ import com.abhioncbr.etlFramework.commons.common.QueryConf
 class ParseQuerySpec extends XmlJobConfBase {
 
   "ParseQuery" should "return QueryObject object with all variables initialised" in {
-    val xmlContent = s"""<query>
+    val xmlContent = """<query>
                             <sqlQueryFile><path>{sql-query-file-path.sql}</path></sqlQueryFile>
                             <configurationFile><path>{db-property-file-path}</path></configurationFile>
                             <queryParams><param order="1" name="{col1}" value="FIRST_DATE"  /></queryParams>
                           </query>"""
     val queryObject: QueryConf = ParseQuery.fromXML(node(xmlContent))
-    queryObject should not equal null
-    queryObject.queryFile should not equal null
+    queryObject should not equal None
+    queryObject.queryFile should not equal None
     queryObject.queryFile.configurationFile.isDefined should be (true)
     queryObject.queryFile.queryFile.isDefined should be (true)
     queryObject.queryArgs.isDefined should be (true)
@@ -20,7 +37,7 @@ class ParseQuerySpec extends XmlJobConfBase {
   }
 
   "ParseQuery" should "return QueryObject object with sqlQueryFile & queryParams initialised" in {
-    val xmlContent = s"""<query>
+    val xmlContent = """<query>
                             <sqlQueryFile>
                               <pathPattern>
                                   <initialPath>{initial-path}</initialPath>
@@ -33,8 +50,8 @@ class ParseQuerySpec extends XmlJobConfBase {
                             <queryParams><param order="1" name="{col1}" value="FIRST_DATE"/></queryParams>
                           </query>"""
     val queryObject: QueryConf = ParseQuery.fromXML(node(xmlContent))
-    queryObject should not equal null
-    queryObject.queryFile should not equal null
+    queryObject should not equal None
+    queryObject.queryFile should not equal None
     queryObject.queryFile.configurationFile.isDefined should be (false)
     queryObject.queryFile.queryFile.isDefined should be (true)
     queryObject.queryFile.queryFile.get.pathPrefix should be (Some("{initial-path}"))
@@ -47,7 +64,7 @@ class ParseQuerySpec extends XmlJobConfBase {
   }
 
   "ParseQuery" should "return QueryObject object with only sqlQueryFile initialised" in {
-    val xmlContent = s"""<query>
+    val xmlContent = """<query>
                             <sqlQueryFile>
                               <pathPattern>
                                   <initialPath>{initial-path}</initialPath>
@@ -59,8 +76,8 @@ class ParseQuerySpec extends XmlJobConfBase {
                             </sqlQueryFile>
                           </query>"""
     val queryObject: QueryConf = ParseQuery.fromXML(node(xmlContent))
-    queryObject should not equal null
-    queryObject.queryFile should not equal null
+    queryObject should not equal None
+    queryObject.queryFile should not equal None
     queryObject.queryFile.configurationFile.isDefined should be (false)
     queryObject.queryFile.queryFile.isDefined should be (true)
     queryObject.queryFile.queryFile.get.pathPrefix should be (Some("{initial-path}"))

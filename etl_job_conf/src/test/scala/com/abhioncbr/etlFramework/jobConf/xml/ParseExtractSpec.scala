@@ -1,11 +1,30 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.abhioncbr.etlFramework.jobConf.xml
 
-import com.abhioncbr.etlFramework.commons.extract.{ExtractConf, ExtractionType, ExtractFeedConf}
+import com.abhioncbr.etlFramework.commons.extract.ExtractConf
+import com.abhioncbr.etlFramework.commons.extract.ExtractFeedConf
+import com.abhioncbr.etlFramework.commons.extract.ExtractionType
 
 class ParseExtractSpec extends XmlJobConfBase {
 
   "ParseFeedConf" should "return Feed object with dataPath variable" in {
-    val xmlContent = s""" <feed feedName="json_data_feed" validateExtractedData="false">
+    val xmlContent = """ <feed feedName="json_data_feed" validateExtractedData="false">
             <fileSystem fileType="JSON">
                 <dataPath>
                     <pathPattern>
@@ -19,7 +38,7 @@ class ParseExtractSpec extends XmlJobConfBase {
             </fileSystem>
         </feed>""".stripMargin
     val feedObject: ExtractFeedConf = ParseExtractFeed.fromXML(node(xmlContent))
-    feedObject should not equal null
+    feedObject should not equal None
     feedObject.extractFeedName should be ("json_data_feed")
     feedObject.validateExtractedData should be (false)
     feedObject.extractionType should be (ExtractionType.FILE_SYSTEM)
@@ -32,7 +51,7 @@ class ParseExtractSpec extends XmlJobConfBase {
   }
 
   "ParseFeedConf" should "return Feed object with query variable" in {
-    val xmlContent = s"""<feed feedName="feed1" validateExtractedData="true">
+    val xmlContent = """<feed feedName="feed1" validateExtractedData="true">
                         |  <jdbc databaseType="DB">
                         |     <query>
                         |        <sqlQueryFile><path>sql-query-file-path.sql</path></sqlQueryFile>
@@ -42,7 +61,7 @@ class ParseExtractSpec extends XmlJobConfBase {
                         |  </jdbc>
                         |</feed>""".stripMargin
     val feedObject: ExtractFeedConf = ParseExtractFeed.fromXML(node(xmlContent))
-    feedObject should not equal null
+    feedObject should not equal None
     feedObject.extractFeedName should be ("feed1")
     feedObject.validateExtractedData should be (true)
     feedObject.extractionType should be (ExtractionType.JDBC)
@@ -50,17 +69,17 @@ class ParseExtractSpec extends XmlJobConfBase {
     feedObject.dataPath.isDefined should be (false)
 
     feedObject.query.isDefined should be (true)
-    feedObject.query.get.queryFile should not equal null
+    feedObject.query.get.queryFile should not equal None
     feedObject.query.get.queryArgs.get.length should be (1)
     feedObject.query.get.queryArgs.get.head.paramName should be ("{col1}")
 
-    //Should return 'null' since sql-queryFile & db-propertyFile is not present
+    // Should return 'null' since sql-queryFile & db-propertyFile is not present
     feedObject.query.get.queryFile.queryFile should be (Some(null))
     feedObject.query.get.queryFile.configurationFile should be (Some(null))
   }
 
   "ParseExtractConf" should "return Extract object with feed array object" in {
-    val xmlContent = s"""<extract>
+    val xmlContent = """<extract>
                         | <feed feedName="feed1" validateExtractedData="true">
                         |  <jdbc databaseType="DB">
                         |     <query>
@@ -85,8 +104,8 @@ class ParseExtractSpec extends XmlJobConfBase {
                         | </feed>
                         |</extract>""".stripMargin
     val extractObject: ExtractConf = ParseExtract.fromXML(node(xmlContent))
-    extractObject should not equal null
-    extractObject.feeds should not equal null
+    extractObject should not equal None
+    extractObject.feeds should not equal None
     extractObject.feeds.length should be (2)
 
     extractObject.feeds.head.extractFeedName should be ("feed1")
