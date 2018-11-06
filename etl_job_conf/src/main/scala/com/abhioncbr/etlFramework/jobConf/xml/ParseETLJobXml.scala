@@ -47,9 +47,9 @@ object ETLJob{
 }
 
 class ParseETLJobXml {
-  def parseXml(path: String, loadFromHdfs: Boolean): Either[String, String] = {
+  def parseXml(path: String, loadFromHDFS: Boolean): Either[String, String] = {
     try {
-      val reader: BufferedReader = if (loadFromHdfs) {
+      val reader: BufferedReader = if (loadFromHDFS) {
         val fs = FileSystem.get(Context.getContextualObject[Configuration](HADOOP_CONF))
         new BufferedReader(new InputStreamReader(fs.open(new Path(path))))
       } else { new BufferedReader(new InputStreamReader(new FileInputStream(path))) }
@@ -58,8 +58,8 @@ class ParseETLJobXml {
       reader.close()
       Left(lines)
     } catch {
-      case fileNotFoundException: FileNotFoundException => Right(s"""${JXF(path)}. ${EM(fileNotFoundException)}""".stripMargin)
-      case exception: Exception => Right(s"""$EWP ${EM(exception)}""")
+      case fileNotFoundException: FileNotFoundException => Right(s"${JXF(path)}. ${EM(fileNotFoundException)}".stripMargin)
+      case exception: Exception => Right(s"$EWP ${EM(exception)}".stripMargin)
     }
   }
 

@@ -49,7 +49,7 @@ libraryDependencies in ThisBuild ++= Seq(
 
   "com.github.scopt" %% "scopt" % scoptVersion,
   "joda-time" % "joda-time" % jodaTimeVersion,
-  "com.beust" % "jcommander" % jcommanderVersion,
+//  "com.beust" % "jcommander" % jcommanderVersion,
 
   "io.prometheus" % "simpleclient" % prometheusVersion,
   "io.prometheus" % "simpleclient_servlet" % prometheusVersion,

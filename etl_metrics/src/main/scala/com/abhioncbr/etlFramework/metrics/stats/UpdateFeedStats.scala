@@ -17,82 +17,71 @@
 
 package com.abhioncbr.etlFramework.metrics.stats
 
-import java.text.DecimalFormat
-
 import com.abhioncbr.etlFramework.commons.Context
-import com.abhioncbr.etlFramework.commons.ContextConstantEnum.{JOB_STATIC_PARAM_CONF, SPARK_CONTEXT, SQL_CONTEXT}
+import com.abhioncbr.etlFramework.commons.ContextConstantEnum.JOB_STATIC_PARAM_CONF
+import com.abhioncbr.etlFramework.commons.ContextConstantEnum.SPARK_CONTEXT
+import com.abhioncbr.etlFramework.commons.ContextConstantEnum.SQL_CONTEXT
+import com.abhioncbr.etlFramework.commons.NotificationMessages.{exceptionMessage => EM}
 import com.abhioncbr.etlFramework.commons.job.JobStaticParamConf
 import com.typesafe.scalalogging.Logger
+import java.io.BufferedWriter
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.OutputStreamWriter
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.{SQLContext, SaveMode}
+import org.apache.spark.sql.SaveMode
+import org.apache.spark.sql.SQLContext
 import org.joda.time.DateTime
-
 import scala.util.Try
 
-class UpdateFeedStats(feed_name: String, firstDate: DateTime = DateTime.now) {
+class UpdateFeedStats(jobName: String, startDate: DateTime = DateTime.now) {
   private val logger = Logger(this.getClass)
 
-  //function for updating etl_feed_stat table through shell script. For airflow-docker image usage, we are going to use other function.
-  @deprecated
-  def updateFeedStat(statScriptPath: String, validated: Long, nonValidated: Long, executionTime: Long,
-                     status: String, transformed: Long, nonTransformed: Long, failureReason: String): Int ={
-    val jobStaticParam = Context.getContextualObject[JobStaticParamConf](JOB_STATIC_PARAM_CONF)
-    val DatePattern = "yyyy-MM-dd"
+  def updateFeedStatInFile(executionTime: Long, feedJobResult: JobResult, filePath: Option[String] = None)
+  : Either[Unit, String] = {
+    val statString: String = getStatString(executionTime, feedJobResult)
+    val defaultPath: String = s"${System.getProperty("user.dir")}/etl_examples/sample_feed_stats/$jobName-stat.csv"
+    val path: String = filePath.getOrElse(defaultPath)
 
-    val reason = if (failureReason.isEmpty) "None" else s""" "${failureReason.split("[ ]").mkString("_")}" """.trim
+    logger.info(s"[updateFeedStatInFile]: writing stat in file: $path.")
 
-    val shellCommand =
-      s"""sh $statScriptPath ${jobStaticParam.jobName} $feed_name $status ${jobStaticParam.processFrequency.toString.toLowerCase}
-         |   ${firstDate.toString(DatePattern)} ${new DecimalFormat("00").format(firstDate.getHourOfDay)}
-         |   $validated $nonValidated $executionTime $transformed $nonTransformed $reason""".stripMargin
-    logger.info(s"""going to execute command: $shellCommand""")
-
-    import sys.process._
-    shellCommand.!
+    // TODO/FIXME: Make file writer more configurable
+    val result: Either[Unit, String] = try {
+      val writer: BufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path, true)))
+      writer.write(statString)
+      writer.flush()
+      writer.close()
+      Left()
+    } catch {
+      case fileNotFoundException: FileNotFoundException => Right(s" ${EM(fileNotFoundException)} ".stripMargin)
+      case exception: Exception => Right(s" ${EM(exception)} ".stripMargin)
+    }
+    result
   }
 
-  def updateFeedStat(statScriptPath: String, jobSubtask: String, validated: Long, nonValidated: Long, executionTime: Long,
-                     status: String, transformed: Long, nonTransformed: Long, failureReason: String): Int ={
+  def updateFeedStatInHive(hiveDbName: String, tableName: String, pathInitial: String,
+    executionTime: Long, feedJobResult: JobResult): Either[Unit, String] = {
+
+    val statString: String = getStatString(executionTime, feedJobResult)
     val jobStaticParam = Context.getContextualObject[JobStaticParamConf](JOB_STATIC_PARAM_CONF)
-    val DatePattern = "yyyy-MM-dd"
-
-    val reason = if (failureReason.isEmpty) "None" else s""" "${failureReason.split("[ ]").mkString("_")}" """.trim
-    val subTask = if (jobSubtask.isEmpty) jobStaticParam.jobName else jobSubtask
-
-    val shellCommand =
-      s"""sh $statScriptPath ${jobStaticParam.jobName} $subTask $status ${jobStaticParam.processFrequency.toString.toLowerCase}
-         |   ${firstDate.toString(DatePattern)} ${new DecimalFormat("00").format(firstDate.getHourOfDay)}
-         |   $validated $nonValidated $executionTime $transformed $nonTransformed $reason""".stripMargin
-    logger.info(s"""going to execute command: $shellCommand""")
-
-    import sys.process._
-    shellCommand.!
-  }
-
-  def updateFeedStat(hiveDbName: String, tableName: String, pathInitial: String,
-                     validated: Long, nonValidated: Long, executionTime: Long,
-                     status: String, transformed: Long, nonTransformed: Long, failureReason: String): Int ={
-    val jobStaticParam = Context.getContextualObject[JobStaticParamConf](JOB_STATIC_PARAM_CONF)
-
-    val reason = if (failureReason.isEmpty) "None" else failureReason.trim
 
     val sc: SparkContext = Context.getContextualObject[SparkContext](SPARK_CONTEXT)
-    val rdd = sc.parallelize(Seq(Seq(feed_name, status, jobStaticParam.processFrequency.toString.toLowerCase, new java.sql.Date(firstDate.getMillis), new DecimalFormat("00").format(firstDate.getHourOfDay),
-      reason, transformed , nonTransformed, validated, nonValidated, executionTime, jobStaticParam.jobName)))
+    val rdd = sc.parallelize(Seq(Seq(statString)))
     val rowRdd = rdd.map(v => org.apache.spark.sql.Row(v: _*))
 
     val sqlContext: SQLContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
-    val statDF = sqlContext.sql(s"""select * from $hiveDbName.$tableName where job_name='${jobStaticParam.jobName}'""".stripMargin)
+    val statDF = sqlContext.sql(s"select * from $hiveDbName.$tableName where job_name='$jobName'".stripMargin)
     val newRow = sqlContext.createDataFrame(rowRdd, statDF.schema)
     val updatedStatDF = statDF.union(newRow)
 
     val path = s"$pathInitial/$hiveDbName/$tableName/${jobStaticParam.jobName}/"
     val tmpPath = path + "_tmp"
 
-    try{
-      println(s"Writing updated stats in to the table 'etl_feed_stat' to HDFS ($path)")
+    val result: Either[Unit, String] = try {
+      logger.info(s"[updateFeedStatInHive]: Writing updated stats in to the table '$tableName' to HDFS ($path)")
       updatedStatDF.write.mode(SaveMode.Overwrite).parquet(tmpPath)
 
       val hadoopFs = FileSystem.get(new Configuration())
@@ -101,15 +90,25 @@ class UpdateFeedStats(feed_name: String, firstDate: DateTime = DateTime.now) {
       hadoopFs.rename(new Path(tmpPath), new Path(path))
 
       sqlContext.sql(
-        s"""
-           |ALTER TABLE $hiveDbName.$tableName
-           | ADD IF NOT EXISTS PARTITION (job_name ='${jobStaticParam.jobName}')
-           | LOCATION '$path'
-         """.stripMargin)
+        s" ALTER TABLE $hiveDbName.$tableName ADD IF NOT EXISTS PARTITION (job_name ='$jobName') LOCATION '$path'".stripMargin)
 
-      println(s"updated stats partition at ($path) registered successfully to $hiveDbName.$tableName")
-      0
-    } finally -1
+      logger.info(s"[updateFeedStatInHive]: Updated stats partition at ($path) registered successfully to $hiveDbName.$tableName")
+      Left()
+    } catch {
+      case exception: Exception => Right(s" ${EM(exception)} ".stripMargin)
+    }
+    result
+  }
+
+  private def getStatString(executionTime: Long, feedJobResult: JobResult): String = {
+    val datePattern = "yyyy-MM-dd"
+    val dateString = startDate.toString(datePattern)
+
+    val stat: String = s"$jobName, ${feedJobResult.feedName}, ${feedJobResult.success}, $dateString, ${startDate.hourOfDay}, " +
+      s"${feedJobResult.transformationPassedCount}, ${feedJobResult.transformationFailedCount}, " +
+      s"${feedJobResult.validateCount}, ${feedJobResult.nonValidatedCount}, ${feedJobResult.failureReason}, $executionTime"
+    logger.info(s"Stat Row: $stat")
+    stat
   }
 
 }

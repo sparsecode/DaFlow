@@ -17,31 +17,35 @@
 
 package com.abhioncbr.etlFramework.metrics.promethus
 
+import com.abhioncbr.etlFramework.commons.NotificationMessages
 import com.typesafe.scalalogging.Logger
+import io.prometheus.client.CollectorRegistry
+import io.prometheus.client.Gauge
 import io.prometheus.client.exporter.PushGateway
-import io.prometheus.client.{CollectorRegistry, Gauge}
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
-import scala.util.{Failure, Success, Try}
-
-class PromethusObject(feedName: String) {
+class PrometheusObject(feedName: String, pushGatewayIpAddress: String) {
   private val logger = Logger(this.getClass)
 
-  @transient lazy val feedDataStatGauge = Gauge.build()
-    .name(feedName.replace("-","_"))
-    .help(s"number of entries for a given ${feedName.replace("-","_")}")
-    .register()
+  @transient lazy val feedDataStatGauge: Gauge = Gauge.build()
+    .name(feedName).help(s"number of entries for a given $feedName").register()
 
-  def pushMetrics(MetricsJobName: String, metricData: Long): Unit = {
+  def pushMetrics(metricsJobName: String, metricData: Long): Either[Unit, String] = {
     @transient val conf: Map[String, String] = Map()
-    val pushGatewayAddress = conf.getOrElse("pushGatewayAddr", "sgdshadoopedge3.sgdc:9091")
+    val pushGatewayAddress = conf.getOrElse("pushGatewayAddr", pushGatewayIpAddress)
     val pushGateway = new PushGateway(pushGatewayAddress)
 
     feedDataStatGauge.labels(feedName).set(metricData)
 
-    Try(pushGateway.push(CollectorRegistry.defaultRegistry, s"${MetricsJobName.replace("-","_")}")) match {
-      case Success(u: Unit) => true
-      case Failure(th: Throwable) => logger.info(s"Unable to push metrics. Got an exception ${th.getStackTrace} ")
+    val output: Either[Unit, String] = Try(pushGateway.push(CollectorRegistry.defaultRegistry, metricsJobName)) match {
+      case Success(u: Unit) => Left(u)
+      case Failure(ex: Exception) => val str = s"Unable to push metrics. ${NotificationMessages.exceptionMessage(ex)}"
+        logger.warn(str)
+        Right(str)
     }
+    output
   }
 
 }

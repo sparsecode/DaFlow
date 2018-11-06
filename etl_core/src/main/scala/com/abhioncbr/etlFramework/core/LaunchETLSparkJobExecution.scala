@@ -22,60 +22,73 @@ import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.extract.ExtractConf
 import com.abhioncbr.etlFramework.commons.extract.ExtractionType
 import com.abhioncbr.etlFramework.commons.job.JobStaticParamConf
-import com.abhioncbr.etlFramework.commons.load.{LoadConf, LoadType}
-import com.abhioncbr.etlFramework.commons.transform.{TransformConf, TransformResult}
-import com.abhioncbr.etlFramework.core.extractData.{ExtractDataFromDB, ExtractDataFromFileSystem, ExtractDataFromHive}
-import com.abhioncbr.etlFramework.core.loadData.{LoadDataIntoFileSystem, LoadDataIntoHive}
-import com.google.common.base.Objects
-import com.abhioncbr.etlFramework.core.transformData.{Transform, TransformData, TransformUtil}
-import com.abhioncbr.etlFramework.metrics.stats.UpdateFeedStats
-import com.abhioncbr.etlFramework.jobConf.xml.ParseETLJobXml
-import org.apache.hadoop.conf.Configuration
-import com.abhioncbr.etlFramework.metrics.stats.JobResult
+import com.abhioncbr.etlFramework.commons.load.LoadConf
+import com.abhioncbr.etlFramework.commons.load.LoadType
+import com.abhioncbr.etlFramework.commons.transform.TransformConf
+import com.abhioncbr.etlFramework.commons.transform.TransformResult
+import com.abhioncbr.etlFramework.core.extractData.ExtractDataFromDB
+import com.abhioncbr.etlFramework.core.extractData.ExtractDataFromFileSystem
+import com.abhioncbr.etlFramework.core.extractData.ExtractDataFromHive
+import com.abhioncbr.etlFramework.core.loadData.LoadDataIntoFileSystem
+import com.abhioncbr.etlFramework.core.loadData.LoadDataIntoHive
+import com.abhioncbr.etlFramework.core.transformData.Transform
+import com.abhioncbr.etlFramework.core.transformData.TransformData
+import com.abhioncbr.etlFramework.core.transformData.TransformUtil
 import com.abhioncbr.etlFramework.core.validateData.ValidateTransformedData
+import com.abhioncbr.etlFramework.jobConf.xml.ParseETLJobXml
+import com.abhioncbr.etlFramework.metrics.stats.JobResult
+import com.abhioncbr.etlFramework.metrics.stats.UpdateFeedStats
 import com.typesafe.scalalogging.Logger
-import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
+import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.SQLContext
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
-
 import scala.xml.XML
 
-class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], secondDate: Option[DateTime],
-                                 xmlInputFilePath: String, otherParams: Option[Map[String, String]]){
+import org.apache.commons.lang.builder.ToStringBuilder
+
+class LaunchETLSparkJobExecution(jobName: String, startDate: Option[DateTime], endDate: Option[DateTime],
+  configFilePath: String, otherParams: Option[Map[String, String]]) {
   private val logger = Logger(this.getClass)
 
-  def configureFeedJob: Either[Boolean, String] ={
-    Context.addContextualObject[Option[DateTime]](FIRST_DATE, firstDate)
-    Context.addContextualObject[Option[DateTime]](SECOND_DATE, secondDate)
+  def configureETLJob: Either[Unit, String] = {
+    // adding job params in context.
+    Context.addContextualObject[Option[DateTime]](END_DATE, endDate)
+    Context.addContextualObject[Option[DateTime]](START_DATE, startDate)
+    Context.addContextualObject[Option[Map[String, String]]](OTHER_PARAM, otherParams)
 
-    val appName = s"etl-$feedName"
+    val appName = "ETL-" + jobName
     val sparkSession: SparkSession = SparkSession.builder().appName(appName).getOrCreate()
-    Context.addContextualObject[Option[Map[String,String]]](OTHER_PARAM, otherParams)
-    Context.addContextualObject[Configuration](HADOOP_CONF, sparkSession.sparkContext.hadoopConfiguration)
-    Context.addContextualObject[SparkContext](SPARK_CONTEXT, sparkSession.sparkContext)
-    Context.addContextualObject[SQLContext](SQL_CONTEXT, sparkSession.sqlContext)
 
-    val FALSE = false
+    // adding spark & hadoop configuration in context.
+    Context.addContextualObject[SQLContext](SQL_CONTEXT, sparkSession.sqlContext)
+    Context.addContextualObject[SparkContext](SPARK_CONTEXT, sparkSession.sparkContext)
+    Context.addContextualObject[Configuration](HADOOP_CONF, sparkSession.sparkContext.hadoopConfiguration)
+
+    // parsing configuration file & loading job params in context.
+    val falseObject = false
     val parse = new ParseETLJobXml
-    parse.parseXml(xmlInputFilePath, FALSE) match {
+    val output: Either[Unit, String] = parse.parseXml(configFilePath, falseObject) match {
       case Left(xmlContent) => parse.parseNode(XML.loadString(xmlContent)) match {
         case Left(tuple) =>
           Context.addContextualObject[JobStaticParamConf] (JOB_STATIC_PARAM_CONF, tuple._1)
           Context.addContextualObject[ExtractConf] (EXTRACT_CONF, tuple._2)
           Context.addContextualObject[TransformConf] (TRANSFORM_CONF, tuple._3)
           Context.addContextualObject[LoadConf] (LOAD_CONF, tuple._4)
+          Left()
         case Right(parseError) => logger.error(parseError)
-          return Right(parseError)
+          Right(parseError)
       }
       case Right(xmlLoadError) => logger.error(xmlLoadError)
-        return Right(xmlLoadError)
+        Right(xmlLoadError)
     }
-
-    Left(true)
+    output
   }
 
-  def executeFeedJob: Either[Array[JobResult], String]={
+  def executeETLJob: Either[Array[JobResult], String] = {
     val extractionResult = extract
     val extractionRight: Array[String] = extractionResult.filter(_.isRight).map(_.right.get)
     if(extractionRight.length > 0) return Right(extractionRight.mkString(" , "))
@@ -88,7 +101,7 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
     logger.info("Transformation phase of the feed is completed")
 
     // validating transformed data, if it is configured to be validated.
-    val validateTransformedData: Boolean  = Context.getContextualObject[TransformConf](TRANSFORM_CONF).validateTransformedData
+    val validateTransformedData: Boolean = Context.getContextualObject[TransformConf](TRANSFORM_CONF).validateTransformedData
     val validateResult: Either[Array[(DataFrame, DataFrame, Any, Any)], String]  = if(validateTransformedData) {
       validate(transformedResult.left.get)
     } else {
@@ -181,96 +194,94 @@ class LaunchETLSparkJobExecution(feedName: String ,firstDate: Option[DateTime], 
 
 object LaunchETLSparkJobExecution extends App{
   private val logger = Logger(this.getClass)
+
+  case class CommandOptions(jobName: String = "", configFilePath: String = "", startDate: Option[DateTime] = None,
+                            endDate: Option[DateTime] = None, otherParams: Option[Map[String, String]] = None) {
+
+    override def toString: String = ToStringBuilder.reflectionToString(this)
+  }
+
   def launch(args: Array[String]): Unit = {
-    case class CommandOptions(firstDate: Option[DateTime] = None, feedName : String = "", secondDate: Option[DateTime] = None,
-                              xmlInputFilePath: String = "", statScriptFilePath: String = "",
-                              otherParams: Option[Map[String, String]] = None) {
-      override def toString: String =
-        Objects.toStringHelper(this)
-          .add("feed_name", feedName)
-          .add("firstDate", firstDate)
-          .add("secondDate", secondDate)
-          .add("xmlFilePath", xmlInputFilePath)
-          .add("statScriptFilePath", statScriptFilePath)
-          .add("otherParams", otherParams)
-          .toString
-    }
-    val DatePattern = "yyyy-MM-dd HH:mm:ss"
-    val dateParser  = DateTimeFormat.forPattern(DatePattern)
+    val datePattern = "yyyy-MM-dd HH:mm:ss"
+    val dateParser = DateTimeFormat.forPattern(datePattern)
 
-    val parser = new scopt.OptionParser[CommandOptions]("") {
-      opt[String]('e', "etl_feed_name")
-        .action((e, f) => f.copy(feedName = e))
-        .text("Required Etl feed name.")
+    val parser = new scopt.OptionParser[CommandOptions](programName = "ETL") {
+      opt[String]('j', name = "jobName")
+        .action((e, c) => c.copy(jobName = e))
+        .text("[Required Param]: Etl Job Name Is Required For All ETL Jobs.")
         .required
 
-      opt[String]('d', "date")
-        .action((fd, c) =>  c.copy(firstDate = if(!fd.trim.isEmpty) Some(dateParser.parseDateTime(fd)) else None))
-        .text("Required for all jobs except of hourly jobs or once execution jobs.")
-        .optional
-
-      opt[String]('s', "second_date")
-        .action((sd, c) =>  c.copy(secondDate = if(!sd.trim.isEmpty) Some(dateParser.parseDateTime(sd)) else None))
-        .text("Required only in case of date range jobs")
-        .optional
-
-      opt[String]('x', "xml_file_path")
-        .action((xfp, c) => c.copy(xmlInputFilePath = xfp))
-        .text("Required xml file path for etl job execution steps.")
+      opt[String]('c', "configFilePath")
+        .action((cfp, c) => c.copy(configFilePath = cfp))
+        .text("[Required Param]: Config File Is Required For All ETL Jobs.")
         .required
 
-      opt[String]('f', "stat_script_file_path")
-        .action((sfp, c) => c.copy(statScriptFilePath = sfp))
-        .text("Required stat script file path for etl job result updates.")
+      opt[String]('s', name = "startDate")
+        .action((sd, c) => c.copy(startDate = if (!sd.trim.isEmpty){ Some(dateParser.parseDateTime(sd)) } else { None }))
+        .text("[Optional Param]: Needed For All ETL Jobs Except For Hourly & Once Frequency One's.")
         .optional
 
-      opt[String]('o', "other_params")
-        .action((op, c) => c.copy(otherParams = Some( op.replace("[", "").
-          replace("]", "").split(",")
-          .map(str => {val temp = str.split("=")
-          (temp(0), temp(1))}).toMap)))
-        .text("Required in-case job requires extra params like mentioned in 'xml' file. Should be of key-value pattern like '[a=b,x=y]'")
+      opt[String]('e', name = "endDate")
+        .action((ed, c) => c.copy(endDate = if (!ed.trim.isEmpty) { Some(dateParser.parseDateTime(ed)) } else { None }))
+        .text("[Optional Param]: Needed For All Date Range ETL Jobs.")
+        .optional
+
+      opt[String]('o', name = "other_params")
+        .action((op, c) => c.copy(otherParams = Some(op.dropRight(1).drop(1).split(',').map(str => {
+          val temp = str.split('=')
+          (temp(0), temp(1))
+        }).toMap)))
+        .text("[Optional Param]: Can Be Used For Specifying Extra Params. Should Be Of key-Value Pattern Like '[a=b,x=y]'")
         .optional
 
     }
 
-    parser.parse(args, CommandOptions()) match {
+    val exitCode: Int = parser.parse(args, CommandOptions()) match {
       case Some(opts) =>
-        logger.info(s"Going to start the execution of the etl feed job: ")
-        var exitCode = -1
-        val etlExecutor = new LaunchETLSparkJobExecution(opts.feedName, opts.firstDate, opts.secondDate, opts.xmlInputFilePath, opts.otherParams)
-
-        var metricData = 0L
-        val updateFeedStats: UpdateFeedStats = new UpdateFeedStats(opts.feedName, opts.firstDate.getOrElse(DateTime.now))
-        etlExecutor.configureFeedJob match {
-          case Left(b) => val start = System.currentTimeMillis()
-            val feedJobOutput = etlExecutor.executeFeedJob
-            val end = System.currentTimeMillis()
-            feedJobOutput match {
-              case Left(dataArray) => /*val temp = dataArray.map(data =>
-                updateFeedStats.updateFeedStat(opts.statScriptFilePath, data.subtask, data.validateCount,
-                  data.nonValidatedCount, end - start, "success", data.transformationPassedCount,
-                  data.transformationFailedCount, data.failureReason)).map(status => if(status==0) true else false)
-                .reduce(_ && _)
-                if(temp) exitCode = 0
-                metricData = dataArray.head.validateCount*/
-                println("job complete.")
-              //else
-              case Right(s) => updateFeedStats.updateFeedStat(opts.statScriptFilePath, "", 0, 0, end - start, "fail", 0, 0, s)
-                logger.error(s)
-            }
-          case Right(s) => updateFeedStats.updateFeedStat(opts.statScriptFilePath, "", 0, 0, 0, "fail", 0, 0, s)
-            logger.error(s)
-        }
-
-        //TODO: Promethus push metrics, commented in refactoring [will be triggered based on job static param]
-        //pushMetrics(opts.feedName)
-
-        logger.info(s"Etl job finish with exit code: $exitCode")
-        System.exit(exitCode)
-      case None =>
-        parser.showTryHelp()
+        logger.info(s"Going to start the execution of the etl feed job: ${opts.toString}")
+        execute(opts)
+      case None => parser.showTryHelp()
+        -1
     }
+    logger.info(s"Etl job finish with exit code: $exitCode")
+    System.exit(exitCode)
+  }
+
+  def execute(opts: CommandOptions): Int = {
+    val etlExecutor = new LaunchETLSparkJobExecution(opts.jobName, opts.startDate,
+      opts.endDate, opts.configFilePath, opts.otherParams)
+
+    val updateFeedStats: UpdateFeedStats = new UpdateFeedStats(opts.jobName, opts.startDate.getOrElse(DateTime.now))
+    val exitCode: Int = etlExecutor.configureETLJob match {
+      case Left(u: Unit) =>
+        logger.info(s"ETL job Config file validated $u")
+        val start = System.currentTimeMillis
+        // executing ETL job
+        val feedJobOutput = etlExecutor.executeETLJob
+        val end = System.currentTimeMillis
+
+        feedJobOutput match {
+          case Left(dataArray) =>
+            // TODO/FIXME: Prometheus push metrics, commented in refactoring [will be triggered based on job static param]
+            // pushMetrics(opts.feedName)
+            val updateStatusData: Array[String] = dataArray
+              .map(data => updateFeedStats.updateFeedStatInFile(end - start, data)).filter(_.isRight).map(_.right.get)
+            if (updateStatusData.length > 0) { -1 } else { 0 }
+          case Right(str) => updateFeedStats.updateFeedStatInFile(end - start, getDefaultJobResult(opts.jobName, str))
+            logger.error(str)
+            -1
+        }
+      case Right(str) =>
+        updateFeedStats.updateFeedStatInFile(executionTime = 0, getDefaultJobResult(opts.jobName, str))
+        logger.error(str)
+        -1
+    }
+    exitCode
+  }
+
+  def getDefaultJobResult(etlJobName: String, failureReason: String): JobResult = {
+    val falseObject: Boolean = false
+    JobResult(falseObject, etlJobName, 0, 0, 0, 0, failureReason)
   }
 
   launch(args)
