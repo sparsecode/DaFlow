@@ -91,18 +91,18 @@ class LaunchETLSparkJobExecution(jobName: String, startDate: Option[DateTime], e
   def executeETLJob: Either[Array[JobResult], String] = {
     val extractionResult = extract
     val extractionRight: Array[String] = extractionResult.filter(_.isRight).map(_.right.get)
-    if(extractionRight.length > 0) return Right(extractionRight.mkString(" , "))
+    if (extractionRight.length > 0) return Right(extractionRight.mkString(" , "))
     logger.info("Extraction phase of the feed is completed")
 
-    //TODO: validate extracted data based on condition & boolean operator.
+    // TODO/FIXME: validate extracted data based on condition & boolean operator.
 
     val transformedResult = transformation(extractionResult.map(_.left.get))
-    if(transformedResult.isRight) return Right(transformedResult.right.get)
+    if (transformedResult.isRight) return Right(transformedResult.right.get)
     logger.info("Transformation phase of the feed is completed")
 
     // validating transformed data, if it is configured to be validated.
     val validateTransformedData: Boolean = Context.getContextualObject[TransformConf](TRANSFORM_CONF).validateTransformedData
-    val validateResult: Either[Array[(DataFrame, DataFrame, Any, Any)], String]  = if(validateTransformedData) {
+    val validateResult: Either[Array[(DataFrame, DataFrame, Any, Any)], String] = if (validateTransformedData) {
       validate(transformedResult.left.get)
     } else {
       Left(transformedResult.left.get.map(array => (array.resultDF, null, array.otherAttributes.get("validCount"),
@@ -113,7 +113,7 @@ class LaunchETLSparkJobExecution(jobName: String, startDate: Option[DateTime], e
 
     // loading the transformed data.
     val loadResult = load(validateResult.left.get)
-    if(loadResult.isRight) return Right(validateResult.right.get)
+    if (loadResult.isRight) return Right(validateResult.right.get)
     logger.info ("Load phase of the feed is completed")
 
     Left(loadResult.left.get)
@@ -130,48 +130,53 @@ class LaunchETLSparkJobExecution(jobName: String, startDate: Option[DateTime], e
   }
 
   private def transformation(extractionDF: Array[DataFrame]): Either[Array[TransformResult], String] = {
-    //testing whether extracted data frame is having data or not. If not then, error message is returned.
-    if(extractionDF.head.first == null) return Right("Extracted data frame contains no data row")
-    val transform: Transform  = TransformUtil.prepareTransformation(Context.getContextualObject[TransformConf](TRANSFORM_CONF))
+    // testing whether extracted data frame is having data or not. If not then, error message is returned.
+    if (extractionDF.head.first == null) { return Right("Extracted data frame contains no data row") }
+    val transform: Transform = TransformUtil.prepareTransformation(Context.getContextualObject[TransformConf](TRANSFORM_CONF))
     new TransformData(transform).performTransformation(extractionDF)
   }
 
   private def validate(transformationDF: Array[TransformResult]): Either[Array[(DataFrame, DataFrame, Any, Any)], String] = {
-    //testing whether transformed data frames have data or not.
-    transformationDF.map(res => res.resultDF).foreach(df => if(df.first == null ) return Right("Transformed data frame contains no data row"))
+    // testing whether transformed data frames have data or not.
+    transformationDF.map(res => res.resultDF).foreach(df => if (df.first == null) {
+      return Right("Transformed data frame contains no data row")
+    })
 
-    var output: Array[ (DataFrame, DataFrame, Any, Any) ] = Array()
-    transformationDF.foreach( arrayElement =>  {
+    var output: Array[(DataFrame, DataFrame, Any, Any)] = Array()
+    transformationDF.foreach(arrayElement => {
       val validator = new ValidateTransformedData
       val validateSchemaResult = validator.validateSchema (arrayElement.resultDF)
       if(validateSchemaResult._1) {
         output = output ++ validator.validateData(arrayElement.resultDF, validateSchemaResult._2.get, arrayElement
           .otherAttributes.get("validCount"), arrayElement.otherAttributes.get("invalidCount"))
-      } else { validateSchemaResult._2 match {
+      } else {
+        validateSchemaResult._2 match {
           case Some(_2) => logger.error("hive table schema & data frame schema does not match. Below are schemas for reference -")
             logger.error(s"table schema:: ${_2.mkString}")
             logger.error(s"data frame schema:: ${validateSchemaResult._3.get.mkString}")
-          case None => logger.error(s"provided hive table does not exist.")}
-          return Right("Validation failed. Please check the log.")
+          case None => logger.error("provided hive table does not exist.")
+          }
+        return Right("Validation failed. Please check the log.")
       }
     })
     Left(output)
   }
 
-  private def load(validationArrayDF: Array[ (DataFrame, DataFrame, Any, Any) ]): Either[Array[JobResult], String] = {
-    //testing whether validated data frames have data or not.
+  private def load(validationArrayDF: Array[(DataFrame, DataFrame, Any, Any)]): Either[Array[JobResult], String] = {
+    // testing whether validated data frames have data or not.
     validationArrayDF.foreach(tuple => {
       if (tuple._1.first == null) {
-        println(s"validate failed"); return Right("Transformed data frame contains no data row")
+        logger.error("[load]: validate failed")
+        return Right("Transformed data frame contains no data row")
       }
     })
 
-    val FALSE = false
-    //TODO: load tables for multiple data frames
-    val loadResult: Array[JobResult] = validationArrayDF.map( validate => {
+    val falseObject = false
+    // TODO/FIXME: load tables for multiple data frames
+    val loadResult: Array[JobResult] = validationArrayDF.map(validate => {
       val loadConf = Context.getContextualObject[LoadConf](LOAD_CONF)
 
-      //TODO: handle mapping of the transform feeds with load feeds.
+      // TODO/FIXME: handle mapping of the transform feeds with load feeds.
       val feed = loadConf.feeds.head
       val loadType = feed.loadType
 
@@ -181,11 +186,18 @@ class LaunchETLSparkJobExecution(jobName: String, startDate: Option[DateTime], e
         case LoadType.FILE_SYSTEM => new LoadDataIntoFileSystem(feed).loadTransformedData(validate._1)
         case _ => Right(s"loading data to $loadType is not supported right now.")
       }
-      //writing output data tuple.
-      (loadResult, validate._1.count(), if(validate._2 != null ) validate._2.count() else 0, validate._3, validate._4)
+      // writing output data tuple.
+      (loadResult, validate._1.count, if (validate._2 != null) { validate._2.count } else { 0 }, validate._3, validate._4)
     }).map(result => {
-      if(result._1.isRight) JobResult(FALSE, "", result._4.asInstanceOf[Int], result._5.asInstanceOf[Int], result._2, result._3, result._1.right.get)
-      else JobResult(result._1.left.get, "", result._4.asInstanceOf[Int], result._5.asInstanceOf[Int], result._2, result._3, "")})
+      if (result._1.isRight) {
+        JobResult(falseObject, "", result._4.asInstanceOf[Int], result._5.asInstanceOf[Int],
+          result._2, result._3, result._1.right.get)
+      }
+      else {
+        JobResult(result._1.left.get, "", result._4.asInstanceOf[Int], result._5.asInstanceOf[Int], result._2, result._3, "")
+      }
+    })
+
     Left(loadResult)
   }
 
