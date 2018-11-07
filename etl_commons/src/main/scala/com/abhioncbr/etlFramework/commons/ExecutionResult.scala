@@ -14,4 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-addSbtPlugin(dependency = "com.eed3si9n" % "sbt-assembly" % "0.13.0")
+
+package com.abhioncbr.etlFramework.commons
+
+import org.apache.spark.sql.DataFrame
+
+case class ExecutionResult(feedName: String, resultDF: DataFrame, otherAttributes: Option[Map[String, Any]] = None)

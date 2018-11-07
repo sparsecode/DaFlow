@@ -1,9 +1,31 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.abhioncbr.etlFramework.core.transformData
 
-import com.abhioncbr.etlFramework.commons.transform.{TransformRuleConf, TransformStepConf, TransformConf}
+import com.abhioncbr.etlFramework.commons.transform.TransformConf
+import com.abhioncbr.etlFramework.commons.transform.TransformRuleConf
+import com.abhioncbr.etlFramework.commons.transform.TransformStepConf
 import com.typesafe.scalalogging.Logger
-import org.apache.spark.sql.types.{DataType, StructType}
-import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.types.DataType
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.SQLContext
 
 import scala.util.Try
 import scala.util.control.NonFatal
@@ -47,16 +69,16 @@ object TransformUtil {
       (tableDataSchema, partitionColSchema)
     }
 
-  def getColumnsInfo(schema: StructType, mapping: Map[String, String]): List[(Int, String, DataType)] ={
+  def getColumnsInfo(schema: StructType, mapping: Map[String, String]): List[(Int, String, DataType)] = {
     val tableColumns: List[(Int, String, DataType)] = schema.fields.map(struct => {
-      var name = struct.name
-      if(mapping.contains(struct.name)) name = mapping.getOrElse(struct.name, "")
+      val name = mapping.getOrElse(struct.name, "")
+      // if(mapping.contains(struct.name)) name = mapping.getOrElse(struct.name, "")
 
       (schema.fieldIndex(struct.name), name, struct.dataType)}).toList
     tableColumns
   }
 
-  def hasColumn(dataFrame: DataFrame, colName: String): Boolean =  {
+  def hasColumn(dataFrame: DataFrame, colName: String): Boolean = {
     dataFrame.select(colName.trim).columns.length == 1
   }
 
@@ -176,14 +198,16 @@ object TransformUtil {
   }
 
   def flattenStructType(row: Row, preAppend: String): org.apache.spark.sql.Row = {
-    if (preAppend.isEmpty) return row
-    var outputRow: Row = row
-    val temp = preAppend.split("[.]").toList
-    temp.foreach(str => outputRow = outputRow.getAs[org.apache.spark.sql.Row](str))
-    outputRow
+    if (preAppend.isEmpty) { row }
+    else {
+      var outputRow: Row = row
+      val temp = preAppend.split("[.]").toList
+      temp.foreach(str => outputRow = outputRow.getAs[org.apache.spark.sql.Row](str))
+      outputRow
+    }
   }
 
-  def prepareTransformation(transformConf: TransformConf): Transform  = {
+  def prepareTransformation(transformConf: TransformConf): Transform = {
     val transformSteps: List[TransformStepConf] = transformConf.transformSteps
     val steps: List[TransformStep] = transformSteps.map(
       transformStep => {val rules: Map[String, TransformRule] = transformStep.rules.map(rule => {
@@ -194,12 +218,13 @@ object TransformUtil {
     Transform(steps, transformConf.validateTransformedData)
   }
 
-  private def getMergerGroup(mergeGroup: String): Either[(String,String), String] = {
-    if(!mergeGroup.isEmpty){
-      val temp = mergeGroup.split(",").map(group => Try(group.trim)).partition(result => result.isSuccess )._1
-      if(temp.length ==2 ) return Left((temp.head.get, temp.tail.head.get))
-    }
-    Right("not proper merge group input")
+  private def getMergerGroup(mergeGroup: String): Either[(String, String), String] = {
+    if (!mergeGroup.isEmpty){
+      val temp = mergeGroup.split(",").map(group => Try(group.trim)).partition(result => result.isSuccess)._1
+      if (temp.length == 2) {  Left((temp.head.get, temp.tail.head.get)) }
+      else { Right("not proper merge group input") }
+    } else { Right("not proper merge group input") }
+
   }
 
   private def getRule(transformRule: TransformRuleConf): TransformRule = {
@@ -210,11 +235,11 @@ object TransformUtil {
 
       case "DROP" => new SimpleFunctionRule(transformRule.ruleType, transformRule.condition, group)
 
-      case "FILTER" =>new SimpleFunctionRule(transformRule.ruleType, transformRule.condition, group)
+      case "FILTER" => new SimpleFunctionRule(transformRule.ruleType, transformRule.condition, group)
 
-      case "SELECT" =>new SimpleFunctionRule(transformRule.ruleType, transformRule.condition, group)
+      case "SELECT" => new SimpleFunctionRule(transformRule.ruleType, transformRule.condition, group)
 
-      case "EXPLODE" =>new SimpleFunctionRule(transformRule.ruleType, transformRule.condition, group)
+      case "EXPLODE" => new SimpleFunctionRule(transformRule.ruleType, transformRule.condition, group)
 
       case "ADD_COLUMN" =>
         val columnName = transformRule.ruleAttributesMap("columnName")

@@ -1,0 +1,29 @@
+# 1. Choose language and target JDKs for parallel builds.
+language: scala
+scala:
+  - 2.11.11
+jdk:
+  - oraclejdk8
+
+# 2. Setup cache directory for SBT and Maven.
+cache:
+  directories:
+  - $HOME/.sbt
+  - $HOME/.m2
+  - $HOME/.ivy2
+
+
+# 3. Turn off notifications.
+notifications:
+  email: false
+
+# 4. Run bt
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION clean coverage test scalastyle
+
+  # Trick to avoid unnecessary cache updates
+  - find $HOME/.sbt -name "*.lock" | xargs rm
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
+
+after_success:
+  - sbt coveralls
