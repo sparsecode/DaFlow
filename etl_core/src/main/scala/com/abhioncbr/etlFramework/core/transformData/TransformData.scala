@@ -17,16 +17,16 @@
 
 package com.abhioncbr.etlFramework.core.transformData
 
-import com.abhioncbr.etlFramework.commons.transform.TransformResult
+import com.abhioncbr.etlFramework.commons.ExecutionResult
 import com.typesafe.scalalogging.Logger
 import org.apache.spark.sql.DataFrame
 
 class TransformData(transform : Transform) {
   private val logger = Logger(this.getClass)
 
-  def performTransformation(rawDataFrame: Array[DataFrame]): Either[Array[TransformResult], String] = {
+  def performTransformation(extractResult: Array[ExecutionResult]): Either[Array[ExecutionResult], String] = {
     val steps = transform.transformSteps
-    var stepOutput: Array[TransformResult] = rawDataFrame.map(dataFrame => TransformResult(dataFrame))
+    var stepOutput: Array[ExecutionResult] = extractResult
 
     // iterating over transformation steps
     steps.foreach(step => {

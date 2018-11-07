@@ -19,13 +19,14 @@ package com.abhioncbr.etlFramework.core
 
 import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
+import com.abhioncbr.etlFramework.commons.ExecutionResult
+import com.abhioncbr.etlFramework.commons.NotificationMessages.{extractNotSupported => ENS}
 import com.abhioncbr.etlFramework.commons.extract.ExtractConf
 import com.abhioncbr.etlFramework.commons.extract.ExtractionType
 import com.abhioncbr.etlFramework.commons.job.JobStaticParamConf
 import com.abhioncbr.etlFramework.commons.load.LoadConf
 import com.abhioncbr.etlFramework.commons.load.LoadType
 import com.abhioncbr.etlFramework.commons.transform.TransformConf
-import com.abhioncbr.etlFramework.commons.transform.TransformResult
 import com.abhioncbr.etlFramework.core.extractData.ExtractDataFromDB
 import com.abhioncbr.etlFramework.core.extractData.ExtractDataFromFileSystem
 import com.abhioncbr.etlFramework.core.extractData.ExtractDataFromHive
@@ -34,21 +35,18 @@ import com.abhioncbr.etlFramework.core.loadData.LoadDataIntoHive
 import com.abhioncbr.etlFramework.core.transformData.Transform
 import com.abhioncbr.etlFramework.core.transformData.TransformData
 import com.abhioncbr.etlFramework.core.transformData.TransformUtil
-import com.abhioncbr.etlFramework.core.validateData.ValidateTransformedData
 import com.abhioncbr.etlFramework.jobConf.xml.ParseETLJobXml
 import com.abhioncbr.etlFramework.metrics.stats.JobResult
 import com.abhioncbr.etlFramework.metrics.stats.UpdateFeedStats
 import com.typesafe.scalalogging.Logger
+import org.apache.commons.lang.builder.ToStringBuilder
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.SQLContext
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import scala.xml.XML
-
-import org.apache.commons.lang.builder.ToStringBuilder
 
 class LaunchETLSparkJobExecution(jobName: String, startDate: Option[DateTime], endDate: Option[DateTime],
   configFilePath: String, otherParams: Option[Map[String, String]]) {
@@ -89,54 +87,55 @@ class LaunchETLSparkJobExecution(jobName: String, startDate: Option[DateTime], e
   }
 
   def executeETLJob: Either[Array[JobResult], String] = {
-    val extractionResult = extract
-    val extractionRight: Array[String] = extractionResult.filter(_.isRight).map(_.right.get)
-    if (extractionRight.length > 0) return Right(extractionRight.mkString(" , "))
-    logger.info("Extraction phase of the feed is completed")
-
-    // TODO/FIXME: validate extracted data based on condition & boolean operator.
-
-    val transformedResult = transformation(extractionResult.map(_.left.get))
-    if (transformedResult.isRight) return Right(transformedResult.right.get)
-    logger.info("Transformation phase of the feed is completed")
-
-    // validating transformed data, if it is configured to be validated.
-    val validateTransformedData: Boolean = Context.getContextualObject[TransformConf](TRANSFORM_CONF).validateTransformedData
-    val validateResult: Either[Array[(DataFrame, DataFrame, Any, Any)], String] = if (validateTransformedData) {
-      validate(transformedResult.left.get)
+    // First: extracting the data.
+    val extractionResult: Either[Array[ExecutionResult], String] = extract
+    if (extractionResult.isRight) {
+      Right(extractionResult.right.get)
     } else {
-      Left(transformedResult.left.get.map(array => (array.resultDF, null, array.otherAttributes.get("validCount"),
-        array.otherAttributes.get("invalidCount"))))
+      // TODO/FIXME: validate extracted data based on condition & boolean operator.
+      // TODO/FIXME: handle scenario of extracted dataframes with no data.
+      logger.info("Extraction phase of the feed is completed")
+
+      // Second: transforming the extracted data.
+      val transformedResult = transform(extractionResult.left.get)
+      if (transformedResult.isRight) {
+        Right(transformedResult.right.get)
+      } else {
+        // TODO/FIXME: validate transformed data based on condition & boolean operator.
+        // TODO/FIXME: handle scenario of transformed dataframes with no data.
+        logger.info("Transformation phase of the feed is completed")
+
+        // Third: loading the transformed data.
+        val loadResult = load(transformedResult.left.get)
+        loadResult
+      }
     }
-    if(validateResult.isRight) return Right(validateResult.right.get)
-    if(validateTransformedData) logger.info("Validation phase of the feed is completed")
-
-    // loading the transformed data.
-    val loadResult = load(validateResult.left.get)
-    if (loadResult.isRight) return Right(validateResult.right.get)
-    logger.info ("Load phase of the feed is completed")
-
-    Left(loadResult.left.get)
   }
 
-  private def extract: Array[Either[DataFrame, String]] = {
+  private def extract: Either[Array[ExecutionResult], String] = {
     val extract: ExtractConf = Context.getContextualObject[ExtractConf](EXTRACT_CONF)
-    extract.feeds.map(feed => feed.extractionType match {
-      case ExtractionType.FILE_SYSTEM => Left(new ExtractDataFromFileSystem(feed).getRawData)
-      case ExtractionType.JDBC => Left(new ExtractDataFromDB(feed).getRawData)
-      case ExtractionType.HIVE => Left(new ExtractDataFromHive(feed).getRawData)
-      case ExtractionType.UNSUPPORTED => Right(s"extracting data from ${feed.extractionType} is not supported right now.")
+    val extractedFeedsOutput: Array[Either[ExecutionResult, String]] = extract.feeds.map(feed => feed.extractionType match {
+      case ExtractionType.FILE_SYSTEM => new ExtractDataFromFileSystem(feed).getRawData
+
+      case ExtractionType.JDBC => new ExtractDataFromDB(feed).getRawData
+
+      case ExtractionType.HIVE => new ExtractDataFromHive(feed).getRawData
+
+      case ExtractionType.UNSUPPORTED => Right(ENS(ExtractionType.getDataValue(feed.extractionType)))
     })
+
+    // checking whether exception occurred in feed extraction.
+    val filteredRight: Array[String] = extractedFeedsOutput.filter(_.isRight).map(_.right.get)
+    if (filteredRight.length > 0) { Right(filteredRight.mkString(" , ")) }
+    else { Left(extractedFeedsOutput.map(_.left.get)) }
   }
 
-  private def transformation(extractionDF: Array[DataFrame]): Either[Array[TransformResult], String] = {
-    // testing whether extracted data frame is having data or not. If not then, error message is returned.
-    if (extractionDF.head.first == null) { return Right("Extracted data frame contains no data row") }
+  private def transform(extractionDF: Array[ExecutionResult]): Either[Array[ExecutionResult], String] = {
     val transform: Transform = TransformUtil.prepareTransformation(Context.getContextualObject[TransformConf](TRANSFORM_CONF))
     new TransformData(transform).performTransformation(extractionDF)
   }
 
-  private def validate(transformationDF: Array[TransformResult]): Either[Array[(DataFrame, DataFrame, Any, Any)], String] = {
+  /* private def validate(transformationDF: Array[TransformResult]): Either[Array[(DataFrame, DataFrame, Any, Any)], String] = {
     // testing whether transformed data frames have data or not.
     transformationDF.map(res => res.resultDF).foreach(df => if (df.first == null) {
       return Right("Transformed data frame contains no data row")
@@ -160,17 +159,9 @@ class LaunchETLSparkJobExecution(jobName: String, startDate: Option[DateTime], e
       }
     })
     Left(output)
-  }
+  } */
 
-  private def load(validationArrayDF: Array[(DataFrame, DataFrame, Any, Any)]): Either[Array[JobResult], String] = {
-    // testing whether validated data frames have data or not.
-    validationArrayDF.foreach(tuple => {
-      if (tuple._1.first == null) {
-        logger.error("[load]: validate failed")
-        return Right("Transformed data frame contains no data row")
-      }
-    })
-
+  private def load(validationArrayDF: Array[ExecutionResult]): Either[Array[JobResult], String] = {
     val falseObject = false
     // TODO/FIXME: load tables for multiple data frames
     val loadResult: Array[JobResult] = validationArrayDF.map(validate => {
@@ -181,27 +172,23 @@ class LaunchETLSparkJobExecution(jobName: String, startDate: Option[DateTime], e
       val loadType = feed.loadType
 
       val loadResult: Either[Boolean, String] = loadType match {
-        case LoadType.HIVE => new LoadDataIntoHive(feed).loadTransformedData(validate._1)
+        case LoadType.HIVE => new LoadDataIntoHive(feed).loadTransformedData(validate.resultDF)
         case LoadType.JDBC => Right(s"loading data to $loadType is not supported right now.")
-        case LoadType.FILE_SYSTEM => new LoadDataIntoFileSystem(feed).loadTransformedData(validate._1)
+        case LoadType.FILE_SYSTEM => new LoadDataIntoFileSystem(feed).loadTransformedData(validate.resultDF)
         case _ => Right(s"loading data to $loadType is not supported right now.")
       }
       // writing output data tuple.
-      (loadResult, validate._1.count, if (validate._2 != null) { validate._2.count } else { 0 }, validate._3, validate._4)
+      (loadResult, validate)
     }).map(result => {
       if (result._1.isRight) {
-        JobResult(falseObject, "", result._4.asInstanceOf[Int], result._5.asInstanceOf[Int],
-          result._2, result._3, result._1.right.get)
-      }
-      else {
-        JobResult(result._1.left.get, "", result._4.asInstanceOf[Int], result._5.asInstanceOf[Int], result._2, result._3, "")
+        JobResult(falseObject, result._2.feedName, 0, 0, 0, 0, result._1.right.get)
+      } else {
+        JobResult(result._1.left.get, result._2.feedName, result._2.resultDF.count, 0, 0, 0, "NONE")
       }
     })
 
     Left(loadResult)
   }
-
-
 }
 
 object LaunchETLSparkJobExecution extends App{
@@ -277,8 +264,12 @@ object LaunchETLSparkJobExecution extends App{
             // TODO/FIXME: Prometheus push metrics, commented in refactoring [will be triggered based on job static param]
             // pushMetrics(opts.feedName)
             val updateStatusData: Array[String] = dataArray
-              .map(data => updateFeedStats.updateFeedStatInFile(end - start, data)).filter(_.isRight).map(_.right.get)
-            if (updateStatusData.length > 0) { -1 } else { 0 }
+              .map(data => updateFeedStats.updateFeedStatInFile(end - start, data))
+              .filter(_.isRight).map(_.right.get)
+            if (updateStatusData.length > 0) {
+              logger.error(updateStatusData.mkString(" , "))
+              -1
+            } else { 0 }
           case Right(str) => updateFeedStats.updateFeedStatInFile(end - start, getDefaultJobResult(opts.jobName, str))
             logger.error(str)
             -1

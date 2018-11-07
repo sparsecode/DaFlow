@@ -17,6 +17,6 @@
 
 package com.abhioncbr.etlFramework.core.extractData
 
-import org.apache.spark.sql.DataFrame
+import com.abhioncbr.etlFramework.commons.ExecutionResult
 
-trait ExtractData { def getRawData: DataFrame }
+trait ExtractData { def getRawData: Either[ExecutionResult, String] }

@@ -17,11 +17,10 @@
 
 package com.abhioncbr.etlFramework.core.transformData
 
-import com.abhioncbr.etlFramework.commons.Context
+import com.abhioncbr.etlFramework.commons.{Context, ExecutionResult}
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
 import com.abhioncbr.etlFramework.commons.common.FieldMappingConf
 import com.abhioncbr.etlFramework.commons.load.LoadFeedConf
-import com.abhioncbr.etlFramework.commons.transform.TransformResult
 import com.abhioncbr.etlFramework.sqlParser.Clause
 import com.abhioncbr.etlFramework.sqlParser.SQLParser
 import com.typesafe.scalalogging.Logger
@@ -37,15 +36,15 @@ import scala.util.Try
 trait TransformRule {
   def getGroup: String
   def condition(f: String => DataFrame): Boolean
-  def execute(f: String => DataFrame): Either[Array[TransformResult], String]
+  def execute(f: String => DataFrame): Either[Array[ExecutionResult], String]
 }
 
 class NilRule(group: String) extends TransformRule {
   override def getGroup: String = group
   override def condition(f: String => DataFrame): Boolean = true
 
-  override def execute(f: String => DataFrame): Either[Array[TransformResult], String] =
-    Left(Array(TransformResult(f.apply(group))))
+  override def execute(f: String => DataFrame): Either[Array[ExecutionResult], String] =
+    Left(Array(ExecutionResult(group, f.apply(group))))
 
   override def toString: String = { s"ruleName = nil, group = $group" }
 }
@@ -61,13 +60,13 @@ class MergeRule(ruleCondition: String, mergeGroup: (String, String), group: Stri
     Try(f.apply(mergeGroup._1)).isSuccess &&  Try(f.apply(mergeGroup._2)).isSuccess
   }
 
-  def execute(f: String => DataFrame): Either[Array[TransformResult], String] = {
+  def execute(f: String => DataFrame): Either[Array[ExecutionResult], String] = {
     val df1: DataFrame = f.apply(mergeGroup._1)
     val df2: DataFrame = f.apply(mergeGroup._2)
-    if(df1.count > 0 && df2.count <= 0) Left(Array(TransformResult(df1)))
-    if(df1.count <= 0 && df2.count > 0) Left(Array(TransformResult(df2)))
+    if(df1.count > 0 && df2.count <= 0) Left(Array(ExecutionResult(group, df1)))
+    if(df1.count <= 0 && df2.count > 0) Left(Array(ExecutionResult(group, df2)))
 
-    if(df1.schema == df2.schema) { Left(Array(TransformResult(df1.union(df2)))) }
+    if(df1.schema == df2.schema) { Left(Array(ExecutionResult(group, df1.union(df2)))) }
     else { Right(s"DataFrames of group $mergeGroup, schema is not equal") }
   }
 }
@@ -77,10 +76,10 @@ abstract class AbstractTransformationRule(group: String, condition: String) exte
   override def getGroup: String = group
   override def toString: String = { s"group = $group, ruleCondition = '$condition'" }
   override def condition(f: String => DataFrame): Boolean = condition(f.apply(group))
-  override def execute(f: String => DataFrame): Either[Array[TransformResult], String] = execute(f.apply(group))
+  override def execute(f: String => DataFrame): Either[Array[ExecutionResult], String] = execute(f.apply(group))
 
   def condition(inputDataFrame: DataFrame): Boolean
-  def execute(inputDataFrame: DataFrame): Either[Array[TransformResult], String]
+  def execute(inputDataFrame: DataFrame): Either[Array[ExecutionResult], String]
 
   def analyzeWhereCondition(inputDataFrame: DataFrame): (Boolean, Option[Seq[Clause]]) = {
     try {
@@ -118,11 +117,11 @@ class AddColumnRule(group: String, columnName: String, columnValueType: String) 
 
   override def condition(f: String => DataFrame): Boolean = true
 
-  override def execute(f: String => DataFrame): Either[Array[TransformResult], String] = {
+  override def execute(f: String => DataFrame): Either[Array[ExecutionResult], String] = {
     import org.apache.spark.sql.functions.lit
     val value: Column = lit(literal = "")
     val inputDataFrame: DataFrame = f.apply(group)
-    Left(Array(TransformResult(inputDataFrame.withColumn(columnName, value))))
+    Left(Array(ExecutionResult(group, inputDataFrame.withColumn(columnName, value))))
   }
 }
 
@@ -154,7 +153,7 @@ class SimpleFunctionRule(functionType: String, ruleCondition: String, group: Str
     }
   }
 
-  def execute(inputDataFrame: DataFrame): Either[Array[TransformResult], String] = {
+  def execute(inputDataFrame: DataFrame): Either[Array[ExecutionResult], String] = {
     functionType match {
       case "FILTER" => Left(filter(inputDataFrame))
       case "SELECT" => Left(select(inputDataFrame))
@@ -163,32 +162,32 @@ class SimpleFunctionRule(functionType: String, ruleCondition: String, group: Str
     }
   }
 
-  def filter(inputDataFrame: DataFrame): Array[TransformResult] = {
-    Array(TransformResult(inputDataFrame.filter(ruleCondition)))
+  def filter(inputDataFrame: DataFrame): Array[ExecutionResult] = {
+    Array(ExecutionResult(group, inputDataFrame.filter(ruleCondition)))
   }
 
-  def select(inputDataFrame: DataFrame): Array[TransformResult] = {
+  def select(inputDataFrame: DataFrame): Array[ExecutionResult] = {
     val selectColumns = ruleCondition.split(",")
     // added condition for supporting column like 'http-agent'
     val selectCondition = selectColumns.map(str => if (str.contains(".")) str.trim else s"`${str.trim}`").mkString(", ")
 
     val sqlContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
     inputDataFrame.createOrReplaceTempView(viewName = "temp")
-    Array(TransformResult(sqlContext.sql(sqlText = s"select $selectCondition from temp")))
+    Array(ExecutionResult(group, sqlContext.sql(sqlText = s"select $selectCondition from temp")))
   }
 
-  def drop(inputDataFrame: DataFrame): Array[TransformResult] = {
+  def drop(inputDataFrame: DataFrame): Array[ExecutionResult] = {
     val outputDF = inputDataFrame.drop(selectColumns.map(col => s""" "$col" """).mkString(" , "))
-    Array(TransformResult(outputDF))
+    Array(ExecutionResult(group, outputDF))
   }
 
-  def explode(inputDataFrame: DataFrame): Array[TransformResult] = {
+  def explode(inputDataFrame: DataFrame): Array[ExecutionResult] = {
     var outputDF = inputDataFrame
 
     val sqlContext: SQLContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
     import sqlContext.implicits._
     selectColumns.foreach(str => outputDF = outputDF.select(org.apache.spark.sql.functions.explode($"$str").alias(s"$str")))
-    Array(TransformResult(outputDF))
+    Array(ExecutionResult(group, outputDF))
   }
 }
 
@@ -205,13 +204,13 @@ class PartitionRule(scope: String, ruleCondition: String, group: String)
     output._1
   }
 
-  def execute(inputDataFrame: DataFrame): Either[Array[TransformResult], String] = {
+  def execute(inputDataFrame: DataFrame): Either[Array[ExecutionResult], String] = {
     val sqlContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
-    inputDataFrame.createGlobalTempView( viewName = "temp")
+    inputDataFrame.createGlobalTempView(viewName = "temp")
 
     val dataFrame = sqlContext.sql(sqlText = s"select * from temp where $condition")
     val negateDataFrame = sqlContext.sql(sqlText = s"select * from temp where $notCondition")
-    Left(Array(TransformResult(dataFrame), TransformResult(negateDataFrame)))
+    Left(Array(ExecutionResult(group, dataFrame), ExecutionResult(group, negateDataFrame)))
   }
 
   private def setCondition(conditions: Seq[Clause]): Unit = {
@@ -257,7 +256,7 @@ class SchemaTransformationRule(ruleCondition: String, group: String, fieldMappin
     temp._1.isDefined
   }
 
-  def execute(inputDataFrame: DataFrame): Either[Array[TransformResult], String] = {
+  def execute(inputDataFrame: DataFrame): Either[Array[ExecutionResult], String] = {
     val tableColumns: List[(Int, String, DataType)] = TransformUtil.getColumnsInfo(tableSchema,
       fieldMapping.map(mapping => (mapping.targetFieldName,mapping.sourceFieldName)).toMap)
 
@@ -302,7 +301,7 @@ class SchemaTransformationRule(ruleCondition: String, group: String, fieldMappin
     val sqlContext: SQLContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
     val outputDF = sqlContext.createDataFrame(transformedRDD, schema = tableSchema)
 
-    Left(Array(TransformResult(outputDF, Some(Map("validCount" -> validCount, "invalidCount" -> invalidCount)))))
+    Left(Array(ExecutionResult(group, outputDF, Some(Map("validCount" -> validCount, "invalidCount" -> invalidCount)))))
   }
 
   def filterRdd(valid: Boolean, failedFieldLimit: Int, temp: RDD[(Int, Row)]): RDD[(Int, Row)] = {

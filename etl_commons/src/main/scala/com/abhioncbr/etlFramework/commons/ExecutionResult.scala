@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-package com.abhioncbr.etlFramework.commons.transform
+package com.abhioncbr.etlFramework.commons
 
 import org.apache.spark.sql.DataFrame
 
-case class TransformResult(resultDF: DataFrame, otherAttributes: Option[Map[String, Any]] = None)
+case class ExecutionResult(feedName: String, resultDF: DataFrame, otherAttributes: Option[Map[String, Any]] = None)

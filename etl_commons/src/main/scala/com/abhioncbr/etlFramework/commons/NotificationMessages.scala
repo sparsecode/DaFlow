@@ -29,4 +29,8 @@ object NotificationMessages {
 
   val unknownXMLEntity: String = "Unknown entity found instead of '<etlJob>'"
   val exceptionWhileParsing: String = "Exception while parsing job xml file. Please validate xml."
+
+  // extract
+  val extractNotSupported: String => String =
+    (extractType: String) => { s"extracting data from $extractType is not supported right now" }
 }
