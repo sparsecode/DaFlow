@@ -20,34 +20,34 @@ package com.abhioncbr.etlFramework.core.transformData
 import com.abhioncbr.etlFramework.commons.transform.TransformConf
 import com.abhioncbr.etlFramework.commons.transform.TransformRuleConf
 import com.abhioncbr.etlFramework.commons.transform.TransformStepConf
-import com.typesafe.scalalogging.Logger
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types.DataType
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.SQLContext
-
 import scala.util.Try
-import scala.util.control.NonFatal
 
 object TransformUtil {
-  private val logger = Logger(this.getClass)
-  lazy val tableMetadata: (String, String, SQLContext, List[String]) =>
+  // private val logger = Logger(this.getClass)
+
+  /* lazy val tableMetadata: (String, String, SQLContext, List[String]) =>
     (Option[StructType], Option[StructType]) =
     (tableName: String, databaseName: String, sqlContext: SQLContext, partitionColumns: List[String]) => {
 
       var tableDataSchema: Option[StructType] = None
       var partitionColSchema: Option[StructType] = None
 
-       //TODO: determine whether table is present in hive or not
-       val tableExist: Boolean =true
-       //val tableExist: Boolean = hiveContext.sql(s"SHOW TABLES IN $databaseName").map(row => row.get(0)).collect.toSet.contains(tableName)
+      // TODO/FIXME: determine whether table is present in hive or not
+      // val tableExist: Boolean =true
+      // val tableExist: Boolean = hiveContext.sql(s"SHOW TABLES IN $databaseName")
+      // .map(row => row.get(0)).collect.toSet.contains(tableName)
 
       if (tableExist) {
         var tableData = sqlContext.sql(s"select * from $databaseName.$tableName limit 1")
-        //val tablePartitionInfo = hiveContext.sql(s"SHOW TABLE EXTENDED in $databaseName like $tableName").collect.partition(row => row.getString(0).startsWith("partitionColumns"))._1
+        //val tablePartitionInfo = hiveContext.sql(s"SHOW TABLE EXTENDED in $databaseName like $tableName")
+        .collect.partition(row => row.getString(0).startsWith("partitionColumns"))._1
         if (partitionColumns.nonEmpty) {
-          /*val temp = new scala.util.matching.Regex("(partitionColumns:struct partition_columns [{]{1})([0-9a-z._, ]*)(})", "prefix", "value", "postfix")
+          /*val temp = new scala.util.matching.Regex("(partitionColumns:struct
+          partition_columns [{]{1})([0-9a-z._, ]*)(})", "prefix", "value", "postfix")
+
           val partitionColumns: Option[List[String]] = tablePartitionInfo.head.getString(0) match {
             case temp(prefix, value, postfix) => Some(value.split(",").map(str => str.trim.split(" ") {
               1
@@ -67,7 +67,7 @@ object TransformUtil {
         }
       }
       (tableDataSchema, partitionColSchema)
-    }
+    } */
 
   def getColumnsInfo(schema: StructType, mapping: Map[String, String]): List[(Int, String, DataType)] = {
     val tableColumns: List[(Int, String, DataType)] = schema.fields.map(struct => {
@@ -82,7 +82,7 @@ object TransformUtil {
     dataFrame.select(colName.trim).columns.length == 1
   }
 
-  def selectColumn(row: Row, dataType: DataType, colName: String): Either[Any, String] = {
+  /* def selectColumn(row: Row, dataType: DataType, colName: String): Either[Any, String] = {
     var value: Any = null
     try {
       value = dataType match {
@@ -91,7 +91,6 @@ object TransformUtil {
           if(temp.isFailure) {
             row.getAs[Any](colName).toString.trim
           } else temp.get.trim
-
 
         case s: org.apache.spark.sql.types.IntegerType =>
           val temp = Try(row.getAs[Int](colName))
@@ -182,7 +181,8 @@ object TransformUtil {
 
         case s: org.apache.spark.sql.types.StructType =>
           val structData = row.getAs[Row](colName)
-          val temp1 = Try(Row.fromSeq(s.fields.map(structField => selectColumn(structData, structField.dataType, s"$colName.${structField.name}").left.get).toSeq))
+          val temp1 = Try(Row.fromSeq(s.fields.map(structField => selectColumn(structData, structField.dataType,
+          s"$colName.${structField.name}").left.get).toSeq))
           if(temp1.isSuccess){
             temp1.get
           } else return Right(s"Column: $colName, value is not valid Struct data type. Exception: ${temp1.failed.get.getCause}")
@@ -205,7 +205,7 @@ object TransformUtil {
       temp.foreach(str => outputRow = outputRow.getAs[org.apache.spark.sql.Row](str))
       outputRow
     }
-  }
+  } */
 
   def prepareTransformation(transformConf: TransformConf): Transform = {
     val transformSteps: List[TransformStepConf] = transformConf.transformSteps
@@ -252,11 +252,13 @@ object TransformUtil {
       case "PARTITION" => val scope = transformRule.ruleAttributesMap("scope")
         new PartitionRule(scope, transformRule.condition, group)
 
-      case "SCHEMA_TRANSFORMATION" =>
-        val failedFieldLimit = transformRule.ruleAttributesMap("failedFieldLimit").toInt
+      // case "SCHEMA_TRANSFORMATION" =>
+        /* val failedFieldLimit = transformRule.ruleAttributesMap("failedFieldLimit").toInt
         val failedRowLimit = transformRule.ruleAttributesMap("failedRowLimit").toInt
-        val mappings = null //ParseFieldMappings.fromXML(node) //List[FieldMapping]((node \ "fieldMapping").toList map { s => ParseFieldMapping.fromXML(s) }: _*)
-        new SchemaTransformationRule(transformRule.condition, group, mappings, failedFieldLimit, failedRowLimit)
+        val mappings = null
+        // ParseFieldMappings.fromXML(node) //List[FieldMapping]((node \ "fieldMapping").toList map { s => ParseFieldMapping
+        // .fromXML(s) }: _*)
+        new SchemaTransformationRule(transformRule.condition, group, mappings, failedFieldLimit, failedRowLimit) */
     }
   }
 }

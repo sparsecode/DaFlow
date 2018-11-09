@@ -58,7 +58,7 @@ class ExtractDataFromHive(feed: ExtractFeedConf) extends AbstractExtractData{
       val dataFrame: DataFrame = sqlContext.sql(tableQuery)
       Left(ExecutionResult(feed.extractFeedName, dataFrame))
     } catch {
-      case exception: Exception => logger.error( "[ExtractDataFromHive]-[getRawData]: ", exception)
+      case exception: Exception => logger.error("[ExtractDataFromHive]-[getRawData]: ", exception)
         Right(s"[ExtractDataFromHive]-[getRawData]: ${EM(exception)}".stripMargin)
     }
   }

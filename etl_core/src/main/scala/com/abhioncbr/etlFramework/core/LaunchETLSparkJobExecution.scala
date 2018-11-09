@@ -195,7 +195,7 @@ object LaunchETLSparkJobExecution extends App{
   private val logger = Logger(this.getClass)
 
   case class CommandOptions(jobName: String = "", configFilePath: String = "", startDate: Option[DateTime] = None,
-                            endDate: Option[DateTime] = None, otherParams: Option[Map[String, String]] = None) {
+    endDate: Option[DateTime] = None, otherParams: Option[Map[String, String]] = None) {
 
     override def toString: String = ToStringBuilder.reflectionToString(this)
   }
@@ -266,8 +266,7 @@ object LaunchETLSparkJobExecution extends App{
             val updateStatusData: Array[String] = dataArray
               .map(data => updateFeedStats.updateFeedStatInFile(end - start, data))
               .filter(_.isRight).map(_.right.get)
-            if (updateStatusData.length > 0) {
-              logger.error(updateStatusData.mkString(" , "))
+            if (updateStatusData.length > 0) { logger.error(updateStatusData.mkString(" , "))
               -1
             } else { 0 }
           case Right(str) => updateFeedStats.updateFeedStatInFile(end - start, getDefaultJobResult(opts.jobName, str))

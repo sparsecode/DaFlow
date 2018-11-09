@@ -19,39 +19,46 @@ package com.abhioncbr.etlFramework.core.transformData
 
 import com.abhioncbr.etlFramework.commons.ExecutionResult
 import com.typesafe.scalalogging.Logger
-import org.apache.spark.sql.DataFrame
 
 class TransformData(transform : Transform) {
   private val logger = Logger(this.getClass)
 
-  def performTransformation(extractResult: Array[ExecutionResult]): Either[Array[ExecutionResult], String] = {
-    val steps = transform.transformSteps
-    var stepOutput: Array[ExecutionResult] = extractResult
+  val test: (Either[Array[ExecutionResult], String], TransformStep) => Either[Array[ExecutionResult], String] = (input, step) => {
+    input match {
+      case Left(array) =>
+        step.addInputData(array.map(res => res.resultDF)) match {
+          case None =>
 
-    // iterating over transformation steps
-    steps.foreach(step => {
-      // setting up input data frames in transformation step
-      step.addInputData(stepOutput.map(res => res.resultDF)) match {
-        // iterating for each group of transformation rules
-        case Left(b) =>
-          stepOutput = Array()
-          step.getRules.zipWithIndex.foreach(rule => {
-            logger.info(s"step order: ${step.getOrder}, rule: $rule - checking condition")
-            if (rule._1._2.condition(step.getInputData)) {
-              logger.info(s"step order: ${step.getOrder}, rule: $rule - executing")
-              rule._1._2.execute(step.getInputData) match {
-                case Left(array) => stepOutput = stepOutput ++ array
-                case Right(s) => return Right(s)
+            // val stepOutput: ArrayBuffer[ExecutionResult] = new ArrayBuffer()
+            val stepOutput: List[Either[Array[ExecutionResult], String]] = step.getRules.zipWithIndex.map(rule => {
+              logger.info(s"step order: ${step.getOrder}, rule: $rule - checking condition")
+              if (rule._1._2.condition(step.getInputData)) {
+                logger.info(s"step order: ${step.getOrder}, rule: $rule - executing")
+                rule._1._2.execute(step.getInputData) match {
+                  case Left(outputArray) => Left(outputArray)
+                  case Right(s) => Right(s)
+                }
+              } else {
+                Right(s"For transformation step order: ${step.getOrder}, rule group:${rule._1._2.getGroup} : condition failed.")
               }
-            } else {
-              return Right(s"For transformation step order: ${step.getOrder}, " +
-                s"rule group:${rule._1._2.getGroup} : condition failed.")
-            }
-          })
-        case Right(e) => return Right(e)
-      }
-    })
-    Left(stepOutput)
+            }).toList
+
+            val filteredStepOutput = stepOutput.filter(_.isRight)
+            if(filteredStepOutput.nonEmpty) { Right(filteredStepOutput.mkString(" \\n ")) }
+            else { Left(stepOutput.flatMap(_.left.get).toArray) }
+
+          case Some(s) => Right(s)
+        }
+
+      case Right(e) => Right(e)
+    }
   }
 
+  def performTransformation(extractResult: Array[ExecutionResult]): Either[Array[ExecutionResult], String] = {
+    val steps = transform.transformSteps
+    val stepOutput: Either[Array[ExecutionResult], String] = Left(extractResult)
+
+    val output: Either[Array[ExecutionResult], String] = steps.foldLeft(stepOutput)((c, n) => test(c, n))
+    output
+  }
 }

@@ -46,7 +46,7 @@ class ExtractDataFromFileSystem(feed: ExtractFeedConf) extends ExtractData {
       }
       output
     } catch {
-      case exception: Exception => logger.error( "[ExtractDataFromFileSystem]-[getRawData]: ", exception)
+      case exception: Exception => logger.error("[ExtractDataFromFileSystem]-[getRawData]: ", exception)
         Right(s"[ExtractDataFromFileSystem]-[getRawData]: ${EM(exception)}".stripMargin)
     }
   }

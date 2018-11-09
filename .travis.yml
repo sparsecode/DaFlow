@@ -17,7 +17,7 @@ cache:
 notifications:
   email: false
 
-# 4. Run bt
+# 4. Run sbt
 script:
   - sbt ++$TRAVIS_SCALA_VERSION clean coverage test scalastyle
 
@@ -27,3 +27,7 @@ script:
 
 after_success:
   - sbt coveralls
+
+#5. Install
+install:
+  - sbt clean assembly

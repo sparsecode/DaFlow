@@ -17,11 +17,10 @@
 
 package com.abhioncbr.etlFramework.core.validateData
 
-import org.apache.spark.sql.DataFrame
+import com.abhioncbr.etlFramework.commons.ExecutionResult
 import org.apache.spark.sql.types.StructType
 
 trait ValidateData{
-  def validateSchema(dataFrame: DataFrame) : (Boolean, Option[StructType], Option[StructType])
-  def validateData(dataFrame: DataFrame, structType: StructType, first: Any, second: Any): Array[(DataFrame, DataFrame,
-  Any, Any)]
+  def validateSchema(input: ExecutionResult) : (Boolean, Option[StructType], Option[StructType])
+  def validateData(input: ExecutionResult, structType: StructType, first: Any, second: Any): Array[ExecutionResult]
 }

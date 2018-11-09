@@ -36,7 +36,6 @@ import org.joda.time.DateTime
 import org.joda.time.Days
 import org.joda.time.DurationFieldType
 
-
 object FileUtil {
   def getFilePathString(filePath: DataPath): String = {
     val pathPrefixString: String = appendDirSeparator(filePath.pathPrefix.getOrElse(""))
