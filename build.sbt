@@ -21,6 +21,7 @@ name := "etl_framework"
 
 lazy val etlFrameworkCommonSettings = Seq(
   scalacOptions += "-target:jvm-1.8",
+  scalacOptions := Seq("-encoding", "UTF-8"),
   version := "0.1.0",
   organization := "com.abhioncbr.etlFramework",
   scalaVersion := "2.11.11"
