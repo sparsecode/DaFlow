@@ -19,6 +19,11 @@
     <transform>
         <step order="1">
             <rule type="SELECT" group='1'>
+                <condition>test_string1,test_string2</condition>
+            </rule>
+        </step>
+        <step order="2">
+            <rule type="SELECT" group='1'>
                 <condition>test_string2</condition>
             </rule>
         </step>

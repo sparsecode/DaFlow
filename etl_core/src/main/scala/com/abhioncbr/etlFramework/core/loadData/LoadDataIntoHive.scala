@@ -20,9 +20,9 @@ package com.abhioncbr.etlFramework.core.loadData
 import java.text.DecimalFormat
 
 import com.abhioncbr.etlFramework.commons.Context
-import com.abhioncbr.etlFramework.commons.ContextConstantEnum.START_DATE
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum.JOB_STATIC_PARAM_CONF
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum.SQL_CONTEXT
+import com.abhioncbr.etlFramework.commons.ContextConstantEnum.START_DATE
 import com.abhioncbr.etlFramework.commons.job.JobStaticParamConf
 import com.abhioncbr.etlFramework.commons.load.LoadFeedConf
 import com.abhioncbr.etlFramework.commons.util.FileUtil
@@ -44,11 +44,10 @@ class LoadDataIntoHive(feed: LoadFeedConf) extends LoadData {
   private val hiveTableDataInitialPath = FileUtil.getFilePathString(feed.dataPath)
 
   def loadTransformedData(dataFrame: DataFrame,
-  date: Option[DateTime] = Context.getContextualObject[Option[DateTime]](START_DATE)): Either[Boolean, String] = {
+    date: Option[DateTime] = Context.getContextualObject[Option[DateTime]](START_DATE)): Either[Boolean, String] = {
     val dateString = date.get.toString("yyyy-MM-dd")
     val timeString = s"""${new DecimalFormat("00").format(date.get.getHourOfDay)}"""
     val path = s"$hiveTableDataInitialPath/$databaseName/$tableName/$dateString/$timeString"
-
 
     try{
 
@@ -78,11 +77,10 @@ class LoadDataIntoHive(feed: LoadFeedConf) extends LoadData {
     val partitioningString = LoadUtil.getPartitioningString(partData)
     logger.info(s"partitioning string - $partitioningString")
 
-    sqlContext.sql(
-      s"""
-         |ALTER TABLE $databaseName.$tableName
-         |ADD IF NOT EXISTS PARTITION ($partitioningString)
-         |LOCATION '$path'""".stripMargin)
+    sqlContext.sql(s"""
+      |ALTER TABLE $databaseName.$tableName
+      |ADD IF NOT EXISTS PARTITION ($partitioningString)
+      |LOCATION '$path'""".stripMargin)
     logger.info(s"Partition at ($path) registered successfully to $databaseName.$tableName")
   }
 }

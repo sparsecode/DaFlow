@@ -17,31 +17,20 @@
 
 package com.abhioncbr.etlFramework.core.validateData
 
-import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
-import com.abhioncbr.etlFramework.commons.load.LoadFeedConf
-import com.abhioncbr.etlFramework.commons.Context
-import com.abhioncbr.etlFramework.core.transformData.TransformUtil
-import com.typesafe.scalalogging.Logger
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, Row, SQLContext}
-
-class ValidateTransformedData extends ValidateData {
-  private val logger = Logger(this.getClass)
+abstract class ValidateTransformedData extends ValidateData
+  /* private val logger = Logger(this.getClass)
   private val sparkContext: SparkContext = Context.getContextualObject[SparkContext](SPARK_CONTEXT)
   private val sqlContext: SQLContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
 
-
   private val tableName = Context.getContextualObject[LoadFeedConf](LOAD_CONF).attributesMap("tableName")
   private val databaseName = Context.getContextualObject[LoadFeedConf](LOAD_CONF).attributesMap("databaseName")
-  val partitionColumns: List[String] = Context.getContextualObject[LoadFeedConf](LOAD_CONF).partitioningData.get.partitionColumns.map(column => column.paramName)
-
+  val partitionColumns: List[String] = Context.getContextualObject[LoadFeedConf](LOAD_CONF).partitioningData.get.
+  partitionColumns.map(column => column.paramName)
 
   def validateSchema(dataFrame: DataFrame): (Boolean, Option[StructType], Option[StructType]) = {
     logger.info("Validating data frame schema and hive table schema")
 
     val dataFrameSchema = dataFrame.schema
-
 
     var tableSchema = Context.getContextualObject[(Option[StructType], Option[StructType])](SCHEMA)
     if(tableSchema == null)
@@ -51,7 +40,8 @@ class ValidateTransformedData extends ValidateData {
     (output, tableSchema._1, Some(dataFrameSchema))
   }
 
-  def validateData(dataFrame: DataFrame, structType: StructType, first: Any, second: Any): Array[(DataFrame, DataFrame, Any, Any)] ={
+  def validateData(dataFrame: DataFrame, structType: StructType, first: Any, second: Any):
+  Array[(DataFrame, DataFrame, Any, Any)] ={
     logger.info("Validating data frame row schema and hive table schema")
 
     //val temp1 = dataFrame.collect
@@ -68,5 +58,4 @@ class ValidateTransformedData extends ValidateData {
   def compareSchema(row: Row, structType: StructType): Boolean = {
     try{ row.schema == structType }
     catch { case e: Throwable => println(row.mkString); false }
-  }
-}
+  } */

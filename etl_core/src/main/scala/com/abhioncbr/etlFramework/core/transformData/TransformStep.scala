@@ -34,13 +34,13 @@ class TransformStep(order: Int, rules: Map[String, TransformRule]){
     case default: Any => Array(default.getGroup)
   }.toArray
 
-  def addInputData(dataArray: Array[DataFrame]) : Either[Boolean, String] = {
+  def addInputData(dataArray: Array[DataFrame]) : Option[String] = {
     if (dataArray.length == requiredDF.length) {
       inputData.clear
       inputData ++= requiredDF.zip(dataArray).toMap
-      Left(true)
+      None
     } else {
-      Right(s"For transformation step ${this.getOrder}: input data frames size(${dataArray.length}) " +
+      Some(s"For transformation step ${this.getOrder}: input data frames size(${dataArray.length}) " +
         s"is not equal to rules map size(${rules.size})")
     }
   }

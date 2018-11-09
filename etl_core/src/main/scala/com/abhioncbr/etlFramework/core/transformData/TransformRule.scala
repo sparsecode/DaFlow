@@ -17,20 +17,15 @@
 
 package com.abhioncbr.etlFramework.core.transformData
 
-import com.abhioncbr.etlFramework.commons.{Context, ExecutionResult}
+import com.abhioncbr.etlFramework.commons.Context
 import com.abhioncbr.etlFramework.commons.ContextConstantEnum._
-import com.abhioncbr.etlFramework.commons.common.FieldMappingConf
-import com.abhioncbr.etlFramework.commons.load.LoadFeedConf
+import com.abhioncbr.etlFramework.commons.ExecutionResult
 import com.abhioncbr.etlFramework.sqlParser.Clause
 import com.abhioncbr.etlFramework.sqlParser.SQLParser
 import com.typesafe.scalalogging.Logger
-import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.Row
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.types.DataType
-import org.apache.spark.sql.types.StructType
 import scala.util.Try
 
 trait TransformRule {
@@ -46,7 +41,7 @@ class NilRule(group: String) extends TransformRule {
   override def execute(f: String => DataFrame): Either[Array[ExecutionResult], String] =
     Left(Array(ExecutionResult(group, f.apply(group))))
 
-  override def toString: String = { s"ruleName = nil, group = $group" }
+  override def toString: String = { s" ruleName = nil, group = $group " }
 }
 
 class MergeRule(ruleCondition: String, mergeGroup: (String, String), group: String) extends TransformRule {
@@ -136,19 +131,11 @@ class SimpleFunctionRule(functionType: String, ruleCondition: String, group: Str
   def condition(inputDataFrame: DataFrame): Boolean = {
     functionType match {
       case "FILTER" => val output = analyzeWhereCondition(inputDataFrame)
-        whereClause :+ output._2.get
+        if(output._1) { whereClause :+ output._2.get }
         output._1
 
-      case "SELECT" => val output = analyzeSelectCondition(inputDataFrame)
-        selectColumns :+ output._2.get
-        output._1
-
-      case "DROP" => val output = analyzeSelectCondition(inputDataFrame)
-        selectColumns :+ output._2.get
-        output._1
-
-      case "EXPLODE" => val output = analyzeSelectCondition(inputDataFrame)
-        selectColumns :+ output._2.get
+      case "SELECT" | "DROP" | "EXPLODE" => val output = analyzeSelectCondition(inputDataFrame)
+        if(output._1) { selectColumns :+ output._2.get }
         output._1
     }
   }
@@ -182,19 +169,18 @@ class SimpleFunctionRule(functionType: String, ruleCondition: String, group: Str
   }
 
   def explode(inputDataFrame: DataFrame): Array[ExecutionResult] = {
-    var outputDF = inputDataFrame
-
     val sqlContext: SQLContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
     import sqlContext.implicits._
-    selectColumns.foreach(str => outputDF = outputDF.select(org.apache.spark.sql.functions.explode($"$str").alias(s"$str")))
+    val outputDF: DataFrame = selectColumns.foldLeft(inputDataFrame)((df, str) =>
+      df.select(org.apache.spark.sql.functions.explode($"$str").alias(alias = s"$str")))
     Array(ExecutionResult(group, outputDF))
   }
 }
 
 class PartitionRule(scope: String, ruleCondition: String, group: String)
   extends AbstractTransformationRule(group, ruleCondition) {
-  private var condition: String = _
-  private var notCondition: String = _
+  private val condition: StringBuilder = StringBuilder.newBuilder
+  private val notCondition: StringBuilder = StringBuilder.newBuilder
 
   override def toString: String = { s"ruleName = partition, scope = $scope, " + super.toString}
 
@@ -216,16 +202,17 @@ class PartitionRule(scope: String, ruleCondition: String, group: String)
   private def setCondition(conditions: Seq[Clause]): Unit = {
     conditions.foreach {
       case notNullClause: com.abhioncbr.etlFramework.sqlParser.NotNull =>
-        condition = s"${notNullClause.getFields("field")} IS NOT NULL"
-        notCondition = s"${notNullClause.getFields("field")} IS NULL"
+        condition.append(s"${notNullClause.getFields("field")} IS NOT NULL")
+        notCondition.append(s"${notNullClause.getFields("field")} IS NULL")
 
       case nullClause: com.abhioncbr.etlFramework.sqlParser.Null =>
-        condition = s"${nullClause.getFields("field")} IS NULL"
-        notCondition = s"${nullClause.getFields("field")} IS NOT NULL"
+        condition.append(s"${nullClause.getFields("field")} IS NULL")
+        notCondition.append(s"${nullClause.getFields("field")} IS NOT NULL")
     }
   }
 }
 
+/*
 // TODO/FIXME: rule condition more dynamic
 class SchemaTransformationRule(ruleCondition: String, group: String, fieldMapping: List[FieldMappingConf],
   failedFieldLimit: Int, failedRowLimit: Int) extends AbstractTransformationRule(group, ruleCondition) {
@@ -241,7 +228,8 @@ class SchemaTransformationRule(ruleCondition: String, group: String, fieldMappin
     val sqlContext: SQLContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
     val tableName = Context.getContextualObject[LoadFeedConf](LOAD_CONF).attributesMap("tableName")
     val databaseName = Context.getContextualObject[LoadFeedConf](LOAD_CONF).attributesMap("databaseName")
-    val partitionColumns: List[String] = Context.getContextualObject[LoadFeedConf](LOAD_CONF).partitioningData.get.partitionColumns.map(column => column.paramName)
+    val partitionColumns: List[String] = Context.getContextualObject[LoadFeedConf](LOAD_CONF)
+      .partitioningData.get.partitionColumns.map(column => column.paramName)
 
     val temp = TransformUtil.tableMetadata(tableName, databaseName, sqlContext, partitionColumns)
 
@@ -258,9 +246,9 @@ class SchemaTransformationRule(ruleCondition: String, group: String, fieldMappin
 
   def execute(inputDataFrame: DataFrame): Either[Array[ExecutionResult], String] = {
     val tableColumns: List[(Int, String, DataType)] = TransformUtil.getColumnsInfo(tableSchema,
-      fieldMapping.map(mapping => (mapping.targetFieldName,mapping.sourceFieldName)).toMap)
+      fieldMapping.map(mapping => (mapping.targetFieldName, mapping.sourceFieldName)).toMap)
 
-    //TODO: pre append rule condition
+    // TODO/FIXME: pre append rule condition
     val preAppend = ruleCondition
     val temp: RDD[(Int, Row)] = inputDataFrame.rdd.map(row => TransformUtil.flattenStructType(row, preAppend)).map(row => {
       var failCount = 0
@@ -307,4 +295,4 @@ class SchemaTransformationRule(ruleCondition: String, group: String, fieldMappin
   def filterRdd(valid: Boolean, failedFieldLimit: Int, temp: RDD[(Int, Row)]): RDD[(Int, Row)] = {
     if (valid) { temp.filter(_._1 <= failedFieldLimit) } else { temp.filter(_._1 > failedFieldLimit) }
   }
-}
+} */
