@@ -1,4 +1,4 @@
-[<img src="https://github.com/abhioncbr/etl-framework/develop/ETL.png" align="right">]
+<img src="https://github.com/abhioncbr/etl-framework/raw/develop/ETL.png" align="right">
 # etl-framework [Apache-Spark based ETL Framework]
 
 [![Build Status](https://travis-ci.com/abhioncbr/etl-framework.svg?branch=develop)](https://travis-ci.com/abhioncbr/etl-framework/)

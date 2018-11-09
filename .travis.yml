@@ -29,6 +29,3 @@ script:
 after_success:
   - sbt coveralls
 
-#5. Install
-install:
-  - sbt clean assembly
