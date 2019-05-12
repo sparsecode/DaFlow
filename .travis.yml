@@ -1,14 +1,9 @@
-# 1. Choose language and target JDKs for parallel builds.
 language: java
 jdk:
   - oraclejdk8
-
-# 2. Setup cache directory for Maven.
+sudo: required
+services:
+  - docker
 cache:
   directories:
-  - $HOME/.m2
-
-# 3. Turn off notifications.
-notifications:
-  email: false
-
+    - $HOME/.m2
