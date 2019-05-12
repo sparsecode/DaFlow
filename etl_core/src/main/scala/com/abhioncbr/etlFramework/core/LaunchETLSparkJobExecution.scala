@@ -239,7 +239,7 @@ object LaunchETLSparkJobExecution extends App{
       case Some(opts) =>
         logger.info(s"Going to start the execution of the etl feed job: ${opts.toString}")
         execute(opts)
-      case None => parser.showTryHelp()
+      case None => parser.showTryHelp
         -1
     }
     logger.info(s"Etl job finish with exit code: $exitCode")

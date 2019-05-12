@@ -5,27 +5,16 @@ scala:
 jdk:
   - oraclejdk8
 
-# 2. Setup cache directory for SBT and Maven.
+# 2. Setup cache directory for Maven.
 cache:
   directories:
-  - $HOME/.sbt
   - $HOME/.m2
-  - $HOME/.ivy2
-
 
 # 3. Turn off notifications.
 notifications:
   email: false
 
-# 4. Run sbt
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION clean coverage test coverageReport scalastyle &&
-    sbt coverageAggregate
-
-  # Trick to avoid unnecessary cache updates
-  - find $HOME/.sbt -name "*.lock" | xargs rm
-  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
 
 after_success:
-  - sbt coveralls
 
