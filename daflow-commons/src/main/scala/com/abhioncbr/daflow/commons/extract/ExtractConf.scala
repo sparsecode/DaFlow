@@ -17,8 +17,8 @@
 
 package com.abhioncbr.daflow.commons.extract
 
-import com.abhioncbr.daflow.commons.common.{DataPath, QueryConf}
 import com.abhioncbr.daflow.commons.common.DataPath
+import com.abhioncbr.daflow.commons.common.QueryConf
 
 case class ExtractConf(feeds: Array[ExtractFeedConf])
 case class ExtractFeedConf(extractFeedName: String, extractionType: ExtractionType.valueType,

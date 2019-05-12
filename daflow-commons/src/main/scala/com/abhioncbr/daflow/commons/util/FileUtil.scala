@@ -29,10 +29,6 @@ import com.abhioncbr.daflow.commons.common.GeneralParamConf
 import com.abhioncbr.daflow.commons.common.PathInfixParam
 import com.abhioncbr.daflow.commons.job.JobStaticParamConf
 import java.text.DecimalFormat
-
-import com.abhioncbr.daflow.commons.common.{DataPath, FileNameParam, GeneralParamConf, PathInfixParam}
-import com.abhioncbr.daflow.commons.{Context, NotificationMessages, ProcessFrequencyEnum}
-import com.abhioncbr.daflow.commons.job.JobStaticParamConf
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
@@ -78,7 +74,7 @@ object FileUtil {
 
   private def parseFileName(rawFileName: String, fileNameSeparator: String = "."): FileNameParam = {
     val nameParts: List[String] = rawFileName.split(s"[$fileNameSeparator]").toList
-    FileNameParam(nameParts.lift(0), nameParts.lift(1), Some(fileNameSeparator))
+    FileNameParam(nameParts.headOption, nameParts.lift(1), Some(fileNameSeparator))
   }
 
   private def getFormattedString(pattern: String, args: Option[Array[String]]): String =

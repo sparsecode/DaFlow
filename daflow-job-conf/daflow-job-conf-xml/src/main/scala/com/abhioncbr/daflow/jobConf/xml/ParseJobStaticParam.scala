@@ -17,10 +17,8 @@
 
 package com.abhioncbr.daflow.jobConf.xml
 
+import com.abhioncbr.daflow.commons.ProcessFrequencyEnum
 import com.abhioncbr.daflow.commons.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.job.JobStaticParamConf
-import com.abhioncbr.daflow.commons.ProcessFrequencyEnum
-import com.abhioncbr.daflow.commons.ProcessFrequencyEnum
 import com.abhioncbr.daflow.commons.job.JobStaticParamConf
 
 object ParseJobStaticParam {

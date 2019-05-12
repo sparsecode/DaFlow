@@ -19,7 +19,6 @@ package com.abhioncbr.daflow.jobConf.xml
 
 import com.abhioncbr.daflow.commons.common.GeneralParamConf
 import com.abhioncbr.daflow.commons.load.PartitioningDataConf
-import com.abhioncbr.daflow.commons.load.PartitioningDataConf
 
 object ParsePartitioningData {
   def fromXML(node: scala.xml.NodeSeq): PartitioningDataConf = {

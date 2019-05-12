@@ -16,8 +16,7 @@
  */
 package com.abhioncbr.daflow.jobConf.xml
 
-import com.abhioncbr.daflow.commons.transform
-import com.abhioncbr.daflow.commons.transform.{TransformConf, TransformStepConf}
+import com.abhioncbr.daflow.commons.transform.TransformConf
 import com.abhioncbr.daflow.commons.transform.TransformStepConf
 
 object ParseTransform {
@@ -25,7 +24,7 @@ object ParseTransform {
     val steps: List[TransformStepConf] =
       List[TransformStepConf]((node \ "step").toList map { s => ParseTransformStep.fromXML(s) }: _*)
 
-    transform.TransformConf(transformSteps = steps,
+    TransformConf(transformSteps = steps,
       validateTransformedData = ParseUtil.parseBoolean((node \ "@validateTransformedData").text))
   }
 }

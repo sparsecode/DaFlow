@@ -17,10 +17,9 @@
 
 package com.abhioncbr.daflow.jobConf.xml
 
-import com.abhioncbr.daflow.commons.common
-import com.abhioncbr.daflow.commons.common.{DataPath, GeneralParamConf, QueryConf, QueryFilesConf}
 import com.abhioncbr.daflow.commons.common.DataPath
 import com.abhioncbr.daflow.commons.common.GeneralParamConf
+import com.abhioncbr.daflow.commons.common.QueryConf
 import com.abhioncbr.daflow.commons.common.QueryFilesConf
 
 object ParseQuery {
@@ -33,8 +32,8 @@ object ParseQuery {
     val queryArgs: Option[Array[GeneralParamConf]] =
       ParseUtil.parseNode[Array[GeneralParamConf]](node \ "queryParams", None, ParseGeneralParams.fromXML)
 
-    val queryFiles: QueryFilesConf = common.QueryFilesConf(configurationFile = configurationFile, queryFile = queryFile)
-    val query: QueryConf = common.QueryConf(queryFile = queryFiles, queryArgs = queryArgs)
+    val queryFiles: QueryFilesConf = QueryFilesConf(configurationFile = configurationFile, queryFile = queryFile)
+    val query: QueryConf = QueryConf(queryFile = queryFiles, queryArgs = queryArgs)
     query
   }
 }

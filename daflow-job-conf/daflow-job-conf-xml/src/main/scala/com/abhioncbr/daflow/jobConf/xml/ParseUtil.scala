@@ -17,11 +17,9 @@
 
 package com.abhioncbr.daflow.jobConf.xml
 
-import com.abhioncbr.daflow.commons.util.FileUtil
-import scala.util.Try
-
 import com.abhioncbr.daflow.commons.common.DataPath
 import com.abhioncbr.daflow.commons.util.FileUtil
+import scala.util.Try
 
 object ParseUtil {
   def parseNode[T](node: scala.xml.NodeSeq, defaultValue: Option[T], fun: scala.xml.NodeSeq => T): Option[T]

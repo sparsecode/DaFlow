@@ -17,19 +17,16 @@
 
 package com.abhioncbr.daflow.jobConf.xml
 
-import com.abhioncbr.daflow.commons
-import com.abhioncbr.daflow.commons.common.{DataPath, QueryConf}
-import com.abhioncbr.daflow.commons.extract.{ExtractConf, ExtractFeedConf, ExtractionType}
-import com.abhioncbr.daflow.commons.extract
 import com.abhioncbr.daflow.commons.common.DataPath
 import com.abhioncbr.daflow.commons.common.QueryConf
+import com.abhioncbr.daflow.commons.extract.ExtractConf
 import com.abhioncbr.daflow.commons.extract.ExtractFeedConf
 import com.abhioncbr.daflow.commons.extract.ExtractionType
 
 object ParseExtract {
   def fromXML(node: scala.xml.NodeSeq): ExtractConf = {
     val extract: ExtractConf =
-      commons.extract.ExtractConf(feeds = Array[ExtractFeedConf]((node \ "feed").toList map { s => ParseExtractFeed.fromXML(s) }: _*))
+      ExtractConf(feeds = Array[ExtractFeedConf]((node \ "feed").toList map { s => ParseExtractFeed.fromXML(s) }: _*))
     extract
   }
 }
@@ -47,7 +44,7 @@ object ParseExtractFeed {
     val query: Option[QueryConf] = ParseUtil.parseNode[QueryConf](node \ "jdbc" \ "query", None, ParseQuery.fromXML)
     val dataPath: Option[DataPath] = ParseUtil.parseNode[DataPath](node \ "fileSystem" \ "dataPath", None, ParseDataPath.fromXML)
 
-    val feed: ExtractFeedConf = extract.ExtractFeedConf(extractFeedName = feedName,
+    val feed: ExtractFeedConf = ExtractFeedConf(extractFeedName = feedName,
       extractionType = extractionType, extractionSubType = extractionSubType,
       dataPath = dataPath, query = query, validateExtractedData = validateExtractedData)
     feed

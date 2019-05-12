@@ -27,27 +27,21 @@ import com.abhioncbr.daflow.commons.NotificationMessages.{unknownXMLEntity => UE
 import com.abhioncbr.daflow.commons.NotificationMessages.{jobXmlFileDoesNotExist => JXF}
 import com.abhioncbr.daflow.commons.NotificationMessages.{exceptionWhileParsing => EWP}
 import com.abhioncbr.daflow.commons.extract.ExtractConf
+import com.abhioncbr.daflow.commons.load.LoadConf
 import com.abhioncbr.daflow.commons.job.DaFlowJobConf
 import com.abhioncbr.daflow.commons.job.JobStaticParamConf
-import com.abhioncbr.daflow.commons.load.LoadConf
+import com.abhioncbr.daflow.commons.transform.TransformConf
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.SchemaFactory
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import scala.util.Try
 import scala.xml.Node
 
-import com.abhioncbr.daflow.commons.extract.ExtractConf
-import com.abhioncbr.daflow.commons.load.LoadConf
-import com.abhioncbr.daflow.commons.transform.TransformConf
-import com.abhioncbr.daflow.commons.{job, Context}
-import com.abhioncbr.daflow.commons.job.{DaFlowJobConf, JobStaticParamConf}
-
 object ETLJob{
   def fromXML(node: scala.xml.NodeSeq): DaFlowJobConf = {
-  job.DaFlowJobConf(ParseJobStaticParam.fromXML(node \ "jobStaticParam"), ParseExtract.fromXML(node \ "extract"),
+  DaFlowJobConf(ParseJobStaticParam.fromXML(node \ "jobStaticParam"), ParseExtract.fromXML(node \ "extract"),
   ParseTransform.fromXML(node \ "transform"), ParseLoad.fromXML(node \ "load"))
   }
 }

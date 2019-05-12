@@ -19,7 +19,6 @@ package com.abhioncbr.daflow.jobConf.xml
 
 import com.abhioncbr.daflow.commons
 import com.abhioncbr.daflow.commons.common.DataPath
-import com.abhioncbr.daflow.commons.load.{LoadConf, LoadFeedConf, LoadType, PartitioningDataConf}
 import com.abhioncbr.daflow.commons.load
 import com.abhioncbr.daflow.commons.load.LoadConf
 import com.abhioncbr.daflow.commons.load.LoadFeedConf

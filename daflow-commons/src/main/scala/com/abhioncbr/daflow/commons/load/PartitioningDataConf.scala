@@ -18,7 +18,6 @@
 package com.abhioncbr.daflow.commons.load
 
 import com.abhioncbr.daflow.commons.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.common.GeneralParamConf
 
 case class PartitioningDataConf(coalesce: Boolean, overwrite: Boolean, coalesceCount: Int,
   partitionColumns: List[GeneralParamConf])

@@ -76,13 +76,11 @@
             <groupId>org.scalamock</groupId>
             <artifactId>scalamock_2.11</artifactId>
             <version>${scala.mock}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_2.11</artifactId>
             <version>${scala.test}</version>
-            <scope>test</scope>
         </dependency>
 
         <!-- Log dependencies-->

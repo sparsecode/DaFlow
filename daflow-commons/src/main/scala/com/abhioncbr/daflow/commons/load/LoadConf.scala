@@ -18,7 +18,6 @@
 package com.abhioncbr.daflow.commons.load
 
 import com.abhioncbr.daflow.commons.common.DataPath
-import com.abhioncbr.daflow.commons.common.DataPath
 
 case class LoadConf(feeds: Array[LoadFeedConf])
 case class LoadFeedConf(loadFeedName: String, loadType: LoadType.valueType, attributesMap: Map[String, String],

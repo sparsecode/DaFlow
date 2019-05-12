@@ -17,9 +17,8 @@
 
 package com.abhioncbr.daflow.jobConf.xml
 
-import com.abhioncbr.daflow.commons.transform
-import com.abhioncbr.daflow.commons.transform.{TransformRuleConf, TransformStepConf}
 import com.abhioncbr.daflow.commons.transform.TransformRuleConf
+import com.abhioncbr.daflow.commons.transform.TransformStepConf
 
 object ParseTransformStep {
   def fromXML(node: scala.xml.NodeSeq): TransformStepConf = {
@@ -29,7 +28,7 @@ object ParseTransformStep {
       s => ParseTransformRule.fromXML(s)
     }: _*).map(rule => (rule.ruleAttributesMap("group"), rule)).toMap
 
-    transform.TransformStepConf(order = order, rules = rules)
+    TransformStepConf(order = order, rules = rules)
   }
 }
 

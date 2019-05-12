@@ -17,8 +17,6 @@
 
 package com.abhioncbr.daflow.commons.job
 
-import com.abhioncbr.daflow.commons.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.ProcessFrequencyEnum
 import com.abhioncbr.daflow.commons.ProcessFrequencyEnum
 import com.abhioncbr.daflow.commons.common.GeneralParamConf
 

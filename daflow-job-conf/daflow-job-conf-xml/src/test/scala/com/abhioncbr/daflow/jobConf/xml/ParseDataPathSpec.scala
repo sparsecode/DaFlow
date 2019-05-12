@@ -17,7 +17,7 @@
 
 package com.abhioncbr.daflow.jobConf.xml
 
-import com.abhioncbr.daflow.commons.common.{DataPath, FileNameParam, PathInfixParam}
+import com.abhioncbr.daflow.commons.common.DataPath
 import com.abhioncbr.daflow.commons.common.FileNameParam
 import com.abhioncbr.daflow.commons.common.PathInfixParam
 

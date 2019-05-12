@@ -20,9 +20,6 @@ package com.abhioncbr.daflow.commons.job
 import com.abhioncbr.daflow.commons.extract.ExtractConf
 import com.abhioncbr.daflow.commons.load.LoadConf
 import com.abhioncbr.daflow.commons.transform.TransformConf
-import com.abhioncbr.daflow.commons.extract.ExtractConf
-import com.abhioncbr.daflow.commons.load.LoadConf
-import com.abhioncbr.daflow.commons.transform.TransformConf
 
 case class DaFlowJobConf(jobStaticParam: JobStaticParamConf, extract: ExtractConf, transform: TransformConf, load: LoadConf)
 

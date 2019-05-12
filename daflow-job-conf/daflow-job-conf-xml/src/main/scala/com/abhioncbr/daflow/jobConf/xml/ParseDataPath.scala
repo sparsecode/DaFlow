@@ -17,9 +17,7 @@
 
 package com.abhioncbr.daflow.jobConf.xml
 
-import com.abhioncbr.daflow.commons.common
-import com.abhioncbr.daflow.commons.common.{DataPath, FileNameParam, GeneralParamConf, PathInfixParam}
-import com.abhioncbr.daflow.commons.common
+import com.abhioncbr.daflow.commons.common.DataPath
 import com.abhioncbr.daflow.commons.common.FileNameParam
 import com.abhioncbr.daflow.commons.common.GeneralParamConf
 import com.abhioncbr.daflow.commons.common.PathInfixParam
@@ -43,7 +41,7 @@ object ParseDataPath {
   }
 
   def parsePathPattern(node: scala.xml.NodeSeq): DataPath = {
-    val dataPath: DataPath = common.DataPath(pathPrefix = Some((node \ "initialPath").text),
+    val dataPath: DataPath = DataPath(pathPrefix = Some((node \ "initialPath").text),
       cataloguePatterns = ParseUtil.parseNode[Array[PathInfixParam]](node \ "groupPattern", None, ParseGroupPatterns.fromXML),
       feedPattern = ParseUtil.parseNode[PathInfixParam](node \ "feedPattern", None, ParseFeedPattern.fromXML),
       fileName = ParseUtil.parseNode[FileNameParam](node \ "fileName", None, ParseFileName.fromXML)
@@ -60,7 +58,7 @@ object ParseGroupPatterns {
 
 object ParseGroupPattern {
   def fromXML(node: scala.xml.NodeSeq): PathInfixParam = {
-    val pathInfixParam : PathInfixParam = common.PathInfixParam(
+    val pathInfixParam : PathInfixParam = PathInfixParam(
       order = ParseUtil.parseNode[Int](node \ "order", None, ParseUtil.parseInt),
       infixPattern = (node \ "groupNamePattern").text,
       formatInfix = ParseUtil.parseNode[Boolean](node \ "formatGroupName", None, ParseUtil.parseBoolean),
@@ -71,7 +69,7 @@ object ParseGroupPattern {
 
 object ParseFeedPattern {
   def fromXML(node: scala.xml.NodeSeq): PathInfixParam = {
-    val pathInfixParam : PathInfixParam = common.PathInfixParam(infixPattern = (node \ "feedNamePattern").text,
+    val pathInfixParam : PathInfixParam = PathInfixParam(infixPattern = (node \ "feedNamePattern").text,
       formatInfix = ParseUtil.parseNode[Boolean](node \ "formatFeedName", None, ParseUtil.parseBoolean),
       formatInfixArgs = ParseUtil.parseNode[Array[GeneralParamConf]](node \ "formatArgValues", None, ParseGeneralParams.fromXML))
     pathInfixParam
