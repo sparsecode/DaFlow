@@ -1,7 +1,5 @@
 # 1. Choose language and target JDKs for parallel builds.
-language: scala
-scala:
-  - 2.11.11
+language: java
 jdk:
   - oraclejdk8
 
