@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/css" href="xmlpartsstyle.css"?>
+<etlJob xmlns="uri:daflow:workflow:0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="uri:daflow:workflow:0.1 ../../daflow-job-conf/daflow-job-conf-xml/daflow-feed-job.xsd">
+    <jobStaticParam jobName="job-name" frequency="DAILY" publishStats="false" />
+
+    <extract>
+        <feed feedName="json_data" validateExtractedData="false">
+            <fileSystem fileType="JSON">
+                <dataPath>
+                    <pathPattern>
+                        <initialPath>{json-file-path-suffix}</initialPath>
+                        <fileName>
+                            <prefix>json_data</prefix>
+                            <suffix>json</suffix>
+                        </fileName>
+                    </pathPattern>
+                </dataPath>
+            </fileSystem>
+        </feed>
+    </extract>
+
+    <transform>
+        <step order="1">
+            <rule type="SELECT" group='1'>
+                <condition>{col1}, {col2}, {col3}</condition>
+            </rule>
+        </step>
+
+        <step order="2">
+            <rule type="SCHEMA_TRANSFORMATION" group="1" failedFieldLimit="10" failedRowLimit="10">
+                <condition>{col1}, {col2}, {col3}</condition>
+                <fieldMapping sourceName="{example-http-agent}" targetName="{example-http_agent}"/>
+            </rule>
+        </step>
+    </transform>
+
+    <load>
+        <feed name="feed1">
+            <hive dataBaseName="{db-name}" tableName="{table-name}" fileType="PARQUET">
+                <partitionData coalescePartition="true" overwritePartition="true" coalescePartitionCount="10">
+                    <partitionColumns>
+                        <column name="date" value="DATE"/>
+                    </partitionColumns>
+                </partitionData>
+                <dataPath>
+                    <path>{partition-file-path-initial}</path>
+                </dataPath>
+            </hive>
+        </feed>
+    </load>
+</etlJob>

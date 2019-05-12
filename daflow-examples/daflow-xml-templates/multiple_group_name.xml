@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/css" href="xmlpartsstyle.css"?>
+<etlJob xmlns="uri:daflow:workflow:0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="uri:daflow:workflow:0.1 ../../daflow-job-conf/daflow-job-conf-xml/daflow-feed-job.xsd">
+    <jobStaticParam jobName="job-name" frequency="DAILY" publishStats="false">
+        <otherParams>
+            <param order="1" name="param1" value="value1" defaultValue="value1"/>
+            <param order="2" name="param2" value="value2" defaultValue="value2"/>
+        </otherParams>
+    </jobStaticParam>
+
+    <extract>
+        <feed feedName="json_data" validateExtractedData="false">
+            <fileSystem fileType="JSON">
+                <dataPath>
+                    <pathPattern>
+                        <initialPath>{json-file-path-suffix}</initialPath>
+                        <fileName>
+                            <prefix>json_data</prefix>
+                            <suffix>json</suffix>
+                        </fileName>
+                    </pathPattern>
+                </dataPath>
+            </fileSystem>
+        </feed>
+    </extract>
+
+    <transform>
+        <step order="1">
+            <rule type='PARTITION' group='1' scope="MERGE"><condition>{col1} is not null</condition></rule>
+        </step>
+
+        <step order="2">
+            <rule type='EXPLODE' group='11'><condition>{cond2}</condition></rule>
+            <rule type='SCHEMA_TRANSFORMATION' group='12' failedFieldLimit="40" failedRowLimit="50">
+                <fieldMapping sourceName="{timestamp}" targetName="{client_timestamp}"/>
+            </rule>
+        </step>
+
+        <step order="3">
+            <rule type='SCHEMA_TRANSFORMATION' group='11' failedFieldLimit="40" failedRowLimit="50">
+                <condition>records.value</condition>
+                <fieldMapping sourceName="{timestamp}" targetName="{client_timestamp}"/>
+            </rule>
+            <rule type='NIL' group='12'/>
+        </step>
+
+        <step order="4">
+            <rule type='MERGE' group='1' mergeGroup='11,12'/>
+        </step>
+    </transform>
+
+    <load>
+        <feed name="json_data">
+            <fileSystem fileType="JSON">
+                <dataPath>
+                    <path>{path}</path>
+                </dataPath>
+            </fileSystem>
+        </feed>
+    </load>
+</etlJob>

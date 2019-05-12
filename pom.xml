@@ -4,15 +4,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.abhioncbr.etlFramework</groupId>
-    <artifactId>etl_framework</artifactId>
+    <groupId>com.abhioncbr.daflow</groupId>
+    <artifactId>daflow</artifactId>
     <packaging>pom</packaging>
     <version>0.1-SNAPSHOT</version>
-    <description>Apache-Spark based ETL Framework which supports multiple read, write destinations of different types
+    <description>Apache-Spark based Data Flow(ETL) Framework which supports multiple read, write destinations of different types
         and also support multiple categories of transformation rules.
     </description>
-    <url>https://github.com/abhioncbr/etl-framework</url>
-    <name>etl-framework</name>
+    <url>https://github.com/abhioncbr/daflow</url>
+    <name>DaFlow</name>
 
     <licenses>
         <license>
@@ -24,12 +24,12 @@
     </licenses>
 
     <modules>
-        <module>etl_commons</module>
-        <module>etl_core</module>
-        <module>etl_sql_parser</module>
-        <module>etl_metrics</module>
-        <module>etl_job_conf/etl_job_conf_xml</module>
-        <module>etl_job_conf/etl_job_conf_yaml</module>
+        <module>daflow-commons</module>
+        <module>daflow-core</module>
+        <module>daflow-sql-parser</module>
+        <module>daflow-metrics</module>
+        <module>daflow-job-conf/daflow-job-conf-xml</module>
+        <module>daflow-job-conf/daflow-job-conf-yaml</module>
     </modules>
 
     <repositories>
