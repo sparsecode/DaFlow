@@ -7,3 +7,4 @@ services:
 cache:
   directories:
     - $HOME/.m2
+script: mvn install
