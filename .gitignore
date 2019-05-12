@@ -16,3 +16,9 @@ etl_commons/src/.DS_Store
 etl_commons/src/main/.DS_Store
 etl_core/src/test/.DS_Store
 etl_commons/src/main/resources/.DS_Store
+etl_core/*.iml
+etl_commons/*.iml
+etl_metrics/*.iml
+etl_sql_parser/*.iml
+etl_job_conf/etl_job_conf_xml/*.iml
+etl_job_conf/etl_job_conf_yaml/*.iml
