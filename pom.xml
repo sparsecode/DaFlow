@@ -122,31 +122,51 @@
                         <include>**/com/**</include>
                     </includes>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
-                <version>${maven_scala_plugin.version}</version>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>3.2.2</version>
                 <executions>
                     <execution>
+                        <id>compile</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <phase>compile</phase>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                        <phase>test-compile</phase>
+                    </execution>
+                    <execution>
+                        <phase>process-resources</phase>
                         <goals>
                             <goal>compile</goal>
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <scalaVersion>${scala.version}</scalaVersion>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
-                <version>1.0</version>
+                <version>2.0.0</version>
                 <configuration>
                     <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
                     <junitxml>.</junitxml>
-                    <filereports>WDF TestSuite.txt</filereports>
+                    <filereports>WDFTestSuite.txt</filereports>
+                    <skipTests>false</skipTests>
                 </configuration>
                 <executions>
                     <execution>

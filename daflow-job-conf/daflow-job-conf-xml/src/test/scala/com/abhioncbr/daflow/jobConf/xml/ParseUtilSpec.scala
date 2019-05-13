@@ -19,7 +19,6 @@ package com.abhioncbr.daflow.jobConf.xml
 
 import com.abhioncbr.daflow.commons.common.DataPath
 import com.abhioncbr.daflow.commons.NotificationMessages
-import com.abhioncbr.daflow.commons.NotificationMessages
 
 class ParseUtilSpec extends XmlJobConfBase {
 
@@ -103,17 +102,17 @@ class ParseUtilSpec extends XmlJobConfBase {
   }
 
   "parseFilePathString" should "should return Either[Left] object when value is passed as an argument" in {
-    val path = s"${System.getProperty("user.dir")}/etl_examples/sample_data/json_data.json"
+    val path = s"${System.getProperty("user.dir")}/daflow-examples/sample-data/json_data.json"
     val filePathObject: Either[DataPath, String] = ParseUtil.parseFilePathString(path)
     filePathObject should not equal None
     filePathObject.isRight should be (false)
     filePathObject.isLeft should be (true)
     filePathObject.left.get should not equal None
-    filePathObject.left.get.pathPrefix should contain (s"${System.getProperty("user.dir")}/etl_examples/sample_data")
+    filePathObject.left.get.pathPrefix should contain (s"${System.getProperty("user.dir")}/daflow-examples/sample-data")
   }
 
   "parseFilePathString" should "should return Either[Right] object when value is passed as an argument" in {
-    val path = s"${System.getProperty("user.dir")}/etl_examples/sample_data/json_data.json1"
+    val path = s"${System.getProperty("user.dir")}/daflow-examples/sample-data/json_data.json"
     val filePathObject: Either[DataPath, String] = ParseUtil.parseFilePathString(path)
     filePathObject should not equal None
     filePathObject.isRight should be (true)

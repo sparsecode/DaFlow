@@ -2,7 +2,7 @@
 
 #DaFlow [Data Flow(ETL) Framework]
 
-[![Build Status](https://travis-ci.com/abhioncbr/DaFlow.svg?branch=develop)](https://travis-ci.com/abhioncbr/DaFlow/)
+[![Build Status](https://travis-ci.org/abhioncbr/DaFlow.svg?branch=develop)](https://travis-ci.org/abhioncbr/DaFlow/)
 [![License](http://img.shields.io/:license-Apache%202-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
 [![Coverage Status](https://coveralls.io/repos/github/abhioncbr/DaFlow/badge.svg?branch=develop)](https://coveralls.io/github/abhioncbr/DaFlow?branch=develop)
 [![Code Climate](https://codeclimate.com/github/codeclimate/codeclimate/badges/gpa.svg)](https://codeclimate.com/github/abhioncbr/DaFlow)

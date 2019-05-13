@@ -17,14 +17,14 @@
 
 package com.abhioncbr.daflow.jobConf.xml
 
-import com.abhioncbr.daflow.commons.transform.{TransformRuleConf, TransformStepConf}
 import com.abhioncbr.daflow.commons.transform.TransformRuleConf
+import com.abhioncbr.daflow.commons.transform.TransformStepConf
 
 class ParseTransformRuleSpec extends XmlJobConfBase {
   val groupLit: String = "group"
   val scopeLit: String = "scope"
 
-  "ParseTransformRule-SCHEMA_TRANSFORMATION" should "return all variables initialized TransformRuleConf Object"in {
+  "ParseTransformRule-SCHEMA_TRANSFORMATION" should "return all variables initialized TransformRuleConf Object" in {
     val xmlContent =
       """<rule type="SCHEMA_TRANSFORMATION" group="1" failedFieldLimit="10" failedRowLimit="10">
         |<condition>test_string2</condition></rule>""".stripMargin

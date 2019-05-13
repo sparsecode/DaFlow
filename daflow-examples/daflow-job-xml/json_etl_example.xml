@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<etlJob xmlns="uri:daflow:workflow:0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<DaFlowJob xmlns="uri:daflow:workflow:0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="uri:daflow:workflow:0.1 ../../daflow-job-conf/daflow-job-conf-xml/daflow-feed-job.xsd">
     <jobStaticParam jobName="json_example" frequency="ONCE" publishStats="false"/>
     <extract>
@@ -7,7 +7,7 @@
             <fileSystem fileType="JSON">
                 <dataPath>
                     <pathPattern>
-                        <initialPath>/Users/abhisheksharma/work/github-proj/etl-framework/etl_examples/sample_data</initialPath>
+                        <initialPath>/Users/abhisheksharma/work/github-proj/DaFlow/daflow-examples/sample-data</initialPath>
                         <fileName>
                             <prefix>json_data</prefix>
                             <suffix>json</suffix>
@@ -33,9 +33,10 @@
         <feed name="json_data">
             <fileSystem fileType="JSON">
                 <dataPath>
-                    <path>/Users/abhisheksharma/work/github-proj/etl-framework/etl_examples/sample_data/etl-frwrk_result/</path>
+                    <path>/Users/abhisheksharma/work/github-proj/DaFlow/daflow-examples/sample-data/daflow-result
+                        /</path>
                 </dataPath>
             </fileSystem>
         </feed>
     </load>
-</etlJob>
+</DaFlowJob>

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/css" href="xmlpartsstyle.css"?>
-<etlJob xmlns="uri:daflow:workflow:0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<DaFlowJob xmlns="uri:daflow:workflow:0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="uri:daflow:workflow:0.1 ../../daflow-job-conf/daflow-job-conf-xml/daflow-feed-job.xsd">
     <jobStaticParam jobName="job-name" frequency="DAILY" publishStats="false" />
 
@@ -40,4 +40,4 @@
             </hive>
         </feed>
     </load>
-</etlJob>
+</DaFlowJob>

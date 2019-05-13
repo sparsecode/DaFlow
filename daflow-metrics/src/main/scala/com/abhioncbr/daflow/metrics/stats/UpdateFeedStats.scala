@@ -46,7 +46,7 @@ class UpdateFeedStats(jobName: String, startDate: DateTime = DateTime.now) {
   def updateFeedStatInFile(executionTime: Long, feedJobResult: JobResult, filePath: Option[String] = None)
   : Either[Unit, String] = {
     val statString: String = getStatString(executionTime, feedJobResult)
-    val defaultPath: String = s"${System.getProperty("user.dir")}/etl_examples/sample_feed_stats/$jobName-stat.csv"
+    val defaultPath: String = s"${System.getProperty("user.dir")}/daflow-examples/sample-feed-stats/$jobName-stat.csv"
     val path: String = filePath.getOrElse(defaultPath)
 
     logger.info(s"[updateFeedStatInFile]: writing stat in file: $path.")

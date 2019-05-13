@@ -17,7 +17,7 @@
 
 package com.abhioncbr.daflow.jobConf.xml
 
-import com.abhioncbr.daflow.commons.extract.{ExtractConf, ExtractFeedConf, ExtractionType}
+import com.abhioncbr.daflow.commons.extract.ExtractConf
 import com.abhioncbr.daflow.commons.extract.ExtractFeedConf
 import com.abhioncbr.daflow.commons.extract.ExtractionType
 

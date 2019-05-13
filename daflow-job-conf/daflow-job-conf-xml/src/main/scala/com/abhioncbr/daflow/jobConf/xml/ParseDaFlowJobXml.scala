@@ -39,14 +39,14 @@ import org.apache.hadoop.fs.Path
 import scala.util.Try
 import scala.xml.Node
 
-object ETLJob{
+object DaFlowJob{
   def fromXML(node: scala.xml.NodeSeq): DaFlowJobConf = {
   DaFlowJobConf(ParseJobStaticParam.fromXML(node \ "jobStaticParam"), ParseExtract.fromXML(node \ "extract"),
   ParseTransform.fromXML(node \ "transform"), ParseLoad.fromXML(node \ "load"))
   }
 }
 
-class ParseETLJobXml {
+class ParseDaFlowJobXml {
   def parseXml(path: String, loadFromHDFS: Boolean): Either[String, String] = {
     try {
       val reader: BufferedReader = if (loadFromHDFS) {
@@ -75,8 +75,8 @@ class ParseETLJobXml {
   def parseNode(node: scala.xml.Node): Either[(JobStaticParamConf, ExtractConf, TransformConf, LoadConf), String] = {
     val trimmedNode: Node = scala.xml.Utility.trim(node)
     trimmedNode match {
-      case <etlJob>{ c @ _* }</etlJob> => val etlJob = ETLJob.fromXML(trimmedNode)
-        Left((etlJob.jobStaticParam, etlJob.extract, etlJob.transform, etlJob.load))
+      case <DaFlowJob>{ c @ _* }</DaFlowJob> => val daFlowJob = DaFlowJob.fromXML(trimmedNode)
+        Left((daFlowJob.jobStaticParam, daFlowJob.extract, daFlowJob.transform, daFlowJob.load))
       case _ => Right(UE)
     }
   }

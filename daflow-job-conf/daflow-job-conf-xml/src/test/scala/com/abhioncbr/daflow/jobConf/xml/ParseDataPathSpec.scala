@@ -224,11 +224,11 @@ class ParseDataPathSpec extends XmlJobConfBase{
   }
 
   "ParseDataPath" should "return FilePath object parsed from path string" in {
-    val path = s"${System.getProperty("user.dir")}/etl_examples/sample_data/json_data.json"
+    val path = s"${System.getProperty("user.dir")}/daflow-examples/sample-data/json_data.json"
     val xmlContent = s"<dataPath><path>$path</path></dataPath>"
     val filePathObject: DataPath = ParseDataPath.fromXML(node(xmlContent))
     filePathObject should not equal None
-    filePathObject.pathPrefix should be (Some(s"${System.getProperty("user.dir")}/etl_examples/sample_data"))
+    filePathObject.pathPrefix should be (Some(s"${System.getProperty("user.dir")}/daflow-examples/sample-data"))
     filePathObject.cataloguePatterns should be (None)
     filePathObject.feedPattern should be (None)
     filePathObject.fileName should not equal None

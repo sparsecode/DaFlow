@@ -26,6 +26,7 @@ import com.abhioncbr.daflow.commons.extract.ExtractionType
 import com.abhioncbr.daflow.commons.job.JobStaticParamConf
 import com.abhioncbr.daflow.commons.load.LoadConf
 import com.abhioncbr.daflow.commons.load.LoadType
+import com.abhioncbr.daflow.commons.transform.TransformConf
 import com.abhioncbr.daflow.core.extractData.ExtractDataFromDB
 import com.abhioncbr.daflow.core.extractData.ExtractDataFromFileSystem
 import com.abhioncbr.daflow.core.extractData.ExtractDataFromHive
@@ -34,7 +35,9 @@ import com.abhioncbr.daflow.core.loadData.LoadDataIntoHive
 import com.abhioncbr.daflow.core.transformData.Transform
 import com.abhioncbr.daflow.core.transformData.TransformData
 import com.abhioncbr.daflow.core.transformData.TransformUtil
+import com.abhioncbr.daflow.jobConf.xml.ParseDaFlowJobXml
 import com.abhioncbr.daflow.metrics.stats.JobResult
+import com.abhioncbr.daflow.metrics.stats.UpdateFeedStats
 import com.typesafe.scalalogging.Logger
 import org.apache.commons.lang.builder.ToStringBuilder
 import org.apache.hadoop.conf.Configuration
@@ -45,28 +48,17 @@ import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import scala.xml.XML
 
-import com.abhioncbr.daflow.commons.extract.{ExtractConf, ExtractionType}
-import com.abhioncbr.daflow.commons.load.{LoadConf, LoadType}
-import com.abhioncbr.daflow.commons.transform.TransformConf
-import com.abhioncbr.daflow.commons.{Context, ExecutionResult}
-import com.abhioncbr.daflow.commons.job.JobStaticParamConf
-import com.abhioncbr.daflow.core.extractData.{ExtractDataFromDB, ExtractDataFromFileSystem, ExtractDataFromHive}
-import com.abhioncbr.daflow.core.loadData.{LoadDataIntoFileSystem, LoadDataIntoHive}
-import com.abhioncbr.daflow.core.transformData.{Transform, TransformData, TransformUtil}
-import com.abhioncbr.daflow.jobConf.xml.ParseETLJobXml
-import com.abhioncbr.daflow.metrics.stats.{JobResult, UpdateFeedStats}
-
-class LaunchETLSparkJobExecution(jobName: String, startDate: Option[DateTime], endDate: Option[DateTime],
+class LaunchDaFlowSparkJobExecution(jobName: String, startDate: Option[DateTime], endDate: Option[DateTime],
   configFilePath: String, otherParams: Option[Map[String, String]]) {
   private val logger = Logger(this.getClass)
 
-  def configureETLJob: Either[Unit, String] = {
+  def configureDaFlowJob: Either[Unit, String] = {
     // adding job params in context.
     Context.addContextualObject[Option[DateTime]](END_DATE, endDate)
     Context.addContextualObject[Option[DateTime]](START_DATE, startDate)
     Context.addContextualObject[Option[Map[String, String]]](OTHER_PARAM, otherParams)
 
-    val appName = "ETL-" + jobName
+    val appName = "DaFlow-" + jobName
     val sparkSession: SparkSession = SparkSession.builder().appName(appName).getOrCreate()
 
     // adding spark & hadoop configuration in context.
@@ -76,7 +68,7 @@ class LaunchETLSparkJobExecution(jobName: String, startDate: Option[DateTime], e
 
     // parsing configuration file & loading job params in context.
     val falseObject = false
-    val parse = new ParseETLJobXml
+    val parse = new ParseDaFlowJobXml
     val output: Either[Unit, String] = parse.parseXml(configFilePath, falseObject) match {
       case Left(xmlContent) => parse.parseNode(XML.loadString(xmlContent)) match {
         case Left(tuple) =>
@@ -94,7 +86,7 @@ class LaunchETLSparkJobExecution(jobName: String, startDate: Option[DateTime], e
     output
   }
 
-  def executeETLJob: Either[Array[JobResult], String] = {
+  def executeDaFlowJob: Either[Array[JobResult], String] = {
     // First: extracting the data.
     val extractionResult: Either[Array[ExecutionResult], String] = extract
     if (extractionResult.isRight) {
@@ -199,7 +191,7 @@ class LaunchETLSparkJobExecution(jobName: String, startDate: Option[DateTime], e
   }
 }
 
-object LaunchETLSparkJobExecution extends App{
+object LaunchDaFlowSparkJobExecution extends App{
   private val logger = Logger(this.getClass)
 
   case class CommandOptions(jobName: String = "", configFilePath: String = "", startDate: Option[DateTime] = None,
@@ -212,25 +204,25 @@ object LaunchETLSparkJobExecution extends App{
     val datePattern = "yyyy-MM-dd HH:mm:ss"
     val dateParser = DateTimeFormat.forPattern(datePattern)
 
-    val parser = new scopt.OptionParser[CommandOptions](programName = "ETL") {
+    val parser = new scopt.OptionParser[CommandOptions](programName = "DaFlow") {
       opt[String]('j', name = "jobName")
         .action((e, c) => c.copy(jobName = e))
-        .text("[Required Param]: Etl Job Name Is Required For All ETL Jobs.")
+        .text("[Required Param]: DaFlow Job Name Is Required For All DaFlow Jobs.")
         .required
 
       opt[String]('c', "configFilePath")
         .action((cfp, c) => c.copy(configFilePath = cfp))
-        .text("[Required Param]: Config File Is Required For All ETL Jobs.")
+        .text("[Required Param]: Config File Is Required For All DaFlow Jobs.")
         .required
 
       opt[String]('s', name = "startDate")
         .action((sd, c) => c.copy(startDate = if (!sd.trim.isEmpty){ Some(dateParser.parseDateTime(sd)) } else { None }))
-        .text("[Optional Param]: Needed For All ETL Jobs Except For Hourly & Once Frequency One's.")
+        .text("[Optional Param]: Needed For All DaFlow Jobs Except For Hourly & Once Frequency One's.")
         .optional
 
       opt[String]('e', name = "endDate")
         .action((ed, c) => c.copy(endDate = if (!ed.trim.isEmpty) { Some(dateParser.parseDateTime(ed)) } else { None }))
-        .text("[Optional Param]: Needed For All Date Range ETL Jobs.")
+        .text("[Optional Param]: Needed For All Date Range DaFlow Jobs.")
         .optional
 
       opt[String]('o', name = "other_params")
@@ -245,26 +237,26 @@ object LaunchETLSparkJobExecution extends App{
 
     val exitCode: Int = parser.parse(args, CommandOptions()) match {
       case Some(opts) =>
-        logger.info(s"Going to start the execution of the etl feed job: ${opts.toString}")
+        logger.info(s"Going to start the execution of the DaFlow feed job: ${opts.toString}")
         execute(opts)
       case None => parser.showTryHelp
         -1
     }
-    logger.info(s"Etl job finish with exit code: $exitCode")
+    logger.info(s"DaFlow job finish with exit code: $exitCode")
     System.exit(exitCode)
   }
 
   def execute(opts: CommandOptions): Int = {
-    val etlExecutor = new LaunchETLSparkJobExecution(opts.jobName, opts.startDate,
+    val daFlowExecutor = new LaunchDaFlowSparkJobExecution(opts.jobName, opts.startDate,
       opts.endDate, opts.configFilePath, opts.otherParams)
 
     val updateFeedStats: UpdateFeedStats = new UpdateFeedStats(opts.jobName, opts.startDate.getOrElse(DateTime.now))
-    val exitCode: Int = etlExecutor.configureETLJob match {
+    val exitCode: Int = daFlowExecutor.configureDaFlowJob match {
       case Left(u: Unit) =>
-        logger.info(s"ETL job Config file validated $u")
+        logger.info(s"DaFlow job Config file validated $u")
         val start = System.currentTimeMillis
-        // executing ETL job
-        val feedJobOutput = etlExecutor.executeETLJob
+        // executing DaFlow job
+        val feedJobOutput = daFlowExecutor.executeDaFlowJob
         val end = System.currentTimeMillis
 
         feedJobOutput match {
@@ -289,9 +281,9 @@ object LaunchETLSparkJobExecution extends App{
     exitCode
   }
 
-  def getDefaultJobResult(etlJobName: String, failureReason: String): JobResult = {
+  def getDefaultJobResult(daFlowJobName: String, failureReason: String): JobResult = {
     val falseObject: Boolean = false
-    JobResult(falseObject, etlJobName, 0, 0, 0, 0, failureReason)
+    JobResult(falseObject, daFlowJobName, 0, 0, 0, 0, failureReason)
   }
 
   launch(args)

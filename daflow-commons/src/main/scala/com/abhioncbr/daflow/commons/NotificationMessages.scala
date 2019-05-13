@@ -27,7 +27,7 @@ object NotificationMessages {
   val exceptionMessage: Exception => String =
     (exception: Exception) => { s"Exception message: ${exception.getMessage}" }
 
-  val unknownXMLEntity: String = "Unknown entity found instead of '<etlJob>'"
+  val unknownXMLEntity: String = "Unknown entity found instead of '<DaFlowJob>'"
   val exceptionWhileParsing: String = "Exception while parsing job xml file. Please validate xml."
 
   // extract

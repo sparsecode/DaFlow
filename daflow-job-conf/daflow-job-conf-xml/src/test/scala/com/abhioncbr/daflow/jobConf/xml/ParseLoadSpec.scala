@@ -22,7 +22,7 @@ import com.abhioncbr.daflow.commons.load.LoadFeedConf
 class ParseLoadSpec extends XmlJobConfBase {
 
   "ParseLoadFeed" should "return LoadFeed object with all hive based variables" in {
-    val path = s"${System.getProperty("user.dir")}/etl_examples/sample_data/"
+    val path = s"${System.getProperty("user.dir")}/daflow-examples/sample-data/"
     val xmlContent = s"""<feed name="feed1">
             <hive dataBaseName="{db-name}" tableName="{table-name}" fileType="PARQUET">
                 <partitionData coalescePartition="true" overwritePartition="true" coalescePartitionCount="10">
@@ -45,7 +45,7 @@ class ParseLoadSpec extends XmlJobConfBase {
     parseLoadFeedObject.partitioningData should not be None
     parseLoadFeedObject.partitioningData.get.coalesce should be (true)
     parseLoadFeedObject.dataPath should not be None
-    parseLoadFeedObject.dataPath.pathPrefix should be (Some(s"${System.getProperty("user.dir")}/etl_examples"))
+    parseLoadFeedObject.dataPath.pathPrefix should be (Some(s"${System.getProperty("user.dir")}/daflow-examples"))
     parseLoadFeedObject.dataPath.feedPattern should not be None
     parseLoadFeedObject.dataPath.feedPattern.get.infixPattern should be ("sample_data")
   }
