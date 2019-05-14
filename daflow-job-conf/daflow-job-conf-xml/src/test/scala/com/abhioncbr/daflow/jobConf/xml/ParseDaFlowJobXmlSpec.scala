@@ -50,7 +50,7 @@ class ParseDaFlowJobXmlSpec extends XmlJobConfBase{
   }
 
   "validateXml" should "return true when valid xml multiple_group_template file is provided as input" in {
-    val xsdFile = s"$userDirectory/daflow-job-conf/daflow-feed-job.xsd"
+    val xsdFile = s"$userDirectory/daflow-job-conf/daflow-job-conf-xml/daflow-feed-job.xsd"
     val xmlFile = s"$userDirectory/daflow-examples/daflow-xml-templates/multiple_group_name.xml"
     val parse: ParseDaFlowJobXml = new ParseDaFlowJobXml
     val output: Boolean = parse.validateXml(xsdFile, xmlFile)

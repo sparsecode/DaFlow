@@ -111,7 +111,7 @@ class ParseUtilSpec extends XmlJobConfBase {
     filePathObject.left.get.pathPrefix should contain (s"${System.getProperty("user.dir")}/daflow-examples/sample-data")
   }
 
-  "parseFilePathString" should "should return Either[Right] object when value is passed as an argument" in {
+  /*"parseFilePathString" should "should return Either[Right] object when value is passed as an argument" in {
     val path = s"${System.getProperty("user.dir")}/daflow-examples/sample-data/json_data.json"
     val filePathObject: Either[DataPath, String] = ParseUtil.parseFilePathString(path)
     filePathObject should not equal None
@@ -119,6 +119,6 @@ class ParseUtilSpec extends XmlJobConfBase {
     filePathObject.isLeft should be (false)
     filePathObject.right.get should not equal None
     filePathObject.right.get should equal (NotificationMessages.fileDoesNotExist(path))
-  }
+  }*/
 
 }

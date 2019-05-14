@@ -47,7 +47,7 @@ class ParseLoadSpec extends XmlJobConfBase {
     parseLoadFeedObject.dataPath should not be None
     parseLoadFeedObject.dataPath.pathPrefix should be (Some(s"${System.getProperty("user.dir")}/daflow-examples"))
     parseLoadFeedObject.dataPath.feedPattern should not be None
-    parseLoadFeedObject.dataPath.feedPattern.get.infixPattern should be ("sample_data")
+    parseLoadFeedObject.dataPath.feedPattern.get.infixPattern should be ("sample-data")
   }
 
   "ParseLoadFeed" should "return LoadFeed object with all fileSystem based variables" in {

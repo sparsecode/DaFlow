@@ -60,7 +60,8 @@
         <apache.spark.version>2.4.0</apache.spark.version>
 
         <maven_jar_plugin.version>2.6</maven_jar_plugin.version>
-        <maven_scala_plugin.version>2.15.2</maven_scala_plugin.version>
+        <maven_scalatest_plugin.version>2.0.0</maven_scalatest_plugin.version>
+        <maven_scala_plugin.version>4.0.2</maven_scala_plugin.version>
         <maven_complier_plugin.version>3.7.0</maven_complier_plugin.version>
     </properties>
 
@@ -134,7 +135,7 @@
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>3.2.2</version>
+                <version>${maven_scala_plugin.version}</version>
                 <executions>
                     <execution>
                         <id>compile</id>
@@ -161,7 +162,7 @@
             <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
-                <version>2.0.0</version>
+                <version>${maven_scalatest_plugin.version}</version>
                 <configuration>
                     <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
                     <junitxml>.</junitxml>
