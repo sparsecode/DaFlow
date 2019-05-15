@@ -17,6 +17,7 @@
 
 package com.abhioncbr.daflow.core.transformData
 
+import com.abhioncbr.daflow.commons.Context
 import com.abhioncbr.daflow.commons.ContextConstantEnum._
 import com.abhioncbr.daflow.commons.ExecutionResult
 import com.abhioncbr.daflow.sqlParser.Clause
@@ -26,8 +27,6 @@ import org.apache.spark.sql.Column
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SQLContext
 import scala.util.Try
-
-import com.abhioncbr.daflow.commons.{Context, ExecutionResult}
 
 trait TransformRule {
   def getGroup: String

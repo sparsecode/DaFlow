@@ -17,14 +17,13 @@
 
 package com.abhioncbr.daflow.core.transformData
 
+import com.abhioncbr.daflow.commons.transform.TransformConf
 import com.abhioncbr.daflow.commons.transform.TransformRuleConf
 import com.abhioncbr.daflow.commons.transform.TransformStepConf
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types.DataType
 import org.apache.spark.sql.types.StructType
 import scala.util.Try
-
-import com.abhioncbr.daflow.commons.transform.{TransformConf, TransformRuleConf, TransformStepConf}
 
 object TransformUtil {
   // private val logger = Logger(this.getClass)

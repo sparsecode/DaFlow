@@ -19,7 +19,6 @@ package com.abhioncbr.daflow.jobConf.xml
 
 import com.abhioncbr.daflow.commons.common.GeneralParamConf
 
-
 class ParseGeneralParamsSpec extends XmlJobConfBase{
   "ParseGeneralParam-fromXML" should "return GeneralParam object when xml node content is passed as an argument" in {
     val xmlContent: String = """<param order="1" name="{col1}" value="FIRST_DATE" defaultValue="SECOND_DATE"/>"""

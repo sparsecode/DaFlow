@@ -17,28 +17,24 @@
 
 package com.abhioncbr.daflow.core.extractData
 
-import java.io.BufferedReader
-import java.io.InputStreamReader
-
-import com.abhioncbr.daflow.commons.extract.ExtractFeedConf
-import com.abhioncbr.daflow.commons.util.FileUtil
-import com.abhioncbr.daflow.commons.{Context, ExecutionResult}
-import com.abhioncbr.daflow.commons.common.{GeneralParamConf, QueryConf}
 import com.abhioncbr.daflow.commons.Context
 import com.abhioncbr.daflow.commons.ContextConstantEnum._
 import com.abhioncbr.daflow.commons.ExecutionResult
 import com.abhioncbr.daflow.commons.NotificationMessages.{exceptionMessage => EM}
 import com.abhioncbr.daflow.commons.common.GeneralParamConf
 import com.abhioncbr.daflow.commons.common.QueryConf
+import com.abhioncbr.daflow.commons.extract.ExtractFeedConf
 import com.abhioncbr.daflow.commons.util.FileUtil
 import com.typesafe.scalalogging.Logger
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SQLContext
 
-class ExtractDataFromHive(feed: ExtractFeedConf) extends AbstractExtractData{
+class ExtractDataFromHive(feed: ExtractFeedConf) extends AbstractExtractData {
   private val logger = Logger(this.getClass)
   val query: Option[QueryConf] = feed.query
 
@@ -47,22 +43,38 @@ class ExtractDataFromHive(feed: ExtractFeedConf) extends AbstractExtractData{
       lazy val fs = FileSystem.get(new Configuration())
 
       // reading query from the query file.
-      val sqlQueryFile: String = FileUtil.getFilePathString(query.get.queryFile.queryFile.get)
-      val tableQueryReader = new BufferedReader(new InputStreamReader(fs.open(new Path(sqlQueryFile))))
-      val rawQuery = Stream.continually(tableQueryReader.readLine()).takeWhile(_ != null).toArray[String].mkString.stripMargin
+      val sqlQueryFile: String =
+        FileUtil.getFilePathString(query.get.queryFile.queryFile.get)
+      val tableQueryReader = new BufferedReader(
+        new InputStreamReader(fs.open(new Path(sqlQueryFile)))
+      )
+      val rawQuery = Stream
+        .continually(tableQueryReader.readLine())
+        .takeWhile(_ != null)
+        .toArray[String]
+        .mkString
+        .stripMargin
 
       val sqlQueryParams: Array[GeneralParamConf] = query.get.queryArgs.get
       val queryParams = ExtractUtil.getParamsValue(sqlQueryParams.toList)
-      logger.info("[ExtractDataFromHive]-[getRawData]: Qquery param values" + queryParams.mkString(" , "))
+      logger.info(
+        "[ExtractDataFromHive]-[getRawData]: Qquery param values" + queryParams
+          .mkString(" , ")
+      )
       val tableQuery = String.format(rawQuery, queryParams: _*)
-      logger.info(s"[ExtractDataFromHive]-[getRawData]: Going to execute hive query: \\n $tableQuery")
+      logger.info(
+        s"[ExtractDataFromHive]-[getRawData]: Going to execute hive query: \\n $tableQuery"
+      )
 
       val sqlContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
       val dataFrame: DataFrame = sqlContext.sql(tableQuery)
       Left(ExecutionResult(feed.extractFeedName, dataFrame))
     } catch {
-      case exception: Exception => logger.error("[ExtractDataFromHive]-[getRawData]: ", exception)
-        Right(s"[ExtractDataFromHive]-[getRawData]: ${EM(exception)}".stripMargin)
+      case exception: Exception =>
+        logger.error("[ExtractDataFromHive]-[getRawData]: ", exception)
+        Right(
+          s"[ExtractDataFromHive]-[getRawData]: ${EM(exception)}".stripMargin
+        )
     }
   }
 }

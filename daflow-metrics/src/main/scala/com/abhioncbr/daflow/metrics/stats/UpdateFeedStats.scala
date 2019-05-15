@@ -22,12 +22,12 @@ import com.abhioncbr.daflow.commons.ContextConstantEnum.JOB_STATIC_PARAM_CONF
 import com.abhioncbr.daflow.commons.ContextConstantEnum.SPARK_CONTEXT
 import com.abhioncbr.daflow.commons.ContextConstantEnum.SQL_CONTEXT
 import com.abhioncbr.daflow.commons.NotificationMessages.{exceptionMessage => EM}
+import com.abhioncbr.daflow.commons.job.JobStaticParamConf
 import com.typesafe.scalalogging.Logger
 import java.io.BufferedWriter
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
@@ -36,9 +36,6 @@ import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.SQLContext
 import org.joda.time.DateTime
 import scala.util.Try
-
-import com.abhioncbr.daflow.commons.job.JobStaticParamConf
-import com.abhioncbr.daflow.commons.Context
 
 class UpdateFeedStats(jobName: String, startDate: DateTime = DateTime.now) {
   private val logger = Logger(this.getClass)
@@ -75,8 +72,11 @@ class UpdateFeedStats(jobName: String, startDate: DateTime = DateTime.now) {
     val rdd = sc.parallelize(Seq(Seq(statString)))
     val rowRdd = rdd.map(v => org.apache.spark.sql.Row(v: _*))
 
-    val sqlContext: SQLContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
-    val statDF = sqlContext.sql(s"select * from $hiveDbName.$tableName where job_name='$jobName'".stripMargin)
+    val sqlContext: SQLContext =
+      Context.getContextualObject[SQLContext](SQL_CONTEXT)
+    val statDF = sqlContext.sql(
+      s"select * from $hiveDbName.$tableName where job_name='$jobName'".stripMargin
+    )
     val newRow = sqlContext.createDataFrame(rowRdd, statDF.schema)
     val updatedStatDF = statDF.union(newRow)
 
@@ -84,7 +84,9 @@ class UpdateFeedStats(jobName: String, startDate: DateTime = DateTime.now) {
     val tmpPath = path + "_tmp"
 
     val result: Either[Unit, String] = try {
-      logger.info(s"[updateFeedStatInHive]: Writing updated stats in to the table '$tableName' to HDFS ($path)")
+      logger.info(
+        s"[updateFeedStatInHive]: Writing updated stats in to the table '$tableName' to HDFS ($path)"
+      )
       updatedStatDF.write.mode(SaveMode.Overwrite).parquet(tmpPath)
 
       val hadoopFs = FileSystem.get(new Configuration())
@@ -93,9 +95,12 @@ class UpdateFeedStats(jobName: String, startDate: DateTime = DateTime.now) {
       hadoopFs.rename(new Path(tmpPath), new Path(path))
 
       sqlContext.sql(
-        s" ALTER TABLE $hiveDbName.$tableName ADD IF NOT EXISTS PARTITION (job_name ='$jobName') LOCATION '$path'".stripMargin)
+        s" ALTER TABLE $hiveDbName.$tableName ADD IF NOT EXISTS PARTITION (job_name ='$jobName') LOCATION '$path'".stripMargin
+      )
 
-      logger.info(s"[updateFeedStatInHive]: Updated stats partition at ($path) registered successfully to $hiveDbName.$tableName")
+      logger.info(
+        s"[updateFeedStatInHive]: Updated stats partition at ($path) registered successfully to $hiveDbName.$tableName"
+      )
       Left()
     } catch {
       case exception: Exception => Right(s" ${EM(exception)} ".stripMargin)
