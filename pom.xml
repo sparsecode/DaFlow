@@ -317,6 +317,7 @@
                         <haltOnFailure>false</haltOnFailure>
                     </check>
                     <format>xml</format>
+                    <format>html</format>
                     <maxmem>256m</maxmem>
                     <!-- aggregated reports for multi-module projects -->
                     <aggregate>true</aggregate>
