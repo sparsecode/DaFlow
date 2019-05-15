@@ -17,6 +17,7 @@
 
 package com.abhioncbr.daflow.metrics.promethus
 
+import com.abhioncbr.daflow.commons.NotificationMessages
 import com.typesafe.scalalogging.Logger
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.Gauge
@@ -24,8 +25,6 @@ import io.prometheus.client.exporter.PushGateway
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
-
-import com.abhioncbr.daflow.commons.NotificationMessages
 
 class PrometheusObject(feedName: String, pushGatewayIpAddress: String) {
   private val logger = Logger(this.getClass)

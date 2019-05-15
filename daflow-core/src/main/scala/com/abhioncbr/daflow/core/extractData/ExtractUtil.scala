@@ -19,11 +19,16 @@ package com.abhioncbr.daflow.core.extractData
 
 import com.abhioncbr.daflow.commons.common.GeneralParamConf
 import com.abhioncbr.daflow.commons.util.FileUtil
-import com.abhioncbr.daflow.commons.util.FileUtil
 
 object ExtractUtil {
   def getParamsValue(paramList: List[GeneralParamConf]): Array[Object] = {
-    paramList.map(queryParam => (queryParam.order,
-      FileUtil.mapFormatArgs(Some(paramList.toArray)))).sortBy(_._1).map(_._2).toArray
+    paramList
+      .map(
+        queryParam =>
+          (queryParam.order, FileUtil.mapFormatArgs(Some(paramList.toArray)))
+      )
+      .sortBy(_._1)
+      .map(_._2)
+      .toArray
   }
 }

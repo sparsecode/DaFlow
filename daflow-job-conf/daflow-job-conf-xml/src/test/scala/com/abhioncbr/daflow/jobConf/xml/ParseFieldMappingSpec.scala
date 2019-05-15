@@ -29,7 +29,6 @@ class ParseFieldMappingSpec extends XmlJobConfBase {
     filedMappingObject.targetFieldName should be ("target")
   }
 
-
   "ParseFieldMappings-fromXML" should "return FieldMapping object" in {
     val xmlContent: String =
       """<node>

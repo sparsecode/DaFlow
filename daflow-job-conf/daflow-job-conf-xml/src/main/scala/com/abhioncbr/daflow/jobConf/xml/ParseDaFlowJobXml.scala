@@ -17,9 +17,6 @@
 
 package com.abhioncbr.daflow.jobConf.xml
 
-import java.io._
-import javax.xml.XMLConstants
-
 import com.abhioncbr.daflow.commons.Context
 import com.abhioncbr.daflow.commons.ContextConstantEnum.HADOOP_CONF
 import com.abhioncbr.daflow.commons.NotificationMessages.{exceptionMessage => EM}
@@ -27,10 +24,12 @@ import com.abhioncbr.daflow.commons.NotificationMessages.{unknownXMLEntity => UE
 import com.abhioncbr.daflow.commons.NotificationMessages.{jobXmlFileDoesNotExist => JXF}
 import com.abhioncbr.daflow.commons.NotificationMessages.{exceptionWhileParsing => EWP}
 import com.abhioncbr.daflow.commons.extract.ExtractConf
-import com.abhioncbr.daflow.commons.load.LoadConf
 import com.abhioncbr.daflow.commons.job.DaFlowJobConf
 import com.abhioncbr.daflow.commons.job.JobStaticParamConf
+import com.abhioncbr.daflow.commons.load.LoadConf
 import com.abhioncbr.daflow.commons.transform.TransformConf
+import java.io._
+import javax.xml.XMLConstants
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.SchemaFactory
 import org.apache.hadoop.conf.Configuration

@@ -17,29 +17,25 @@
 
 package com.abhioncbr.daflow.core.extractData
 
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.util.Properties
-
-import com.abhioncbr.daflow.commons.extract.ExtractFeedConf
-import com.abhioncbr.daflow.commons.util.FileUtil
-import com.abhioncbr.daflow.commons.{Context, ExecutionResult}
-import com.abhioncbr.daflow.commons.common.{GeneralParamConf, QueryConf}
 import com.abhioncbr.daflow.commons.Context
 import com.abhioncbr.daflow.commons.ContextConstantEnum._
 import com.abhioncbr.daflow.commons.ExecutionResult
 import com.abhioncbr.daflow.commons.NotificationMessages.{exceptionMessage => EM}
 import com.abhioncbr.daflow.commons.common.GeneralParamConf
 import com.abhioncbr.daflow.commons.common.QueryConf
+import com.abhioncbr.daflow.commons.extract.ExtractFeedConf
 import com.abhioncbr.daflow.commons.util.FileUtil
 import com.typesafe.scalalogging.Logger
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.util.Properties
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SQLContext
 
-class ExtractDataFromDB(feed: ExtractFeedConf) extends AbstractExtractData{
+class ExtractDataFromDB(feed: ExtractFeedConf) extends AbstractExtractData {
   private val logger = Logger(this.getClass)
   val query: Option[QueryConf] = feed.query
 
@@ -48,30 +44,51 @@ class ExtractDataFromDB(feed: ExtractFeedConf) extends AbstractExtractData{
       lazy val fs = FileSystem.get(new Configuration())
 
       // reading database properties from property file.
-      val propertyFilePath = FileUtil.getFilePathString(query.get.queryFile.configurationFile.get)
-      logger.info(s"[ExtractDataFromDB]-[getRawData]: DB property file path: $propertyFilePath")
+      val propertyFilePath =
+        FileUtil.getFilePathString(query.get.queryFile.configurationFile.get)
+      logger.info(
+        s"[ExtractDataFromDB]-[getRawData]: DB property file path: $propertyFilePath"
+      )
 
       val connectionProps = new Properties()
       connectionProps.load(fs.open(new Path(propertyFilePath)))
       val dbUri = connectionProps.getProperty("dburi")
 
       // reading query from the query file.
-      val sqlQueryFile = FileUtil.getFilePathString(query.get.queryFile.queryFile.get)
-      val tableQueryReader = new BufferedReader(new InputStreamReader(fs.open(new Path(sqlQueryFile))))
-      val rawQuery = Stream.continually(tableQueryReader.readLine()).takeWhile(_ != null).toArray[String].mkString.stripMargin
+      val sqlQueryFile =
+        FileUtil.getFilePathString(query.get.queryFile.queryFile.get)
+      val tableQueryReader = new BufferedReader(
+        new InputStreamReader(fs.open(new Path(sqlQueryFile)))
+      )
+      val rawQuery = Stream
+        .continually(tableQueryReader.readLine())
+        .takeWhile(_ != null)
+        .toArray[String]
+        .mkString
+        .stripMargin
 
       val sqlQueryParams: Array[GeneralParamConf] = query.get.queryArgs.get
       val queryParams = ExtractUtil.getParamsValue(sqlQueryParams.toList)
 
-      logger.info("[ExtractDataFromDB]-[getRawData]: Query param values: " + queryParams.mkString(" , "))
+      logger.info(
+        "[ExtractDataFromDB]-[getRawData]: Query param values: " + queryParams
+          .mkString(" , ")
+      )
       val tableQuery = String.format(rawQuery, queryParams: _*)
-      logger.info(s"[ExtractDataFromDB]-[getRawData]: Going to execute jdbc query: \\n $tableQuery")
+      logger.info(
+        s"[ExtractDataFromDB]-[getRawData]: Going to execute jdbc query: \\n $tableQuery"
+      )
 
       val sqlContext = Context.getContextualObject[SQLContext](SQL_CONTEXT)
-      val dataFrame: DataFrame = sqlContext.read.jdbc(url = dbUri, table = tableQuery, properties = connectionProps)
+      val dataFrame: DataFrame = sqlContext.read.jdbc(
+        url = dbUri,
+        table = tableQuery,
+        properties = connectionProps
+      )
       Left(ExecutionResult(feed.extractFeedName, dataFrame))
     } catch {
-      case exception: Exception => logger.error("[ExtractDataFromDB]-[getRawData]: ", exception)
+      case exception: Exception =>
+        logger.error("[ExtractDataFromDB]-[getRawData]: ", exception)
         Right(s"[ExtractDataFromDB]-[getRawData]: ${EM(exception)}".stripMargin)
     }
   }
