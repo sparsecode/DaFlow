@@ -64,9 +64,9 @@
         <scala.version>2.11.12</scala.version>
 
         <scala.test>3.1.0-SNAP7</scala.test>
-        <scala.mock>4.3.0</scala.mock>
+        <scala.mock>4.2.0</scala.mock>
 
-        <apache.spark.version>2.4.0</apache.spark.version>
+        <apache.spark.version>2.4.3</apache.spark.version>
 
         <maven_jar_plugin.version>2.6</maven_jar_plugin.version>
         <maven_scala_plugin.version>4.0.2</maven_scala_plugin.version>
@@ -207,6 +207,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>${maven_checkstyle_plugin.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>8.20</version>
+                    </dependency>
+                </dependencies>
                 <configuration>
                     <consoleOutput>true</consoleOutput>
                     <encoding>UTF-8</encoding>
