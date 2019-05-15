@@ -301,6 +301,12 @@
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <version>${maven_coveralls_plugin.version}</version>
+                <configuration>
+                    <sourceEncoding>UTF-8</sourceEncoding>
+                    <sourceDirectories>
+                        <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
+                    </sourceDirectories>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
