@@ -7,4 +7,4 @@
 [![codecov](https://codecov.io/gh/abhioncbr/DaFlow/branch/master/graph/badge.svg)](https://codecov.io/gh/abhioncbr/DaFlow)
 [![Code Climate](https://codeclimate.com/github/codeclimate/codeclimate/badges/gpa.svg)](https://codeclimate.com/github/abhioncbr/DaFlow)
 
-Apache-Spark based Data Flow(ETL) Framework Framework which supports multiple read, write destinations of different types and also support multiple categories of transformation rules.  
+Apache-Spark based Data Flow(ETL) Framework which supports multiple read, write destinations of different types and also support multiple categories of transformation rules.  
