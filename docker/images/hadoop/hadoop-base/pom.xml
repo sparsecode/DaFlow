@@ -35,13 +35,12 @@
                             <goal>push</goal>
                         </goals>
                         <configuration>
-                            <tag>${project.version}</tag>
+                            <tag>latest</tag>
                             <skip>${docker.build.skip}</skip>
                             <pullNewerImage>false</pullNewerImage>
                             <username>${docker.reg.username}</username>
                             <password>${docker.reg.password}</password>
-                            <repository>abhioncbr/daflow-hadoop${docker.hadoop.version}-base</repository>
-                            <tag>latest</tag>
+                            <repository>abhioncbr/daflow-hadoop-base</repository>
                         </configuration>
                     </execution>
                     <execution>
@@ -53,12 +52,12 @@
                             <goal>push</goal>
                         </goals>
                         <configuration>
-                            <tag>${project.version}</tag>
+                            <tag>${docker.hadoop.version}-${project.version}</tag>
                             <skip>${docker.build.skip}</skip>
                             <pullNewerImage>false</pullNewerImage>
                             <username>${docker.reg.username}</username>
                             <password>${docker.reg.password}</password>
-                            <repository>abhioncbr/daflow-hadoop${docker.hadoop.version}-base</repository>
+                            <repository>abhioncbr/daflow-hadoop-base</repository>
                         </configuration>
                     </execution>
                 </executions>
