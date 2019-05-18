@@ -1,0 +1,67 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.abhioncbr.daflow</groupId>
+        <artifactId>daflow-docker</artifactId>
+        <version>0.1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <packaging>pom</packaging>
+    <version>0.1-SNAPSHOT</version>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>daflow-hadoop-namenode-docker</artifactId>
+    <description>Hadoop namenode Docker Image with DaFlow</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies></dependencies>
+
+    <build>
+        <plugins>
+            <!-- Build Docker image -->
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>dockerfile-maven-plugin</artifactId>
+                <version>${dockerfile.maven.version}</version>
+                <executions>
+                    <execution>
+                        <id>tag-latest</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>tag</goal>
+                            <goal>push</goal>
+                        </goals>
+                        <configuration>
+                            <tag>latest</tag>
+                            <skip>${docker.build.skip}</skip>
+                            <pullNewerImage>false</pullNewerImage>
+                            <username>${docker.reg.username}</username>
+                            <password>${docker.reg.password}</password>
+                            <repository>abhioncbr/daflow-hadoop-namenode</repository>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>tag-version</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>tag</goal>
+                            <goal>push</goal>
+                        </goals>
+                        <configuration>
+                            <tag>${docker.hadoop.version}-${project.version}</tag>
+                            <skip>${docker.build.skip}</skip>
+                            <pullNewerImage>false</pullNewerImage>
+                            <username>${docker.reg.username}</username>
+                            <password>${docker.reg.password}</password>
+                            <repository>abhioncbr/daflow-hadoop-namenode</repository>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

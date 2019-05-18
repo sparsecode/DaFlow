@@ -23,4 +23,9 @@ daflow-sql-parser/*.iml
 daflow-job-conf/daflow-job-conf-xml/*.iml
 daflow-job-conf/daflow-job-conf-yaml/*.iml
 docker/images/*.iml
-docker/images/hadoop/hadoop-base/*.iml
+docker/images/hadoop/base/*.iml
+docker/images/hadoop/datanode/*.iml
+docker/images/hadoop/namenode/*.iml
+docker/images/hadoop/historyserver/*.imldaflow-hadoop-datanode-docker.iml
+daflow-hadoop-historyserver-docker.iml
+daflow-hadoop-historyserver-docker.iml

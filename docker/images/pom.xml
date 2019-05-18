@@ -13,7 +13,10 @@
     <artifactId>daflow-docker</artifactId>
 
     <modules>
-        <module>hadoop/hadoop-base</module>
+        <module>hadoop/base</module>
+        <module>hadoop/datanode</module>
+        <module>hadoop/namenode</module>
+        <module>hadoop/historyserver</module>
     </modules>
 
     <dependencies></dependencies>
