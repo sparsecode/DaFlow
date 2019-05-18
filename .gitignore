@@ -26,6 +26,4 @@ docker/images/*.iml
 docker/images/hadoop/base/*.iml
 docker/images/hadoop/datanode/*.iml
 docker/images/hadoop/namenode/*.iml
-docker/images/hadoop/historyserver/*.imldaflow-hadoop-datanode-docker.iml
-daflow-hadoop-historyserver-docker.iml
-daflow-hadoop-historyserver-docker.iml
+docker/images/hadoop/historyserver/*.iml
