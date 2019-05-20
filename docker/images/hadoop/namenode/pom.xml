@@ -10,13 +10,21 @@
     <version>0.1-SNAPSHOT</version>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>daflow-hadoop-namenode-docker</artifactId>
-    <description>Hadoop namenode Docker Image with DaFlow</description>
+    <description>DaFlow's Docker Image of Hadoop Name Node.</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <dependencies></dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>com.abhioncbr.daflow</groupId>
+            <artifactId>daflow-hadoop-base-docker</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>
@@ -41,6 +49,10 @@
                             <username>${docker.reg.username}</username>
                             <password>${docker.reg.password}</password>
                             <repository>abhioncbr/daflow-hadoop-namenode</repository>
+                            <buildArgs>
+                                <HADOOP_VERSION>${docker.hadoop.version}</HADOOP_VERSION>
+                                <HADOOP_WEBHDFS_PORT>${docker.hadoop.webHdfs.port}</HADOOP_WEBHDFS_PORT>
+                            </buildArgs>
                         </configuration>
                     </execution>
                     <execution>
@@ -58,6 +70,10 @@
                             <username>${docker.reg.username}</username>
                             <password>${docker.reg.password}</password>
                             <repository>abhioncbr/daflow-hadoop-namenode</repository>
+                            <buildArgs>
+                                <HADOOP_VERSION>${docker.hadoop.version}</HADOOP_VERSION>
+                                <HADOOP_WEBHDFS_PORT>${docker.hadoop.webHdfs.port}</HADOOP_WEBHDFS_PORT>
+                            </buildArgs>
                         </configuration>
                     </execution>
                 </executions>

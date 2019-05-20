@@ -3,14 +3,14 @@
         <groupId>com.abhioncbr.daflow</groupId>
         <artifactId>daflow-docker</artifactId>
         <version>0.1-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <packaging>pom</packaging>
     <version>0.1-SNAPSHOT</version>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>daflow-hadoop-datanode-docker</artifactId>
-    <description>DaFlow's Docker Image of Hadoop Data Node.</description>
+    <artifactId>daflow-hive-docker</artifactId>
+    <description>DaFlow's Docker Image of Hive.</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -28,6 +28,22 @@
 
     <build>
         <plugins>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <configuration>
+                            <tasks>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- Build Docker image -->
             <plugin>
                 <groupId>com.spotify</groupId>
@@ -48,10 +64,31 @@
                             <pullNewerImage>false</pullNewerImage>
                             <username>${docker.reg.username}</username>
                             <password>${docker.reg.password}</password>
-                            <repository>abhioncbr/daflow-hadoop-datanode</repository>
+                            <repository>abhioncbr/daflow-hive</repository>
                             <buildArgs>
+                                <HIVE_VERSION>${docker.hive.version}</HIVE_VERSION>
                                 <HADOOP_VERSION>${docker.hadoop.version}</HADOOP_VERSION>
-                                <HADOOP_DN_PORT>${docker.hadoop.dn.port}</HADOOP_DN_PORT>
+                            </buildArgs>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>tag-components-version</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>tag</goal>
+                            <goal>push</goal>
+                        </goals>
+                        <configuration>
+                            <tag>${docker.hadoop.version}-${docker.hive.version}</tag>
+                            <skip>${docker.build.skip}</skip>
+                            <pullNewerImage>false</pullNewerImage>
+                            <username>${docker.reg.username}</username>
+                            <password>${docker.reg.password}</password>
+                            <repository>abhioncbr/daflow-hive</repository>
+                            <buildArgs>
+                                <HIVE_VERSION>${docker.hive.version}</HIVE_VERSION>
+                                <HADOOP_VERSION>${docker.hadoop.version}</HADOOP_VERSION>
                             </buildArgs>
                         </configuration>
                     </execution>
@@ -64,15 +101,15 @@
                             <goal>push</goal>
                         </goals>
                         <configuration>
-                            <tag>${docker.hadoop.version}-${project.version}</tag>
+                            <tag>${docker.hadoop.version}-${docker.hive.version}-${project.version}</tag>
                             <skip>${docker.build.skip}</skip>
                             <pullNewerImage>false</pullNewerImage>
                             <username>${docker.reg.username}</username>
                             <password>${docker.reg.password}</password>
-                            <repository>abhioncbr/daflow-hadoop-datanode</repository>
+                            <repository>abhioncbr/daflow-hive</repository>
                             <buildArgs>
+                                <HIVE_VERSION>${docker.hive.version}</HIVE_VERSION>
                                 <HADOOP_VERSION>${docker.hadoop.version}</HADOOP_VERSION>
-                                <HADOOP_DN_PORT>${docker.hadoop.dn.port}</HADOOP_DN_PORT>
                             </buildArgs>
                         </configuration>
                     </execution>

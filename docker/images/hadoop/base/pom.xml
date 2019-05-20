@@ -10,13 +10,22 @@
     <version>0.1-SNAPSHOT</version>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>daflow-hadoop-base-docker</artifactId>
-    <description>Base Docker Image with DaFlow</description>
+    <description>DaFlow's Docker Image of Hadoop Base</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <dependencies></dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>com.abhioncbr.daflow</groupId>
+            <artifactId>daflow-docker</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+
 
     <build>
         <plugins>
@@ -41,6 +50,9 @@
                             <username>${docker.reg.username}</username>
                             <password>${docker.reg.password}</password>
                             <repository>abhioncbr/daflow-hadoop-base</repository>
+                            <buildArgs>
+                                <HADOOP_VERSION>${docker.hadoop.version}</HADOOP_VERSION>
+                            </buildArgs>
                         </configuration>
                     </execution>
                     <execution>
@@ -52,12 +64,15 @@
                             <goal>push</goal>
                         </goals>
                         <configuration>
-                            <tag>${docker.hadoop.version}-${project.version}</tag>
+                            <tag>${docker.hadoop.version}</tag>
                             <skip>${docker.build.skip}</skip>
                             <pullNewerImage>false</pullNewerImage>
                             <username>${docker.reg.username}</username>
                             <password>${docker.reg.password}</password>
                             <repository>abhioncbr/daflow-hadoop-base</repository>
+                            <buildArgs>
+                                <HADOOP_VERSION>${docker.hadoop.version}</HADOOP_VERSION>
+                            </buildArgs>
                         </configuration>
                     </execution>
                 </executions>

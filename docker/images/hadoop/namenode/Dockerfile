@@ -1,6 +1,6 @@
 ARG HADOOP_VERSION=2.8.4
 ARG HADOOP_WEBHDFS_PORT=50070
-FROM abhioncbr/daflow-hadoop_${HADOOP_VERSION}-base:latest
+FROM abhioncbr/daflow-hadoop-base:${HADOOP_VERSION}
 
 ENV HADOOP_WEBHDFS_PORT ${HADOOP_WEBHDFS_PORT}
 
