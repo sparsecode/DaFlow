@@ -58,6 +58,8 @@
                 <version>${dockerfile.maven.version}</version>
                 <configuration>
                     <skip>true</skip>
+                    <verbose>false</verbose>
+                    <googleContainerRegistryEnabled>false</googleContainerRegistryEnabled>
                 </configuration>
             </plugin>
         </plugins>

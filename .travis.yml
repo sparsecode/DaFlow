@@ -13,8 +13,8 @@ cache:
     - $HOME/.m2
 
 script:
-  - mvn -Ddocker.build.skip=false -Ddocker.reg=$DOCKER_REGISTRY -Ddocker.reg.username=$DOCKER_USERNAME -Ddocker.reg.password=$DOCKER_PASSWORD clean install
+  - mvn -Ddocker.build.skip=$DOCKER_BUILD_SKIP -Ddocker.reg=$DOCKER_REGISTRY -Ddocker.reg.username=$DOCKER_USERNAME -Ddocker.reg.password=$DOCKER_PASSWORD -q clean install
 
 after_success:
-  - mvn clean cobertura:cobertura
+  - mvn -q clean cobertura:cobertura
   - bash <(curl -s https://codecov.io/bash)
