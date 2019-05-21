@@ -36,6 +36,9 @@
                         <phase>package</phase>
                         <configuration>
                             <tasks>
+                                <echo>[main]  ${main.basedir}</echo>
+                                <copy file="${project.basedir}/../../../daflow-core/target/daflow-core-${project.version}.jar" tofile="target/daflow-core-${project.version}.jar" />
+                                <copy file="${project.basedir}/../../../daflow-examples/daflow-job-xml/json_etl_example.xml" tofile="target/daflow-job-xml/json_etl_example.xml" />
                             </tasks>
                         </configuration>
                         <goals>

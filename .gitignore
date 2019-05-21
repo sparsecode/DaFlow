@@ -31,3 +31,4 @@ docker/images/hadoop/historyserver/*.iml
 docker/images/spark/base/*.iml
 docker/images/spark/master/*.iml
 docker/images/spark/worker/*.iml
+daflow-examples/sample-data/daflow-result/*

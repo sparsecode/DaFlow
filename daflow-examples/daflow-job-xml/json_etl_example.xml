@@ -33,8 +33,7 @@
         <feed name="json_data">
             <fileSystem fileType="JSON">
                 <dataPath>
-                    <path>/Users/abhisheksharma/work/github-proj/DaFlow/daflow-examples/sample-data/daflow-result
-                        /</path>
+                    <path>/Users/abhisheksharma/work/github-proj/DaFlow/daflow-examples/sample-data/daflow-result/</path>
                 </dataPath>
             </fileSystem>
         </feed>

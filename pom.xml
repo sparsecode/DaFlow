@@ -286,6 +286,7 @@
                         <exclude>**/test/resources/*.data</exclude>
                         <exclude>**/test/resources/*.schema</exclude>
                         <exclude>**/test/resources/*.csv</exclude>
+                        <exclude>**/daflow-examples/sample-data/daflow-result/*</exclude>
                     </excludes>
                 </configuration>
                 <executions>
