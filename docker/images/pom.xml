@@ -16,6 +16,7 @@
         <module>hive</module>
         <module>spark/base</module>
         <module>hadoop/base</module>
+        <module>spark/adhoc</module>
         <module>spark/worker</module>
         <module>spark/master</module>
         <module>hadoop/datanode</module>

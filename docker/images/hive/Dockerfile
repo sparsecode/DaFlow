@@ -32,9 +32,9 @@ ADD conf/ivysettings.xml $HIVE_HOME/conf
 ADD conf/llap-daemon-log4j2.properties $HIVE_HOME/conf
 
 # Setup DaFlow Library jars
-ADD target/ /var/daflow/ws/docker/daflow/hadoop/hive_base/target/
+ADD target/demo /var/daflow/demo
 
-ENV DAFLOW_BUNDLE=/var/daflow/ws/docker/daflow/hadoop/hive_base/target/daflow-*.jar
+ENV DAFLOW_BUNDLE=/var/daflow/demo/artifacts/daflow-*.jar
 
 COPY startup.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/startup.sh

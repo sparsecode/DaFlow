@@ -1,0 +1,180 @@
+version: "3.3"
+
+services:
+
+  daflow-namenode:
+    image: abhioncbr/daflow-hadoop-namenode:latest
+    hostname: daflow-namenode
+    container_name: daflow-namenode
+    volumes:
+      - /tmp/hadoop_name:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=daflow_hadoop284_hive232_spark231
+    ports:
+      - "50070:50070"
+      - "8020:8020"
+    env_file:
+      - ./hadoop.env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://namenode:50070"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+ 
+  daflow-datanode1:
+    image: abhioncbr/daflow-hadoop-datanode:latest
+    hostname: daflow-datanode1
+    container_name: daflow-datanode1
+    environment:
+      - CLUSTER_NAME=daflow_hadoop284_hive232_spark231
+    env_file:
+      - ./hadoop.env
+    ports:
+      - "50075:50075"
+      - "50010:50010"
+    links:
+      - "daflow-namenode"
+      - "daflow-historyserver"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://datanode1:50075"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - daflow-namenode
+    volumes:
+      - /tmp/hadoop_data:/hadoop/dfs/data
+
+  daflow-historyserver:
+    image: abhioncbr/daflow-hadoop-historyserver:latest
+    hostname: daflow-historyserver
+    container_name: daflow-historyserver
+    environment:
+      - CLUSTER_NAME=daflow_hadoop284_hive232_spark231
+    depends_on:
+      - "daflow-namenode"
+    links:
+      - "daflow-namenode"
+    ports:
+      - "58188:8188"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://historyserver:8188"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    env_file:
+      - ./hadoop.env
+    volumes:
+      - daflow-historyserver:/hadoop/yarn/timeline
+
+  daflow-hive-metastore-postgresql:
+    image: bde2020/hive-metastore-postgresql:2.3.0
+    volumes:
+      - daflow-hive-metastore-postgresql:/var/lib/postgresql
+    hostname: daflow-hive-metastore-postgresql
+    container_name: daflow-hive-metastore-postgresql
+ 
+  daflow-hivemetastore:
+    image: abhioncbr/daflow-hive:latest
+    hostname: daflow-hivemetastore
+    container_name: daflow-hivemetastore
+    links:
+      - "daflow-hive-metastore-postgresql"
+      - "daflow-namenode"
+    env_file:
+      - ./hadoop.env
+    command: /opt/hive/bin/hive --service metastore
+    environment:
+      SERVICE_PRECONDITION: "daflow-namenode:50070 daflow-hive-metastore-postgresql:5432"
+    ports:
+      - "9083:9083"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "hivemetastore", "9083"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - "daflow-hive-metastore-postgresql"
+      - "daflow-namenode"
+
+  daflow-hiveserver:
+    image: abhioncbr/daflow-hive:latest
+    hostname: daflow-hiveserver
+    container_name: daflow-hiveserver
+    env_file:
+      - ./hadoop.env
+    environment:
+      SERVICE_PRECONDITION: "daflow-hivemetastore:9083"
+    ports:
+      - "10000:10000"
+    depends_on:
+      - daflow-hivemetastore
+    links:
+      - "daflow-hivemetastore"
+      - "daflow-hive-metastore-postgresql"
+      - "daflow-namenode"
+    volumes:
+      - ${DAFLOW_WS}:/var/daflow/ws
+
+  daflow-sparkmaster:
+    image: abhioncbr/daflow-spark-master:latest
+    hostname: daflow-sparkmaster
+    container_name: daflow-sparkmaster
+    env_file:
+      - ./hadoop.env
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    environment:
+      - INIT_DAEMON_STEP=setup_spark
+    links:
+      - "daflow-hivemetastore"
+      - "daflow-hiveserver"
+      - "daflow-hive-metastore-postgresql"
+      - "daflow-namenode"
+
+  daflow-spark-worker-1:
+    image: abhioncbr/daflow-spark-worker:latest
+    hostname: daflow-spark-worker-1
+    container_name: daflow-spark-worker-1
+    env_file:
+      - ./hadoop.env
+    depends_on:
+      - daflow-sparkmaster
+    ports:
+      - "8081:8081"
+    environment:
+      - "SPARK_MASTER=spark://sparkmaster:7077"
+    links:
+      - "daflow-hivemetastore"
+      - "daflow-hiveserver"
+      - "daflow-hive-metastore-postgresql"
+      - "daflow-namenode"
+
+  daflow-adhoc-1:
+    image: abhioncbr/daflow-adhoc1:latest
+    hostname: daflow-adhoc-1
+    container_name: daflow-adhoc-1
+    env_file:
+      - ./hadoop.env
+    depends_on:
+      - daflow-sparkmaster
+    ports:
+      - '4040:4040'
+    environment:
+      - "SPARK_MASTER=spark://sparkmaster:7077"
+    links:
+      - "daflow-hivemetastore"
+      - "daflow-hiveserver"
+      - "daflow-hive-metastore-postgresql"
+      - "daflow-namenode"
+    volumes:
+      - ${DAFLOW_WS}:/var/daflow/ws
+
+volumes:
+  daflow-namenode:
+  daflow-historyserver:
+  daflow-hive-metastore-postgresql:
+
+networks:
+  default:

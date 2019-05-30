@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <DaFlowJob xmlns="uri:daflow:workflow:0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="uri:daflow:workflow:0.1 ../../daflow-job-conf/daflow-job-conf-xml/daflow-feed-job.xsd">
+        xsi:schemaLocation="uri:daflow:workflow:0.1 ../../../daflow-job-conf/daflow-job-conf-xml/daflow-feed-job.xsd">
     <jobStaticParam jobName="json_example" frequency="ONCE" publishStats="false"/>
     <extract>
         <feed feedName="json_data" validateExtractedData="true">

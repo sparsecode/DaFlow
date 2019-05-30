@@ -3,14 +3,14 @@
         <groupId>com.abhioncbr.daflow</groupId>
         <artifactId>daflow-docker</artifactId>
         <version>0.1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <packaging>pom</packaging>
     <version>0.1-SNAPSHOT</version>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>daflow-hive-docker</artifactId>
-    <description>DaFlow's Docker Image of Hive.</description>
+    <artifactId>daflow-adhoc1</artifactId>
+    <description>DaFlow's Docker Image of Spark adhoc node.</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -19,7 +19,7 @@
     <dependencies>
         <dependency>
             <groupId>com.abhioncbr.daflow</groupId>
-            <artifactId>daflow-hadoop-base-docker</artifactId>
+            <artifactId>daflow-spark-base-docker</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
             <scope>import</scope>
@@ -28,30 +28,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.7</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <configuration>
-                            <tasks>
-                                <delete>
-                                    <fileset dir="${project.basedir}/../../../daflow-examples/demo/artifacts" includes="*.jar" />
-                                </delete>
-                                <copy file="${project.basedir}/../../../daflow-core/target/daflow-core-${project.version}.jar"
-                                      tofile="${project.basedir}/../../../daflow-examples/demo/artifacts/daflow-core-${project.version}.jar" />
-                                <copy todir="target/demo/">
-                                    <fileset dir="${project.basedir}/../../../daflow-examples/demo"/>
-                                </copy>
-                            </tasks>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <!-- Build Docker image -->
             <plugin>
                 <groupId>com.spotify</groupId>
@@ -72,30 +48,10 @@
                             <pullNewerImage>false</pullNewerImage>
                             <username>${docker.reg.username}</username>
                             <password>${docker.reg.password}</password>
-                            <repository>abhioncbr/daflow-hive</repository>
+                            <repository>abhioncbr/daflow-adhoc1</repository>
                             <buildArgs>
                                 <HIVE_VERSION>${docker.hive.version}</HIVE_VERSION>
-                                <HADOOP_VERSION>${docker.hadoop.version}</HADOOP_VERSION>
-                            </buildArgs>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>tag-components-version</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>build</goal>
-                            <goal>tag</goal>
-                            <goal>push</goal>
-                        </goals>
-                        <configuration>
-                            <tag>${docker.hadoop.version}-${docker.hive.version}</tag>
-                            <skip>${docker.build.skip}</skip>
-                            <pullNewerImage>false</pullNewerImage>
-                            <username>${docker.reg.username}</username>
-                            <password>${docker.reg.password}</password>
-                            <repository>abhioncbr/daflow-hive</repository>
-                            <buildArgs>
-                                <HIVE_VERSION>${docker.hive.version}</HIVE_VERSION>
+                                <SPARK_VERSION>${docker.spark.version}</SPARK_VERSION>
                                 <HADOOP_VERSION>${docker.hadoop.version}</HADOOP_VERSION>
                             </buildArgs>
                         </configuration>
@@ -109,14 +65,15 @@
                             <goal>push</goal>
                         </goals>
                         <configuration>
-                            <tag>${docker.hadoop.version}-${docker.hive.version}-${project.version}</tag>
+                            <tag>${docker.spark.version}-${project.version}</tag>
                             <skip>${docker.build.skip}</skip>
                             <pullNewerImage>false</pullNewerImage>
                             <username>${docker.reg.username}</username>
                             <password>${docker.reg.password}</password>
-                            <repository>abhioncbr/daflow-hive</repository>
+                            <repository>abhioncbr/daflow-adhoc1</repository>
                             <buildArgs>
                                 <HIVE_VERSION>${docker.hive.version}</HIVE_VERSION>
+                                <SPARK_VERSION>${docker.spark.version}</SPARK_VERSION>
                                 <HADOOP_VERSION>${docker.hadoop.version}</HADOOP_VERSION>
                             </buildArgs>
                         </configuration>
