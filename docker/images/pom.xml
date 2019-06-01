@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.abhioncbr.daflow</groupId>
+        <artifactId>daflow</artifactId>
+        <version>0.1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <packaging>pom</packaging>
+    <version>0.1-SNAPSHOT</version>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>daflow-docker</artifactId>
+
+    <modules>
+        <module>hive</module>
+        <module>spark/base</module>
+        <module>hadoop/base</module>
+        <module>spark/adhoc</module>
+        <module>spark/worker</module>
+        <module>spark/master</module>
+        <module>hadoop/datanode</module>
+        <module>hadoop/namenode</module>
+        <module>hadoop/historyserver</module>
+    </modules>
+
+    <properties>
+        <docker.reg>daflow</docker.reg>
+        <docker.reg.password>daflow</docker.reg.password>
+        <docker.reg.username>abc@daflow.com</docker.reg.username>
+
+        <docker.build.skip>true</docker.build.skip>
+
+        <docker.hive.version>2.3.3</docker.hive.version>
+        <docker.spark.version>2.4.3</docker.spark.version>
+        <docker.hadoop.version>2.8.4</docker.hadoop.version>
+
+        <docker.hadoop.hs.port>8188</docker.hadoop.hs.port>
+        <docker.hadoop.dn.port>50075</docker.hadoop.dn.port>
+        <docker.hadoop.webHdfs.port>50070</docker.hadoop.webHdfs.port>
+
+        <docker.spark.hadoop.version>2.7</docker.spark.hadoop.version>
+
+        <dockerfile.maven.version>1.4.10</dockerfile.maven.version>
+    </properties>
+
+    <build>
+        <extensions>
+            <extension>
+                <groupId>com.spotify</groupId>
+                <artifactId>dockerfile-maven-extension</artifactId>
+                <version>${dockerfile.maven.version}</version>
+            </extension>
+        </extensions>
+        <plugins>
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>dockerfile-maven-plugin</artifactId>
+                <version>${dockerfile.maven.version}</version>
+                <configuration>
+                    <skip>true</skip>
+                    <verbose>false</verbose>
+                    <googleContainerRegistryEnabled>false</googleContainerRegistryEnabled>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

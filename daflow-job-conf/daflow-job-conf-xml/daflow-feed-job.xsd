@@ -164,6 +164,7 @@ Two Options:
         <xs:all><xs:element name="dataPath" type="workflow:DataPath"/></xs:all>
         <xs:attribute name="feedName" type="xs:string"/>
         <xs:attribute name="catalogName" type="xs:string"/>
+        <xs:attribute name="isPathRelative" default="false" type="xs:boolean"/>
         <xs:attribute name="fileType" use="required" type="workflow:SupportedFileType"/>
     </xs:complexType>
     <xs:complexType name="LoadFeed">
@@ -210,6 +211,7 @@ Two Options:
 <!-- START: Extract schema xsd descriptors. -->
     <xs:complexType name="ExtractFileSystem">
         <xs:all><xs:element name="dataPath" type="workflow:DataPath"/></xs:all>
+        <xs:attribute name="isPathRelative" default="false" type="xs:boolean"/>
         <xs:attribute name="fileType" use="required" type="workflow:SupportedFileType"/>
     </xs:complexType>
     <xs:complexType name="JDBC">

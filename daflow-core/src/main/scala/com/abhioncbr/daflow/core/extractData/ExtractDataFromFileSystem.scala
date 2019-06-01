@@ -42,7 +42,7 @@ class ExtractDataFromFileSystem(feed: ExtractFeedConf) extends ExtractData {
       )
 
       val output: Either[ExecutionResult, String] =
-        feed.extractionSubType match {
+        feed.extractionAttributesMap("fileType") match {
           case "CSV" =>
             Left(
               ExecutionResult(
@@ -66,7 +66,7 @@ class ExtractDataFromFileSystem(feed: ExtractFeedConf) extends ExtractData {
             )
           case _ =>
             Right(
-              s"[ExtractDataFromFileSystem]-[getRawData]: ${ENS(feed.extractionSubType)}"
+              s"[ExtractDataFromFileSystem]-[getRawData]: ${ENS(feed.extractionAttributesMap("fileType"))}"
             )
         }
       output

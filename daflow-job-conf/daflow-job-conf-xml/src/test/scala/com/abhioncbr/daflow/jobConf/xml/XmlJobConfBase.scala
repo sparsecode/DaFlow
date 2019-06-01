@@ -22,6 +22,16 @@ import scala.xml.XML
 
 class XmlJobConfBase extends CommonSpec{
 
+  val userDirectory: String = System.getProperty("user.dir")
+
+  val daflowExamplesPath = s"$userDirectory/daflow-examples"
+  val daflowExamplesDemoPath = s"$daflowExamplesPath/demo"
+  val daflowExamplesDemoSampleDataPath = s"$daflowExamplesDemoPath/sample-data"
+  val daflowExampleDemoJobXmlPath = s"$daflowExamplesDemoPath/daflow-job-xml"
+  val daflowExampleJobXmlTemplatePath = s"$daflowExamplesPath/daflow-xml-templates"
+
+  val xsdFilePath = s"$userDirectory/daflow-job-conf/daflow-job-conf-xml/daflow-feed-job.xsd"
+
   val node: String => scala.xml.NodeSeq = (xmlContent: String) => { XML.loadString(xmlContent) }
 
 }

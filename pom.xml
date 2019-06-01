@@ -26,8 +26,9 @@
     <modules>
         <module>daflow-commons</module>
         <module>daflow-core</module>
-        <module>daflow-sql-parser</module>
         <module>daflow-metrics</module>
+        <module>daflow-sql-parser</module>
+        <module>docker/images</module>
         <module>daflow-job-conf/daflow-job-conf-xml</module>
         <module>daflow-job-conf/daflow-job-conf-yaml</module>
     </modules>
@@ -277,14 +278,18 @@
                         <exclude>**/*.xsd</exclude>
                         <exclude>**/*.json</exclude>
                         <exclude>**/*-stat</exclude>
-                        <exclude>**/dependency-reduced-pom.xml</exclude>
+                        <exclude>**/style/*</exclude>
+                        <exclude>**/target/*</exclude>
+                        <exclude>**/Dockerfile*</exclude>
+                        <exclude>**/demo/artifacts/*</exclude>
+                        <exclude>**/docker/compose/*</exclude>
+                        <exclude>**/test/resources/*.csv</exclude>
                         <exclude>**/test/resources/*.avsc</exclude>
                         <exclude>**/test/resources/*.data</exclude>
                         <exclude>**/test/resources/*.schema</exclude>
-                        <exclude>**/test/resources/*.csv</exclude>
-                        <exclude>**/main/avro/*.avsc</exclude>
-                        <exclude>**/target/*</exclude>
-                        <exclude>**/style/*</exclude>
+                        <exclude>**/dependency-reduced-pom.xml</exclude>
+                        <exclude>**/daflow-examples/demo/sample-feed-stats/*</exclude>
+                        <exclude>**/daflow-examples/demo/sample-data/daflow-result/*</exclude>
                     </excludes>
                 </configuration>
                 <executions>

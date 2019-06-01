@@ -25,7 +25,7 @@ class ParseExtractSpec extends XmlJobConfBase {
 
   "ParseFeedConf" should "return Feed object with dataPath variable" in {
     val xmlContent = """ <feed feedName="json_data_feed" validateExtractedData="false">
-            <fileSystem fileType="JSON">
+            <fileSystem fileType="JSON" isPathRelative="true">
                 <dataPath>
                     <pathPattern>
                         <initialPath>{json-file-path-suffix}</initialPath>
@@ -42,6 +42,9 @@ class ParseExtractSpec extends XmlJobConfBase {
     feedObject.extractFeedName should be ("json_data_feed")
     feedObject.validateExtractedData should be (false)
     feedObject.extractionType should be (ExtractionType.FILE_SYSTEM)
+    feedObject.extractionAttributesMap.size should be (2)
+    feedObject.extractionAttributesMap("fileType") should be ("JSON")
+    feedObject.extractionAttributesMap("isPathRelative") should be ("true")
 
     feedObject.dataPath.isDefined should be (true)
     feedObject.dataPath.get.pathPrefix should be (Some("{json-file-path-suffix}"))

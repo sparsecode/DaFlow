@@ -22,7 +22,7 @@ import com.abhioncbr.daflow.commons.load.LoadFeedConf
 class ParseLoadSpec extends XmlJobConfBase {
 
   "ParseLoadFeed" should "return LoadFeed object with all hive based variables" in {
-    val path = s"${System.getProperty("user.dir")}/daflow-examples/sample-data/"
+    val path = s"$daflowExamplesDemoSampleDataPath/"
     val xmlContent = s"""<feed name="feed1">
             <hive dataBaseName="{db-name}" tableName="{table-name}" fileType="PARQUET">
                 <partitionData coalescePartition="true" overwritePartition="true" coalescePartitionCount="10">
@@ -45,14 +45,14 @@ class ParseLoadSpec extends XmlJobConfBase {
     parseLoadFeedObject.partitioningData should not be None
     parseLoadFeedObject.partitioningData.get.coalesce should be (true)
     parseLoadFeedObject.dataPath should not be None
-    parseLoadFeedObject.dataPath.pathPrefix should be (Some(s"${System.getProperty("user.dir")}/daflow-examples"))
+    parseLoadFeedObject.dataPath.pathPrefix should be (Some(daflowExamplesDemoPath))
     parseLoadFeedObject.dataPath.feedPattern should not be None
     parseLoadFeedObject.dataPath.feedPattern.get.infixPattern should be ("sample-data")
   }
 
   "ParseLoadFeed" should "return LoadFeed object with all fileSystem based variables" in {
     val xmlContent = """<feed name="json_data">
-                            <fileSystem fileType="JSON">
+                            <fileSystem fileType="JSON" isPathRelative="true">
                               <dataPath>
                                 <pathPattern>
                                   <initialPath>{json-file-path-suffix}</initialPath>
@@ -67,8 +67,9 @@ class ParseLoadSpec extends XmlJobConfBase {
     val parseLoadFeedObject: LoadFeedConf = ParseLoadFeed.fromXML(node(xmlContent))
     parseLoadFeedObject should not be None
     parseLoadFeedObject.loadFeedName should be ("json_data")
-    parseLoadFeedObject.attributesMap.size should be (1)
+    parseLoadFeedObject.attributesMap.size should be (2)
     parseLoadFeedObject.attributesMap("fileType") should be ("JSON")
+    parseLoadFeedObject.attributesMap("isPathRelative") should be ("true")
     parseLoadFeedObject.partitioningData should be (None)
     parseLoadFeedObject.dataPath should not be None
     parseLoadFeedObject.dataPath.pathPrefix should be (Some("{json-file-path-suffix}"))

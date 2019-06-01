@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <DaFlowJob xmlns="uri:daflow:workflow:0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="uri:daflow:workflow:0.1 ../../daflow-job-conf/daflow-job-conf-xml/daflow-feed-job.xsd">
+        xsi:schemaLocation="uri:daflow:workflow:0.1 ../../../daflow-job-conf/daflow-job-conf-xml/daflow-feed-job.xsd">
     <jobStaticParam jobName="json_example" frequency="ONCE" publishStats="false"/>
     <extract>
         <feed feedName="json_data" validateExtractedData="true">
-            <fileSystem fileType="JSON">
+            <fileSystem fileType="JSON" isPathRelative="true">
                 <dataPath>
                     <pathPattern>
-                        <initialPath>/Users/abhisheksharma/work/github-proj/DaFlow/daflow-examples/sample-data</initialPath>
+                        <initialPath>daflow-examples/demo/sample-data</initialPath>
                         <fileName>
                             <prefix>json_data</prefix>
                             <suffix>json</suffix>
@@ -31,10 +31,9 @@
     </transform>
     <load>
         <feed name="json_data">
-            <fileSystem fileType="JSON">
+            <fileSystem fileType="JSON" isPathRelative="true">
                 <dataPath>
-                    <path>/Users/abhisheksharma/work/github-proj/DaFlow/daflow-examples/sample-data/daflow-result
-                        /</path>
+                    <path>daflow-examples/demo/sample-data/daflow-result/</path>
                 </dataPath>
             </fileSystem>
         </feed>

@@ -22,4 +22,5 @@ import com.abhioncbr.daflow.commons.common.QueryConf
 
 case class ExtractConf(feeds: Array[ExtractFeedConf])
 case class ExtractFeedConf(extractFeedName: String, extractionType: ExtractionType.valueType,
-  extractionSubType: String, dataPath: Option[DataPath], query: Option[QueryConf], validateExtractedData: Boolean)
+  extractionAttributesMap: Map[String, String], dataPath: Option[DataPath], query: Option[QueryConf],
+  validateExtractedData: Boolean)
