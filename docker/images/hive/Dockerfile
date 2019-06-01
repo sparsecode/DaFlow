@@ -32,7 +32,7 @@ ADD conf/ivysettings.xml $HIVE_HOME/conf
 ADD conf/llap-daemon-log4j2.properties $HIVE_HOME/conf
 
 # Setup DaFlow Library jars
-ADD target/demo /var/daflow/demo
+ADD target/demo /var/daflow/ws/daflow-examples/demo
 
 ENV DAFLOW_BUNDLE=/var/daflow/demo/artifacts/daflow-*.jar
 

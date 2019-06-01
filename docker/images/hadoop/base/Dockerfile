@@ -14,7 +14,7 @@ ENV HADOOP_VERSION ${HADOOP_VERSION}
 ENV HADOOP_URL ${HADOOP_URL}
 
 RUN set -x \
-    && DEBIAN_FRONTEND=noninteractive apt-get -yq update && apt-get -yq install curl wget netcat procps net-tools \
+    && DEBIAN_FRONTEND=noninteractive apt-get -yq update && apt-get -yq install curl wget netcat procps \
     && echo "Fetch URL2 is : ${HADOOP_URL}" \
     && curl -fSL "${HADOOP_URL}" -o /tmp/hadoop.tar.gz \
     && curl -fSL "${HADOOP_URL}.asc" -o /tmp/hadoop.tar.gz.asc \

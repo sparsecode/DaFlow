@@ -52,7 +52,7 @@ class ParseLoadSpec extends XmlJobConfBase {
 
   "ParseLoadFeed" should "return LoadFeed object with all fileSystem based variables" in {
     val xmlContent = """<feed name="json_data">
-                            <fileSystem fileType="JSON">
+                            <fileSystem fileType="JSON" isPathRelative="true">
                               <dataPath>
                                 <pathPattern>
                                   <initialPath>{json-file-path-suffix}</initialPath>
@@ -67,8 +67,9 @@ class ParseLoadSpec extends XmlJobConfBase {
     val parseLoadFeedObject: LoadFeedConf = ParseLoadFeed.fromXML(node(xmlContent))
     parseLoadFeedObject should not be None
     parseLoadFeedObject.loadFeedName should be ("json_data")
-    parseLoadFeedObject.attributesMap.size should be (1)
+    parseLoadFeedObject.attributesMap.size should be (2)
     parseLoadFeedObject.attributesMap("fileType") should be ("JSON")
+    parseLoadFeedObject.attributesMap("isPathRelative") should be ("true")
     parseLoadFeedObject.partitioningData should be (None)
     parseLoadFeedObject.dataPath should not be None
     parseLoadFeedObject.dataPath.pathPrefix should be (Some("{json-file-path-suffix}"))

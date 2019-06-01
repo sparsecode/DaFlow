@@ -34,18 +34,19 @@ object ParseExtract {
 object ParseExtractFeed {
   def fromXML(node: scala.xml.NodeSeq): ExtractFeedConf = {
     val feedName: String = (node \ "@feedName").text
-    val extractionSubType: String = (node \ "_").head.attributes.value.text.toUpperCase
-
     val validateExtractedData: Boolean = ParseUtil.parseBoolean((node \ "@validateExtractedData").text)
 
     val extractionType: ExtractionType.valueType =
       ExtractionType.getValueType(valueTypeString = (node \ "_").head.label.toUpperCase)
 
+    val attributesMap: Map[String, String] =
+      (node \ "_").head.attributes.map(meta => (meta.key, meta.value.toString)).toMap
+
     val query: Option[QueryConf] = ParseUtil.parseNode[QueryConf](node \ "jdbc" \ "query", None, ParseQuery.fromXML)
     val dataPath: Option[DataPath] = ParseUtil.parseNode[DataPath](node \ "fileSystem" \ "dataPath", None, ParseDataPath.fromXML)
 
     val feed: ExtractFeedConf = ExtractFeedConf(extractFeedName = feedName,
-      extractionType = extractionType, extractionSubType = extractionSubType,
+      extractionType = extractionType, extractionAttributesMap = attributesMap,
       dataPath = dataPath, query = query, validateExtractedData = validateExtractedData)
     feed
   }
