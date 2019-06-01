@@ -36,7 +36,7 @@
                         <phase>package</phase>
                         <configuration>
                             <tasks>
-                                <delete>
+                                <delete failonerror="false">
                                     <fileset dir="${project.basedir}/../../../daflow-examples/demo/artifacts" includes="*.jar" />
                                 </delete>
                                 <copy file="${project.basedir}/../../../daflow-core/target/daflow-core-${project.version}.jar"
