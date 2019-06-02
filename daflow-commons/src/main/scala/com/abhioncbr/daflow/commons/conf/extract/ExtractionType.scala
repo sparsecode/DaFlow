@@ -15,20 +15,29 @@
  * limitations under the License.
  */
 
-package com.abhioncbr.daflow.core.extractData
+package com.abhioncbr.daflow.commons.conf.extract
 
-import com.abhioncbr.daflow.commons.conf.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.util.FileUtil
+object ExtractionType extends Enumeration {
+  type valueType = Value
+  val JDBC, HIVE, FILE_SYSTEM, UNSUPPORTED = Value
 
-object ExtractUtil {
-  def getParamsValue(paramList: List[GeneralParamConf]): Array[Object] = {
-    paramList
-      .map(
-        queryParam =>
-          (queryParam.order, FileUtil.mapFormatArgs(Some(paramList.toArray)))
-      )
-      .sortBy(_._1)
-      .map(_._2)
-      .toArray
+  def getValueType(valueTypeString: String): ExtractionType.valueType = {
+    val valueType = valueTypeString match {
+      case "JDBC" => ExtractionType.JDBC
+      case "HIVE" => ExtractionType.HIVE
+      case "FILESYSTEM" => ExtractionType.FILE_SYSTEM
+      case "UNSUPPORTED" => ExtractionType.UNSUPPORTED
+    }
+    valueType
+  }
+
+  def getDataValue(valueType: ExtractionType.valueType): String = {
+    val output = valueType match {
+      case JDBC => "JDBC"
+      case HIVE => "HIVE"
+      case FILE_SYSTEM => "FILE_SYSTEM"
+      case UNSUPPORTED => "UNSUPPORTED"
+    }
+    output
   }
 }

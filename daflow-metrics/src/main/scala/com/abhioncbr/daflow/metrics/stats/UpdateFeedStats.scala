@@ -22,7 +22,7 @@ import com.abhioncbr.daflow.commons.ContextConstantEnum.JOB_STATIC_PARAM_CONF
 import com.abhioncbr.daflow.commons.ContextConstantEnum.SPARK_CONTEXT
 import com.abhioncbr.daflow.commons.ContextConstantEnum.SQL_CONTEXT
 import com.abhioncbr.daflow.commons.NotificationMessages.{exceptionMessage => EM}
-import com.abhioncbr.daflow.commons.job.JobStaticParamConf
+import com.abhioncbr.daflow.commons.conf.JobStaticParamConf
 import com.typesafe.scalalogging.Logger
 import java.io.BufferedWriter
 import java.io.FileNotFoundException

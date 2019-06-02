@@ -15,20 +15,10 @@
  * limitations under the License.
  */
 
-package com.abhioncbr.daflow.core.extractData
+package com.abhioncbr.daflow.commons.conf
 
-import com.abhioncbr.daflow.commons.conf.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.util.FileUtil
+import com.abhioncbr.daflow.commons.conf.extract.ExtractConf
+import com.abhioncbr.daflow.commons.conf.load.LoadConf
+import com.abhioncbr.daflow.commons.conf.transform.TransformConf
 
-object ExtractUtil {
-  def getParamsValue(paramList: List[GeneralParamConf]): Array[Object] = {
-    paramList
-      .map(
-        queryParam =>
-          (queryParam.order, FileUtil.mapFormatArgs(Some(paramList.toArray)))
-      )
-      .sortBy(_._1)
-      .map(_._2)
-      .toArray
-  }
-}
+case class DaFlowJobConf(jobStaticParam: JobStaticParamConf, extract: ExtractConf, transform: TransformConf, load: LoadConf)

@@ -15,20 +15,21 @@
  * limitations under the License.
  */
 
-package com.abhioncbr.daflow.core.extractData
+package com.abhioncbr.daflow.job.conf.xml
 
-import com.abhioncbr.daflow.commons.conf.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.util.FileUtil
+import com.abhioncbr.daflow.commons.conf.common.FieldMappingConf
+import com.abhioncbr.daflow.job.conf.xml.AttributeTags._
+import com.abhioncbr.daflow.job.conf.xml.NodeTags._
 
-object ExtractUtil {
-  def getParamsValue(paramList: List[GeneralParamConf]): Array[Object] = {
-    paramList
-      .map(
-        queryParam =>
-          (queryParam.order, FileUtil.mapFormatArgs(Some(paramList.toArray)))
-      )
-      .sortBy(_._1)
-      .map(_._2)
-      .toArray
+object ParseFieldMappings {
+  def fromXML(node: scala.xml.NodeSeq): List[FieldMappingConf] = {
+    List[FieldMappingConf]((node \ FIELD_MAPPING).toList map { s => ParseFieldMapping.fromXML(s) }: _*)
+  }
+}
+
+object ParseFieldMapping {
+  def fromXML(node: scala.xml.NodeSeq): FieldMappingConf = {
+    FieldMappingConf(sourceFieldName = (node \ SOURCE_NAME).text,
+      targetFieldName = (node \ TARGET_NAME).text)
   }
 }

@@ -21,8 +21,8 @@ import com.abhioncbr.daflow.commons.Context
 import com.abhioncbr.daflow.commons.ContextConstantEnum.JOB_STATIC_PARAM_CONF
 import com.abhioncbr.daflow.commons.ContextConstantEnum.SQL_CONTEXT
 import com.abhioncbr.daflow.commons.ContextConstantEnum.START_DATE
-import com.abhioncbr.daflow.commons.job.JobStaticParamConf
-import com.abhioncbr.daflow.commons.load.LoadFeedConf
+import com.abhioncbr.daflow.commons.conf.JobStaticParamConf
+import com.abhioncbr.daflow.commons.conf.load.LoadFeedConf
 import com.abhioncbr.daflow.commons.util.FileUtil
 import com.typesafe.scalalogging.Logger
 import java.text.DecimalFormat

@@ -17,10 +17,10 @@
 
 package com.abhioncbr.daflow.commons
 
-import com.abhioncbr.daflow.commons.common.DataPath
-import com.abhioncbr.daflow.commons.common.FileNameParam
-import com.abhioncbr.daflow.commons.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.common.PathInfixParam
+import com.abhioncbr.daflow.commons.conf.common.DataPath
+import com.abhioncbr.daflow.commons.conf.common.FileNameParam
+import com.abhioncbr.daflow.commons.conf.common.GeneralParamConf
+import com.abhioncbr.daflow.commons.conf.common.PathInfixParam
 
 object Fixture {
   // fixture around data path-prefix

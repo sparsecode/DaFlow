@@ -17,7 +17,7 @@
 
 package com.abhioncbr.daflow.core.loadData
 
-import com.abhioncbr.daflow.commons.load.PartitioningDataConf
+import com.abhioncbr.daflow.commons.conf.load.PartitioningDataConf
 
 object LoadUtil {
   def getPartitioningString(data: PartitioningDataConf): String = {

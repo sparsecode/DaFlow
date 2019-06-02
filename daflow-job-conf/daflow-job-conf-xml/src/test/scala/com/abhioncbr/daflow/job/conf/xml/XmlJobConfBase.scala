@@ -15,20 +15,23 @@
  * limitations under the License.
  */
 
-package com.abhioncbr.daflow.core.extractData
+package com.abhioncbr.daflow.job.conf.xml
 
-import com.abhioncbr.daflow.commons.conf.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.util.FileUtil
+import com.abhioncbr.daflow.commons.CommonSpec
+import scala.xml.XML
 
-object ExtractUtil {
-  def getParamsValue(paramList: List[GeneralParamConf]): Array[Object] = {
-    paramList
-      .map(
-        queryParam =>
-          (queryParam.order, FileUtil.mapFormatArgs(Some(paramList.toArray)))
-      )
-      .sortBy(_._1)
-      .map(_._2)
-      .toArray
-  }
+class XmlJobConfBase extends CommonSpec{
+
+  val userDirectory: String = System.getProperty("user.dir")
+
+  val daflowExamplesPath = s"$userDirectory/daflow-examples"
+  val daflowExamplesDemoPath = s"$daflowExamplesPath/demo"
+  val daflowExamplesDemoSampleDataPath = s"$daflowExamplesDemoPath/sample-data"
+  val daflowExampleDemoJobXmlPath = s"$daflowExamplesDemoPath/daflow-job-xml"
+  val daflowExampleJobXmlTemplatePath = s"$daflowExamplesPath/daflow-xml-templates"
+
+  val xsdFilePath = s"$userDirectory/daflow-job-conf/daflow-job-conf-xml/daflow-feed-job.xsd"
+
+  val node: String => scala.xml.NodeSeq = (xmlContent: String) => { XML.loadString(xmlContent) }
+
 }

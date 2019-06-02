@@ -21,12 +21,12 @@ import com.abhioncbr.daflow.commons.Context
 import com.abhioncbr.daflow.commons.ContextConstantEnum._
 import com.abhioncbr.daflow.commons.ExecutionResult
 import com.abhioncbr.daflow.commons.NotificationMessages.{extractNotSupported => ENS}
-import com.abhioncbr.daflow.commons.extract.ExtractConf
-import com.abhioncbr.daflow.commons.extract.ExtractionType
-import com.abhioncbr.daflow.commons.job.JobStaticParamConf
-import com.abhioncbr.daflow.commons.load.LoadConf
-import com.abhioncbr.daflow.commons.load.LoadType
-import com.abhioncbr.daflow.commons.transform.TransformConf
+import com.abhioncbr.daflow.commons.conf.JobStaticParamConf
+import com.abhioncbr.daflow.commons.conf.extract.ExtractConf
+import com.abhioncbr.daflow.commons.conf.extract.ExtractionType
+import com.abhioncbr.daflow.commons.conf.load.LoadConf
+import com.abhioncbr.daflow.commons.conf.load.LoadType
+import com.abhioncbr.daflow.commons.conf.transform.TransformConf
 import com.abhioncbr.daflow.core.extractData.ExtractDataFromDB
 import com.abhioncbr.daflow.core.extractData.ExtractDataFromFileSystem
 import com.abhioncbr.daflow.core.extractData.ExtractDataFromHive
@@ -35,7 +35,7 @@ import com.abhioncbr.daflow.core.loadData.LoadDataIntoHive
 import com.abhioncbr.daflow.core.transformData.Transform
 import com.abhioncbr.daflow.core.transformData.TransformData
 import com.abhioncbr.daflow.core.transformData.TransformUtil
-import com.abhioncbr.daflow.jobConf.xml.ParseDaFlowJobXml
+import com.abhioncbr.daflow.job.conf.xml.ParseDaFlowJobXml
 import com.abhioncbr.daflow.metrics.stats.JobResult
 import com.abhioncbr.daflow.metrics.stats.UpdateFeedStats
 import com.typesafe.scalalogging.Logger

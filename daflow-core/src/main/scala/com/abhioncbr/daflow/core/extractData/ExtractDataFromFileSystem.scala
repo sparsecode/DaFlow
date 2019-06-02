@@ -22,8 +22,8 @@ import com.abhioncbr.daflow.commons.ContextConstantEnum._
 import com.abhioncbr.daflow.commons.ExecutionResult
 import com.abhioncbr.daflow.commons.NotificationMessages.{exceptionMessage => EM}
 import com.abhioncbr.daflow.commons.NotificationMessages.{extractNotSupported => ENS}
-import com.abhioncbr.daflow.commons.common.DataPath
-import com.abhioncbr.daflow.commons.extract.ExtractFeedConf
+import com.abhioncbr.daflow.commons.conf.common.DataPath
+import com.abhioncbr.daflow.commons.conf.extract.ExtractFeedConf
 import com.abhioncbr.daflow.commons.util.FileUtil
 import com.typesafe.scalalogging.Logger
 import org.apache.spark.sql.SQLContext

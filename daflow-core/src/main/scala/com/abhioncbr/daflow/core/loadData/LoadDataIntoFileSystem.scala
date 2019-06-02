@@ -19,9 +19,9 @@ package com.abhioncbr.daflow.core.loadData
 
 import com.abhioncbr.daflow.commons.Context
 import com.abhioncbr.daflow.commons.ContextConstantEnum.JOB_STATIC_PARAM_CONF
-import com.abhioncbr.daflow.commons.common.DataPath
-import com.abhioncbr.daflow.commons.job.JobStaticParamConf
-import com.abhioncbr.daflow.commons.load.LoadFeedConf
+import com.abhioncbr.daflow.commons.conf.JobStaticParamConf
+import com.abhioncbr.daflow.commons.conf.common.DataPath
+import com.abhioncbr.daflow.commons.conf.load.LoadFeedConf
 import com.abhioncbr.daflow.commons.util.FileUtil
 import com.typesafe.scalalogging.Logger
 import org.apache.spark.sql.DataFrame

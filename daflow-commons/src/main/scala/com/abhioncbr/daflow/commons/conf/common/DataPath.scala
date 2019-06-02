@@ -15,20 +15,13 @@
  * limitations under the License.
  */
 
-package com.abhioncbr.daflow.core.extractData
+package com.abhioncbr.daflow.commons.conf.common
 
-import com.abhioncbr.daflow.commons.conf.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.util.FileUtil
+case class DataPath(pathPrefix: Option[String], cataloguePatterns: Option[Array[PathInfixParam]] = None,
+  feedPattern: Option[PathInfixParam] = None, fileName: Option[FileNameParam] = None)
 
-object ExtractUtil {
-  def getParamsValue(paramList: List[GeneralParamConf]): Array[Object] = {
-    paramList
-      .map(
-        queryParam =>
-          (queryParam.order, FileUtil.mapFormatArgs(Some(paramList.toArray)))
-      )
-      .sortBy(_._1)
-      .map(_._2)
-      .toArray
-  }
-}
+case class PathInfixParam(order: Option[Int] = None, infixPattern: String,
+  formatInfix: Option[Boolean] = Some(false), formatInfixArgs: Option[Array[GeneralParamConf]] = None)
+
+case class FileNameParam(fileNamePrefix: Option[String] = None, fileNameSuffix: Option[String] = None,
+  fileNameSeparator: Option[String] = Some("."))

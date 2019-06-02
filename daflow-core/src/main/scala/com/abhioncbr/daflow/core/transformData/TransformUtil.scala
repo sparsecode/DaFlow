@@ -17,9 +17,9 @@
 
 package com.abhioncbr.daflow.core.transformData
 
-import com.abhioncbr.daflow.commons.transform.TransformConf
-import com.abhioncbr.daflow.commons.transform.TransformRuleConf
-import com.abhioncbr.daflow.commons.transform.TransformStepConf
+import com.abhioncbr.daflow.commons.conf.transform.TransformConf
+import com.abhioncbr.daflow.commons.conf.transform.TransformRuleConf
+import com.abhioncbr.daflow.commons.conf.transform.TransformStepConf
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types.DataType
 import org.apache.spark.sql.types.StructType
