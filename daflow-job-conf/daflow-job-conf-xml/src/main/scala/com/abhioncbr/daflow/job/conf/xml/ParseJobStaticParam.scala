@@ -15,20 +15,20 @@
  * limitations under the License.
  */
 
-package com.abhioncbr.daflow.core.extractData
+package com.abhioncbr.daflow.job.conf.xml
 
+import com.abhioncbr.daflow.commons.ProcessFrequencyEnum
+import com.abhioncbr.daflow.commons.conf.JobStaticParamConf
 import com.abhioncbr.daflow.commons.conf.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.util.FileUtil
+import com.abhioncbr.daflow.job.conf.xml.AttributeTags._
+import com.abhioncbr.daflow.job.conf.xml.NodeTags._
 
-object ExtractUtil {
-  def getParamsValue(paramList: List[GeneralParamConf]): Array[Object] = {
-    paramList
-      .map(
-        queryParam =>
-          (queryParam.order, FileUtil.mapFormatArgs(Some(paramList.toArray)))
-      )
-      .sortBy(_._1)
-      .map(_._2)
-      .toArray
+object ParseJobStaticParam {
+  def fromXML(node: scala.xml.NodeSeq): JobStaticParamConf = {
+    JobStaticParamConf(processFrequency = ProcessFrequencyEnum.getProcessFrequencyEnum((node \ FREQUENCY).text),
+      jobName = (node \ JOB_NAME).text,
+      publishStats = ParseUtil.parseBoolean((node \ PUBLISH_STATS).text),
+      otherParams = ParseUtil.parseNode[Array[GeneralParamConf]](node \ OTHER_PARAMS, None, ParseGeneralParams.fromXML)
+    )
   }
 }

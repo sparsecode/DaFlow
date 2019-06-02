@@ -21,9 +21,9 @@ import com.abhioncbr.daflow.commons.Context
 import com.abhioncbr.daflow.commons.ContextConstantEnum._
 import com.abhioncbr.daflow.commons.ExecutionResult
 import com.abhioncbr.daflow.commons.NotificationMessages.{exceptionMessage => EM}
-import com.abhioncbr.daflow.commons.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.common.QueryConf
-import com.abhioncbr.daflow.commons.extract.ExtractFeedConf
+import com.abhioncbr.daflow.commons.conf.common.GeneralParamConf
+import com.abhioncbr.daflow.commons.conf.common.QueryConf
+import com.abhioncbr.daflow.commons.conf.extract.ExtractFeedConf
 import com.abhioncbr.daflow.commons.util.FileUtil
 import com.typesafe.scalalogging.Logger
 import java.io.BufferedReader

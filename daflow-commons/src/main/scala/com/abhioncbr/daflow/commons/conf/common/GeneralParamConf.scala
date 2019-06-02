@@ -15,20 +15,7 @@
  * limitations under the License.
  */
 
-package com.abhioncbr.daflow.core.extractData
+package com.abhioncbr.daflow.commons.conf.common
 
-import com.abhioncbr.daflow.commons.conf.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.util.FileUtil
+case class GeneralParamConf(order: Int, paramName: String, paramValue: String, paramDefaultValue: String)
 
-object ExtractUtil {
-  def getParamsValue(paramList: List[GeneralParamConf]): Array[Object] = {
-    paramList
-      .map(
-        queryParam =>
-          (queryParam.order, FileUtil.mapFormatArgs(Some(paramList.toArray)))
-      )
-      .sortBy(_._1)
-      .map(_._2)
-      .toArray
-  }
-}

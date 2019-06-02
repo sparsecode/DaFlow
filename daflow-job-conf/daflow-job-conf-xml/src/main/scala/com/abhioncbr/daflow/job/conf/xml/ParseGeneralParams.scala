@@ -15,20 +15,24 @@
  * limitations under the License.
  */
 
-package com.abhioncbr.daflow.core.extractData
+package com.abhioncbr.daflow.job.conf.xml
 
 import com.abhioncbr.daflow.commons.conf.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.util.FileUtil
+import com.abhioncbr.daflow.job.conf.xml.AttributeTags._
+import com.abhioncbr.daflow.job.conf.xml.NodeTags._
 
-object ExtractUtil {
-  def getParamsValue(paramList: List[GeneralParamConf]): Array[Object] = {
-    paramList
-      .map(
-        queryParam =>
-          (queryParam.order, FileUtil.mapFormatArgs(Some(paramList.toArray)))
-      )
-      .sortBy(_._1)
-      .map(_._2)
-      .toArray
+object ParseGeneralParams {
+  def fromXML(node: scala.xml.NodeSeq): Array[GeneralParamConf] = {
+    Array[GeneralParamConf]((node \ PARAM).toList map { s => ParseGeneralParam.fromXML(s) }: _*)
+  }
+}
+
+object ParseGeneralParam {
+  def fromXML(node: scala.xml.NodeSeq): GeneralParamConf = {
+    val order = ParseUtil.parseInt((node  \ AttributeTags.ORDER).text)
+    val paramName = (node \ NAME).text
+    val paramValue = (node \ VALUE).text
+    val paramDefaultValue = (node \ DEFAULT_VALUE).text
+    GeneralParamConf(order, paramName, paramValue, paramDefaultValue)
   }
 }

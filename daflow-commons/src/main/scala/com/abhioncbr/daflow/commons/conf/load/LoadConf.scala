@@ -15,20 +15,10 @@
  * limitations under the License.
  */
 
-package com.abhioncbr.daflow.core.extractData
+package com.abhioncbr.daflow.commons.conf.load
 
-import com.abhioncbr.daflow.commons.conf.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.util.FileUtil
+import com.abhioncbr.daflow.commons.conf.common.DataPath
 
-object ExtractUtil {
-  def getParamsValue(paramList: List[GeneralParamConf]): Array[Object] = {
-    paramList
-      .map(
-        queryParam =>
-          (queryParam.order, FileUtil.mapFormatArgs(Some(paramList.toArray)))
-      )
-      .sortBy(_._1)
-      .map(_._2)
-      .toArray
-  }
-}
+case class LoadConf(feeds: Array[LoadFeedConf])
+case class LoadFeedConf(loadFeedName: String, loadType: LoadType.valueType, attributesMap: Map[String, String],
+  dataPath: DataPath, partitioningData: Option[PartitioningDataConf] )

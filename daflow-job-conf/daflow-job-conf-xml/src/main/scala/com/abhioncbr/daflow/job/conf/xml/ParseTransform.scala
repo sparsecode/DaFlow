@@ -14,21 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.abhioncbr.daflow.job.conf.xml
 
-package com.abhioncbr.daflow.core.extractData
+import com.abhioncbr.daflow.commons.conf.transform
+import com.abhioncbr.daflow.commons.conf.transform.TransformConf
+import com.abhioncbr.daflow.commons.conf.transform.TransformStepConf
+import com.abhioncbr.daflow.job.conf.xml.AttributeTags._
+import com.abhioncbr.daflow.job.conf.xml.NodeTags._
 
-import com.abhioncbr.daflow.commons.conf.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.util.FileUtil
+object ParseTransform {
+  def fromXML(node: scala.xml.NodeSeq): TransformConf = {
+    val steps: List[TransformStepConf] =
+      List[TransformStepConf]((node \ STEP).toList map { s => ParseTransformStep.fromXML(s) }: _*)
 
-object ExtractUtil {
-  def getParamsValue(paramList: List[GeneralParamConf]): Array[Object] = {
-    paramList
-      .map(
-        queryParam =>
-          (queryParam.order, FileUtil.mapFormatArgs(Some(paramList.toArray)))
-      )
-      .sortBy(_._1)
-      .map(_._2)
-      .toArray
+    transform.TransformConf(transformSteps = steps,
+      validateTransformedData = ParseUtil.parseBoolean((node \ VALIDATE_TRANSFORMED_DATA).text))
   }
 }

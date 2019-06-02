@@ -15,20 +15,8 @@
  * limitations under the License.
  */
 
-package com.abhioncbr.daflow.core.extractData
+package com.abhioncbr.daflow.commons.conf.transform
 
-import com.abhioncbr.daflow.commons.conf.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.util.FileUtil
-
-object ExtractUtil {
-  def getParamsValue(paramList: List[GeneralParamConf]): Array[Object] = {
-    paramList
-      .map(
-        queryParam =>
-          (queryParam.order, FileUtil.mapFormatArgs(Some(paramList.toArray)))
-      )
-      .sortBy(_._1)
-      .map(_._2)
-      .toArray
-  }
-}
+case class TransformConf(transformSteps: List[TransformStepConf], validateTransformedData: Boolean)
+case class TransformStepConf(order: Int, rules: Map[String, TransformRuleConf])
+case class TransformRuleConf(ruleType: String, condition: String, ruleAttributesMap: Map[String, String])

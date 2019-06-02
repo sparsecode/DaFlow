@@ -15,20 +15,22 @@
  * limitations under the License.
  */
 
-package com.abhioncbr.daflow.core.extractData
+package com.abhioncbr.daflow.job.conf.xml
 
 import com.abhioncbr.daflow.commons.conf.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.util.FileUtil
+import com.abhioncbr.daflow.commons.conf.load.PartitioningDataConf
+import com.abhioncbr.daflow.job.conf.xml.AttributeTags._
+import com.abhioncbr.daflow.job.conf.xml.NodeTags._
 
-object ExtractUtil {
-  def getParamsValue(paramList: List[GeneralParamConf]): Array[Object] = {
-    paramList
-      .map(
-        queryParam =>
-          (queryParam.order, FileUtil.mapFormatArgs(Some(paramList.toArray)))
-      )
-      .sortBy(_._1)
-      .map(_._2)
-      .toArray
+object ParsePartitioningData {
+  def fromXML(node: scala.xml.NodeSeq): PartitioningDataConf = {
+    val coalesce = ParseUtil.parseBoolean((node \ COALESCE_PARTITION).text)
+    val overwrite = ParseUtil.parseBoolean((node \ OVERWRITE_PARTITION).text)
+    val coalesceCount = ParseUtil.parseInt((node \ COALESCE_PARTITION_COUNT).text)
+    val partitionColumns = List[GeneralParamConf]((node \ PARTITION_COLUMNS \ COLUMN).
+      toList map { s => ParseGeneralParam.fromXML(s) }: _*)
+
+    PartitioningDataConf(coalesce = coalesce, overwrite = overwrite,
+      coalesceCount = coalesceCount, partitionColumns = partitionColumns)
   }
 }

@@ -15,20 +15,27 @@
  * limitations under the License.
  */
 
-package com.abhioncbr.daflow.core.extractData
+package com.abhioncbr.daflow.commons.conf.load
 
-import com.abhioncbr.daflow.commons.conf.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.util.FileUtil
+object LoadType extends Enumeration {
+  type valueType = Value
+  val JDBC, HIVE, FILE_SYSTEM = Value
 
-object ExtractUtil {
-  def getParamsValue(paramList: List[GeneralParamConf]): Array[Object] = {
-    paramList
-      .map(
-        queryParam =>
-          (queryParam.order, FileUtil.mapFormatArgs(Some(paramList.toArray)))
-      )
-      .sortBy(_._1)
-      .map(_._2)
-      .toArray
+  def getValueType(valueTypeString: String): LoadType.valueType = {
+    val valueType = valueTypeString match {
+      case "JDBC" => LoadType.JDBC
+      case "HIVE" => LoadType.HIVE
+      case "FILESYSTEM" => LoadType.FILE_SYSTEM
+    }
+    valueType
+  }
+
+  def getDataValue(valueType: LoadType.valueType): String = {
+    val output = valueType match {
+      case JDBC => "JDBC"
+      case HIVE => "HIVE"
+      case FILE_SYSTEM => "FILESYSTEM"
+    }
+    output
   }
 }

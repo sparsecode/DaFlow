@@ -15,20 +15,23 @@
  * limitations under the License.
  */
 
-package com.abhioncbr.daflow.core.extractData
+package com.abhioncbr.daflow.job.conf.xml
 
-import com.abhioncbr.daflow.commons.conf.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.util.FileUtil
-
-object ExtractUtil {
-  def getParamsValue(paramList: List[GeneralParamConf]): Array[Object] = {
-    paramList
-      .map(
-        queryParam =>
-          (queryParam.order, FileUtil.mapFormatArgs(Some(paramList.toArray)))
-      )
-      .sortBy(_._1)
-      .map(_._2)
-      .toArray
-  }
+object AttributeTags {
+  val NAME: String = "@name"
+  val TYPE: String = "@type"
+  val VALUE: String = "@value"
+  val ORDER: String = "@order"
+  val JOB_NAME: String = "@jobName"
+  val FREQUENCY: String = "@frequency"
+  val FEED_NAME: String = "@feedName"
+  val SOURCE_NAME: String = "@sourceName"
+  val TARGET_NAME: String = "@targetName"
+  val DEFAULT_VALUE: String = "@defaultValue"
+  val PUBLISH_STATS: String = "@publishStats"
+  val COALESCE_PARTITION: String = "@coalescePartition"
+  val OVERWRITE_PARTITION: String = "@overwritePartition"
+  val VALIDATE_EXTRACTED_DATA: String = "@validateExtractedData"
+  val COALESCE_PARTITION_COUNT: String = "@coalescePartitionCount"
+  val VALIDATE_TRANSFORMED_DATA: String = "@validateTransformedData"
 }

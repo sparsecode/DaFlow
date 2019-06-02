@@ -23,11 +23,12 @@ import com.abhioncbr.daflow.commons.ContextConstantEnum.JOB_STATIC_PARAM_CONF
 import com.abhioncbr.daflow.commons.ContextConstantEnum.OTHER_PARAM
 import com.abhioncbr.daflow.commons.NotificationMessages
 import com.abhioncbr.daflow.commons.ProcessFrequencyEnum
-import com.abhioncbr.daflow.commons.common.DataPath
-import com.abhioncbr.daflow.commons.common.FileNameParam
-import com.abhioncbr.daflow.commons.common.GeneralParamConf
-import com.abhioncbr.daflow.commons.common.PathInfixParam
-import com.abhioncbr.daflow.commons.job.JobStaticParamConf
+import com.abhioncbr.daflow.commons.conf.JobStaticParamConf
+import com.abhioncbr.daflow.commons.conf.common
+import com.abhioncbr.daflow.commons.conf.common.DataPath
+import com.abhioncbr.daflow.commons.conf.common.FileNameParam
+import com.abhioncbr.daflow.commons.conf.common.GeneralParamConf
+import com.abhioncbr.daflow.commons.conf.common.PathInfixParam
 import java.text.DecimalFormat
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
@@ -58,7 +59,7 @@ object FileUtil {
           if (!path.getName.contains(fileNameSeparator)) {
             DataPath(Some(pathPrefix), feedPattern = Some(PathInfixParam(infixPattern = path.getName))) }
           else {
-            DataPath(Some(pathPrefix), fileName = Some(parseFileName(path.getName, fileNameSeparator))) }
+            common.DataPath(Some(pathPrefix), fileName = Some(parseFileName(path.getName, fileNameSeparator))) }
 
         Left(filePath)
       } else { Right(NotificationMessages.fileDoesNotExist(filePathString)) }
