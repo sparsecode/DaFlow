@@ -7,7 +7,7 @@
     <groupId>com.abhioncbr.daflow</groupId>
     <artifactId>daflow</artifactId>
     <packaging>pom</packaging>
-    <version>0.1-SNAPSHOT</version>
+    <version>${revision}</version>
     <description>Apache-Spark based Data Flow(ETL) Framework which supports multiple read, write destinations of different types
         and also support multiple categories of transformation rules.
     </description>
@@ -62,8 +62,25 @@
         <build.java.target.version>8</build.java.target.version>
         <main.basedir>${project.basedir}</main.basedir>
 
-        <scala.version>2.11.12</scala.version>
+        <revision>${daflow.version}</revision>
+        <daflow.version>0.1-SNAPSHOT</daflow.version>
+        <daflow.core.version>${daflow.version}</daflow.core.version>
+        <daflow.common.version>${daflow.version}</daflow.common.version>
+        <daflow.metrics.version>${daflow.version}</daflow.metrics.version>
+        <daflow.sql.parser.version>${daflow.version}</daflow.sql.parser.version>
+        <daflow.job.conf.xml.version>${daflow.version}</daflow.job.conf.xml.version>
+        <daflow.job.conf.yaml.version>${daflow.version}</daflow.job.conf.yaml.version>
+        <daflow.docker.hive.version>${daflow.version}</daflow.docker.hive.version>
+        <daflow.docker.spark.base.version>${daflow.version}</daflow.docker.spark.base.version>
+        <daflow.docker.spark.adhoc.version>${daflow.version}</daflow.docker.spark.adhoc.version>
+        <daflow.docker.hadoop.base.version>${daflow.version}</daflow.docker.hadoop.base.version>
+        <daflow.docker.spark.master.version>${daflow.version}</daflow.docker.spark.master.version>
+        <daflow.docker.spark.worker.version>${daflow.version}</daflow.docker.spark.worker.version>
+        <daflow.docker.hadoop.datanode.version>${daflow.version}</daflow.docker.hadoop.datanode.version>
+        <daflow.docker.hadoop.namenode.version>${daflow.version}</daflow.docker.hadoop.namenode.version>
+        <daflow.docker.hadoop.historyserver.version>${daflow.version}</daflow.docker.hadoop.historyserver.version>
 
+        <scala.version>2.11.12</scala.version>
         <scala.test>3.1.0-SNAP7</scala.test>
         <scala.mock>4.2.0</scala.mock>
 

@@ -2,12 +2,12 @@
     <parent>
         <groupId>com.abhioncbr.daflow</groupId>
         <artifactId>daflow-docker</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>${revision}</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <packaging>pom</packaging>
-    <version>0.1-SNAPSHOT</version>
+    <version>${daflow.docker.spark.base.version}</version>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>daflow-spark-base-docker</artifactId>
     <description>DaFlow's Docker Image of Spark base</description>
