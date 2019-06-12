@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.abhioncbr.daflow</groupId>
         <artifactId>daflow</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>${revision}</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -13,6 +13,7 @@
     <packaging>jar</packaging>
     <name>daflow-job-conf-yaml</name>
     <artifactId>daflow-job-conf-yaml</artifactId>
+    <version>${daflow.job.conf.yaml.version}</version>
 
     <licenses>
         <license>
@@ -40,14 +41,29 @@
     </pluginRepositories>
 
     <properties>
+        <circe-generic.version>0.11.1</circe-generic.version>
+        <circe-yaml.version>0.10.0</circe-yaml.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.abhioncbr.daflow</groupId>
             <artifactId>daflow-commons</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>${daflow.common.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.circe</groupId>
+            <artifactId>circe-yaml_2.11</artifactId>
+            <version>${circe-yaml.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.circe</groupId>
+            <artifactId>circe-generic_2.11</artifactId>
+            <version>${circe-generic.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build></build>

@@ -5,12 +5,13 @@
     <parent>
         <groupId>com.abhioncbr.daflow</groupId>
         <artifactId>daflow</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <packaging>jar</packaging>
     <name>daflow-core</name>
+    <version>${daflow.core.version}</version>
     <artifactId>daflow-core</artifactId>
 
     <licenses>
@@ -39,37 +40,38 @@
     </pluginRepositories>
 
     <properties>
+        <scopt.version>3.3.0</scopt.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.abhioncbr.daflow</groupId>
             <artifactId>daflow-commons</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>${daflow.common.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.abhioncbr.daflow</groupId>
             <artifactId>daflow-job-conf-xml</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>${daflow.job.conf.xml.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.abhioncbr.daflow</groupId>
             <artifactId>daflow-metrics</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>${daflow.metrics.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.abhioncbr.daflow</groupId>
             <artifactId>daflow-sql-parser</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>${daflow.sql.parser.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.github.scopt</groupId>
             <artifactId>scopt_2.11</artifactId>
-            <version>3.3.0</version>
+            <version>${scopt.version}</version>
         </dependency>
 
     </dependencies>
