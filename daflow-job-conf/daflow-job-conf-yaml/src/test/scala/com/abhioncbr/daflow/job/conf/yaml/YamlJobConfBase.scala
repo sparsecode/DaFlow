@@ -15,16 +15,26 @@
  * limitations under the License.
  */
 
-package com.abhioncbr.daflow.commons
+package com.abhioncbr.daflow.job.conf.yaml
 
-object NotificationMessages {
-  val fileDoesNotExist: String => String =
-    (filePath: String) => { s"Provided file path '$filePath' doesn't exist." }
+import com.abhioncbr.daflow.commons.CommonSpec
+import com.abhioncbr.daflow.commons.exception.DaFlowJobConfigException
+import com.abhioncbr.daflow.job.conf.yaml.config.YamlJobConfig
+import io.circe.Decoder
+import io.circe.DecodingFailure
+import io.circe.Json
+import io.circe.yaml.parser
 
-  val exceptionMessage: Exception => String =
-    (exception: Exception) => { s"Exception message: ${exception.getMessage}" }
+class YamlJobConfBase extends CommonSpec{
 
-  // extract
-  val extractNotSupported: String => String =
-    (extractType: String) => { s"extracting data from $extractType is not supported right now" }
+  val userDirectory: String = System.getProperty("user.dir")
+
+  val daflowExamplesPath = s"$userDirectory/daflow-examples"
+  val daflowExamplesDemoPath = s"$daflowExamplesPath/demo"
+  val daflowExamplesDemoSampleDataPath = s"$daflowExamplesDemoPath/sample-data"
+
+  def parseConfig[T](configContent: String, decoder: Decoder[T]): T = {
+    val json: Json = parser.parse(configContent).right.get
+    json.as[T](decoder).right.get
+  }
 }

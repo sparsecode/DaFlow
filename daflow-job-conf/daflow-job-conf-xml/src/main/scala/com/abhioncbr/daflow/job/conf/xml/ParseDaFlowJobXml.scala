@@ -17,69 +17,56 @@
 
 package com.abhioncbr.daflow.job.conf.xml
 
-import com.abhioncbr.daflow.commons.Context
-import com.abhioncbr.daflow.commons.ContextConstantEnum.HADOOP_CONF
-import com.abhioncbr.daflow.commons.NotificationMessages.{exceptionMessage => EM}
-import com.abhioncbr.daflow.commons.NotificationMessages.{unknownXMLEntity => UE}
-import com.abhioncbr.daflow.commons.NotificationMessages.{jobXmlFileDoesNotExist => JXF}
-import com.abhioncbr.daflow.commons.NotificationMessages.{exceptionWhileParsing => EWP}
 import com.abhioncbr.daflow.commons.conf.DaFlowJobConf
-import com.abhioncbr.daflow.commons.conf.JobStaticParamConf
-import com.abhioncbr.daflow.commons.conf.extract.ExtractConf
-import com.abhioncbr.daflow.commons.conf.load.LoadConf
-import com.abhioncbr.daflow.commons.conf.transform.TransformConf
+import com.abhioncbr.daflow.commons.exception.DaFlowJobConfigException
+import com.abhioncbr.daflow.commons.parse.conf.ParseDaFlowJob
 import com.abhioncbr.daflow.job.conf.xml.NodeTags._
 import java.io._
 import javax.xml.XMLConstants
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.SchemaFactory
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileSystem
-import org.apache.hadoop.fs.Path
 import scala.util.Try
 import scala.xml.Node
+import scala.xml.XML
 
 object DaFlowJob{
   def fromXML(node: scala.xml.NodeSeq): DaFlowJobConf = {
-  DaFlowJobConf(ParseJobStaticParam.fromXML(node \ JOB_STATIC_PARAM),
-    ParseExtract.fromXML(node \ EXTRACT),
-    ParseTransform.fromXML(node \ TRANSFORM),
-    ParseLoad.fromXML(node \ LOAD))
+    DaFlowJobConf(ParseJobStaticParam.fromXML(node \ JOB_STATIC_PARAM),
+      ParseExtract.fromXML(node \ EXTRACT),
+      ParseTransform.fromXML(node \ TRANSFORM),
+      ParseLoad.fromXML(node \ LOAD)
+    )
   }
 }
 
-class ParseDaFlowJobXml {
-  def parseXml(path: String, loadFromHDFS: Boolean): Either[String, String] = {
-    try {
-      val reader: BufferedReader = if (loadFromHDFS) {
-        val fs = FileSystem.get(Context.getContextualObject[Configuration](HADOOP_CONF))
-        new BufferedReader(new InputStreamReader(fs.open(new Path(path))))
-      } else { new BufferedReader(new InputStreamReader(new FileInputStream(path))) }
+class ParseDaFlowJobXml extends ParseDaFlowJob {
+  val unknownXMLEntity: String = "Unknown entity found instead of '<DaFlowJob>'"
 
-      val lines = Stream.continually(reader.readLine()).takeWhile(_ != null).toArray[String].mkString
-      reader.close()
-      Left(lines)
-    } catch {
-      case fileNotFoundException: FileNotFoundException => Right(s"${JXF(path)}. ${EM(fileNotFoundException)}".stripMargin)
-      case exception: Exception => Right(s"$EWP ${EM(exception)}".stripMargin)
+  def parse(configFilePath: String, loadFromHDFS: Boolean): Either[DaFlowJobConfigException, DaFlowJobConf] = {
+    getConfigFileContent(configFilePath, loadFromHDFS) match {
+      case Left(exception) => Left(exception)
+      case Right(xmlContent) => parseNode(XML.loadString(xmlContent)) match {
+        case Left(msg) => Left(new DaFlowJobConfigException(msg, configFilePath))
+        case Right(daFlowJobConfig) => Right(daFlowJobConfig)
+      }
     }
   }
 
-  def validateXml(xsdFile: String, xmlFile: String): Boolean = {
+  def validate(specFilePath: String, configFilePath: String): Boolean = {
     Try({
       val factory: SchemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
-      val schema = factory.newSchema(new StreamSource(new FileInputStream(xsdFile)))
-      schema.newValidator().validate(new StreamSource(new FileInputStream(xmlFile)))
+      val schema = factory.newSchema(new StreamSource(new FileInputStream(specFilePath)))
+      schema.newValidator().validate(new StreamSource(new FileInputStream(configFilePath)))
       true
     }).getOrElse(false)
-}
+  }
 
-  def parseNode(node: scala.xml.Node): Either[(JobStaticParamConf, ExtractConf, TransformConf, LoadConf), String] = {
+  private def parseNode(node: scala.xml.Node): Either[String, DaFlowJobConf] = {
     val trimmedNode: Node = scala.xml.Utility.trim(node)
     trimmedNode match {
-      case <DaFlowJob>{_*}</DaFlowJob> => val daFlowJob = DaFlowJob.fromXML(trimmedNode)
-        Left((daFlowJob.jobStaticParam, daFlowJob.extract, daFlowJob.transform, daFlowJob.load))
-      case _ => Right(UE)
+      case <DaFlowJob>{_*}</DaFlowJob> => val daFlowJobConfig = DaFlowJob.fromXML(trimmedNode)
+        Right(daFlowJobConfig)
+      case _ => Left(unknownXMLEntity)
     }
   }
 }

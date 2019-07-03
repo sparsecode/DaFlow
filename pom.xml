@@ -24,11 +24,11 @@
     </licenses>
 
     <modules>
-        <module>daflow-commons</module>
         <module>daflow-core</module>
+        <module>docker/images</module>
+        <module>daflow-commons</module>
         <module>daflow-metrics</module>
         <module>daflow-sql-parser</module>
-        <module>docker/images</module>
         <module>daflow-job-conf/daflow-job-conf-xml</module>
         <module>daflow-job-conf/daflow-job-conf-yaml</module>
     </modules>

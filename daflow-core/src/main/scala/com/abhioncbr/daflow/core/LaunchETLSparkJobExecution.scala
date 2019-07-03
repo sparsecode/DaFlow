@@ -21,12 +21,14 @@ import com.abhioncbr.daflow.commons.Context
 import com.abhioncbr.daflow.commons.ContextConstantEnum._
 import com.abhioncbr.daflow.commons.ExecutionResult
 import com.abhioncbr.daflow.commons.NotificationMessages.{extractNotSupported => ENS}
+import com.abhioncbr.daflow.commons.conf.DaFlowJobConf
 import com.abhioncbr.daflow.commons.conf.JobStaticParamConf
 import com.abhioncbr.daflow.commons.conf.extract.ExtractConf
 import com.abhioncbr.daflow.commons.conf.extract.ExtractionType
 import com.abhioncbr.daflow.commons.conf.load.LoadConf
 import com.abhioncbr.daflow.commons.conf.load.LoadType
 import com.abhioncbr.daflow.commons.conf.transform.TransformConf
+import com.abhioncbr.daflow.commons.exception.DaFlowJobConfigException
 import com.abhioncbr.daflow.core.extractData.ExtractDataFromDB
 import com.abhioncbr.daflow.core.extractData.ExtractDataFromFileSystem
 import com.abhioncbr.daflow.core.extractData.ExtractDataFromHive
@@ -46,13 +48,12 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.SQLContext
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
-import scala.xml.XML
 
 class LaunchDaFlowSparkJobExecution(jobName: String, startDate: Option[DateTime], endDate: Option[DateTime],
   configFilePath: String, otherParams: Option[Map[String, String]]) {
   private val logger = Logger(this.getClass)
 
-  def configureDaFlowJob: Either[Unit, String] = {
+  def configureDaFlowJob: Either[DaFlowJobConfigException, Unit] = {
     // adding job params in context.
     Context.addContextualObject[Option[DateTime]](END_DATE, endDate)
     Context.addContextualObject[Option[DateTime]](START_DATE, startDate)
@@ -69,19 +70,15 @@ class LaunchDaFlowSparkJobExecution(jobName: String, startDate: Option[DateTime]
     // parsing configuration file & loading job params in context.
     val falseObject = false
     val parse = new ParseDaFlowJobXml
-    val output: Either[Unit, String] = parse.parseXml(configFilePath, falseObject) match {
-      case Left(xmlContent) => parse.parseNode(XML.loadString(xmlContent)) match {
-        case Left(tuple) =>
-          Context.addContextualObject[JobStaticParamConf] (JOB_STATIC_PARAM_CONF, tuple._1)
-          Context.addContextualObject[ExtractConf] (EXTRACT_CONF, tuple._2)
-          Context.addContextualObject[TransformConf] (TRANSFORM_CONF, tuple._3)
-          Context.addContextualObject[LoadConf] (LOAD_CONF, tuple._4)
-          Left()
-        case Right(parseError) => logger.error(parseError)
-          Right(parseError)
-      }
-      case Right(xmlLoadError) => logger.error(xmlLoadError)
-        Right(xmlLoadError)
+    val output: Either[DaFlowJobConfigException, Unit] = parse.parse(configFilePath, falseObject) match {
+      case Left(exception) =>
+        Left(exception)
+      case Right(conf) =>
+        Context.addContextualObject[JobStaticParamConf] (JOB_STATIC_PARAM_CONF, conf.jobStaticParam)
+        Context.addContextualObject[ExtractConf] (EXTRACT_CONF, conf.extract)
+        Context.addContextualObject[TransformConf] (TRANSFORM_CONF, conf.transform)
+        Context.addContextualObject[LoadConf] (LOAD_CONF, conf.load)
+        Right()
     }
     output
   }
@@ -252,7 +249,11 @@ object LaunchDaFlowSparkJobExecution extends App{
 
     val updateFeedStats: UpdateFeedStats = new UpdateFeedStats(opts.jobName, opts.startDate.getOrElse(DateTime.now))
     val exitCode: Int = daFlowExecutor.configureDaFlowJob match {
-      case Left(u: Unit) =>
+      case Left(exception) =>
+        updateFeedStats.updateFeedStatInFile(executionTime = 0, getDefaultJobResult(opts.jobName, exception.getMessage))
+        logger.error(exception.getMessage)
+        -1
+      case Right(u: Unit) =>
         logger.info(s"DaFlow job Config file validated $u")
         val start = System.currentTimeMillis
         // executing DaFlow job
@@ -273,10 +274,6 @@ object LaunchDaFlowSparkJobExecution extends App{
             logger.error(str)
             -1
         }
-      case Right(str) =>
-        updateFeedStats.updateFeedStatInFile(executionTime = 0, getDefaultJobResult(opts.jobName, str))
-        logger.error(str)
-        -1
     }
     exitCode
   }

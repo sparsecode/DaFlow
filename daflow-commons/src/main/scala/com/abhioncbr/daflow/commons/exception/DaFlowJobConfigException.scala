@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,17 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.abhioncbr.daflow.commons.exception
 
-package com.abhioncbr.daflow.commons
-
-object NotificationMessages {
-  val fileDoesNotExist: String => String =
-    (filePath: String) => { s"Provided file path '$filePath' doesn't exist." }
-
-  val exceptionMessage: Exception => String =
-    (exception: Exception) => { s"Exception message: ${exception.getMessage}" }
-
-  // extract
-  val extractNotSupported: String => String =
-    (extractType: String) => { s"extracting data from $extractType is not supported right now" }
-}
+class DaFlowJobConfigException(msg: String, fileName: String, exception: Option[Throwable] = None) extends
+  Exception(s"JobConfig: `$fileName`, issue: $msg", exception.getOrElse(new Throwable))

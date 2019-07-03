@@ -53,6 +53,14 @@
         </dependency>
 
         <dependency>
+            <groupId>com.abhioncbr.daflow</groupId>
+            <artifactId>daflow-commons</artifactId>
+            <version>${daflow.common.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>io.circe</groupId>
             <artifactId>circe-yaml_2.11</artifactId>
             <version>${circe-yaml.version}</version>
@@ -66,7 +74,28 @@
 
     </dependencies>
 
-    <build></build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest-maven-plugin</artifactId>
+                <configuration>
+                    <systemProperties>
+                        <user.dir>${main.basedir}</user.dir>
+                    </systemProperties>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>test</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+    </build>
 
     <reporting>
         <plugins>

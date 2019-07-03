@@ -22,7 +22,7 @@ class ParseDaFlowJobXmlSpec extends XmlJobConfBase{
     val xsdFile = xsdFilePath
     val xmlFile = s"$daflowExampleDemoJobXmlPath/json_etl_example.xml"
     val parse: ParseDaFlowJobXml = new ParseDaFlowJobXml
-    val output: Boolean = parse.validateXml(xsdFile, xmlFile)
+    val output: Boolean = parse.validate(xsdFile, xmlFile)
 
     output should not equal None
     output should be (true)
@@ -32,7 +32,7 @@ class ParseDaFlowJobXmlSpec extends XmlJobConfBase{
     val xsdFile = xsdFilePath
     val xmlFile = s"$daflowExampleJobXmlTemplatePath/extract_jdbc_import.xml"
     val parse: ParseDaFlowJobXml = new ParseDaFlowJobXml
-    val output: Boolean = parse.validateXml(xsdFile, xmlFile)
+    val output: Boolean = parse.validate(xsdFile, xmlFile)
 
     output should not equal None
     output should be (true)
@@ -42,7 +42,7 @@ class ParseDaFlowJobXmlSpec extends XmlJobConfBase{
     val xsdFile = xsdFilePath
     val xmlFile = s"$daflowExampleJobXmlTemplatePath/extract_json_import.xml"
     val parse: ParseDaFlowJobXml = new ParseDaFlowJobXml
-    val output: Boolean = parse.validateXml(xsdFile, xmlFile)
+    val output: Boolean = parse.validate(xsdFile, xmlFile)
 
     output should not equal None
     output should be (true)
@@ -52,7 +52,7 @@ class ParseDaFlowJobXmlSpec extends XmlJobConfBase{
     val xsdFile = xsdFilePath
     val xmlFile = s"$daflowExampleJobXmlTemplatePath/multiple_group_name.xml"
     val parse: ParseDaFlowJobXml = new ParseDaFlowJobXml
-    val output: Boolean = parse.validateXml(xsdFile, xmlFile)
+    val output: Boolean = parse.validate(xsdFile, xmlFile)
 
     output should not equal None
     output should be (true)
@@ -62,7 +62,7 @@ class ParseDaFlowJobXmlSpec extends XmlJobConfBase{
     val xsdFile = xsdFilePath
     val xmlFile = s"$daflowExampleJobXmlTemplatePath/multiple_transform_rule.xml"
     val parse: ParseDaFlowJobXml = new ParseDaFlowJobXml
-    val output: Boolean = parse.validateXml(xsdFile, xmlFile)
+    val output: Boolean = parse.validate(xsdFile, xmlFile)
 
     output should not equal None
     output should be (true)
