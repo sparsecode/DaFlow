@@ -1,8 +1,3 @@
----
-layout: post
-title: DaFlow: Apache-Spark based Data Flow(ETL) Framework
----
-
 <img src="https://github.com/abhioncbr/DaFlow/raw/develop/DaFlow.png" align="right">
 
 #DaFlow [Data Flow(ETL) Framework]
