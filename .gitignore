@@ -34,3 +34,6 @@ docker/images/spark/worker/*.iml
 daflow-examples/demo/aritfacts/*
 daflow-examples/demo/sample-data/daflow-result/*
 daflow-examples/demo/sample-feed-stats/*
+
+*.iml
+**/*.iml
